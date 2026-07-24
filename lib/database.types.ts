@@ -34,6 +34,112 @@ export type Database = {
   }
   public: {
     Tables: {
+      class_sessions: {
+        Row: {
+          capacity: number
+          created_at: string
+          date: string
+          id: string
+          instructor_id: string
+          status: string
+          studio_id: string
+          template_id: string
+        }
+        Insert: {
+          capacity: number
+          created_at?: string
+          date: string
+          id?: string
+          instructor_id: string
+          status?: string
+          studio_id: string
+          template_id: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          date?: string
+          id?: string
+          instructor_id?: string
+          status?: string
+          studio_id?: string
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_sessions_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_sessions_studio_id_fkey"
+            columns: ["studio_id"]
+            isOneToOne: false
+            referencedRelation: "studios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_sessions_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "class_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_templates: {
+        Row: {
+          capacity: number
+          created_at: string
+          day_of_week: number
+          duration_min: number
+          id: string
+          instructor_id: string
+          start_time: string
+          studio_id: string
+          title: string
+        }
+        Insert: {
+          capacity: number
+          created_at?: string
+          day_of_week: number
+          duration_min: number
+          id?: string
+          instructor_id: string
+          start_time: string
+          studio_id: string
+          title: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          day_of_week?: number
+          duration_min?: number
+          id?: string
+          instructor_id?: string
+          start_time?: string
+          studio_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_templates_instructor_id_fkey"
+            columns: ["instructor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_templates_studio_id_fkey"
+            columns: ["studio_id"]
+            isOneToOne: false
+            referencedRelation: "studios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invites: {
         Row: {
           code: string
@@ -143,6 +249,25 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _generate_sessions_internal: {
+        Args: { p_template_id: string; p_weeks_ahead: number }
+        Returns: {
+          capacity: number
+          created_at: string
+          date: string
+          id: string
+          instructor_id: string
+          status: string
+          studio_id: string
+          template_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "class_sessions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       accept_invite: {
         Args: { p_code: string; p_full_name: string }
         Returns: {
@@ -184,6 +309,26 @@ export type Database = {
         Returns: Database["public"]["Enums"]["profile_role"]
       }
       current_studio_id: { Args: never; Returns: string }
+      generate_sessions_for_all_templates: { Args: never; Returns: undefined }
+      generate_sessions_for_template: {
+        Args: { p_template_id: string; p_weeks_ahead?: number }
+        Returns: {
+          capacity: number
+          created_at: string
+          date: string
+          id: string
+          instructor_id: string
+          status: string
+          studio_id: string
+          template_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "class_sessions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       get_invite_preview: {
         Args: { p_code: string }
         Returns: {
