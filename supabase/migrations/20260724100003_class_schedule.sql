@@ -95,20 +95,28 @@ as $$
 declare
   v_template public.class_templates;
   v_date date;
-  v_end_date date;
 begin
   select * into v_template from public.class_templates where id = p_template_id;
   if v_template.id is null then
     raise exception 'template_not_found';
   end if;
 
-  v_end_date := current_date + (p_weeks_ahead * 7);
   v_date := current_date;
   while extract(dow from v_date)::smallint <> v_template.day_of_week loop
     v_date := v_date + 1;
   end loop;
 
-  while v_date <= v_end_date loop
+  -- Counted loop (not a `while v_date <= v_end_date` date-range loop): the
+  -- previous date-range version computed `v_end_date := current_date +
+  -- (p_weeks_ahead * 7)` and looped `while v_date <= v_end_date`, which
+  -- produced p_weeks_ahead + 1 sessions whenever `current_date` already
+  -- matched the template's day_of_week -- the alignment loop above then
+  -- leaves v_date at current_date instead of advancing it, so both the
+  -- first iteration (today) and the last (today + p_weeks_ahead*7, which
+  -- equals v_end_date and also satisfies `<=`) landed inside the range.
+  -- Iterating a fixed 0..(p_weeks_ahead - 1) count instead always produces
+  -- exactly p_weeks_ahead sessions regardless of the starting offset.
+  for i in 0..(p_weeks_ahead - 1) loop
     insert into public.class_sessions (template_id, studio_id, date, instructor_id, capacity)
     values (v_template.id, v_template.studio_id, v_date, v_template.instructor_id, v_template.capacity)
     on conflict (template_id, date) do nothing;
@@ -175,8 +183,24 @@ as $$
 declare
   v_template record;
 begin
+  -- Each template's generation is wrapped in its own begin/exception block
+  -- (per-template error isolation) rather than letting the loop body run as
+  -- one implicit transaction: without this, a single tenant's template
+  -- failing validate_instructor_ref (e.g. its instructor was later demoted
+  -- to 'member' -- an ordinary, legitimate owner action on a different
+  -- profile row, not a self-escalation caught by
+  -- prevent_privilege_escalation -- and a subsequent session insert
+  -- re-validates the instructor's role and fails) would raise uncaught,
+  -- aborting this entire function call and silently stalling the weekly
+  -- rollover for every other studio's template too. Catching `others` here
+  -- and just warning keeps one bad template from taking down the whole
+  -- cron batch.
   for v_template in select id from public.class_templates loop
-    perform public._generate_sessions_internal(v_template.id, 1);
+    begin
+      perform public._generate_sessions_internal(v_template.id, 1);
+    exception when others then
+      raise warning 'generate_sessions_for_all_templates: template % failed: %', v_template.id, sqlerrm;
+    end;
   end loop;
 end;
 $$;
