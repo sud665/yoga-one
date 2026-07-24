@@ -1003,8 +1003,8 @@ EOF
 - Modify: `lib/types.ts`, `package.json`(테스트 스크립트)
 
 **Interfaces:**
-- Consumes: `public.class_sessions` (Task 4)
-- Produces: `public.bookings` 테이블. `public.book_session(p_session_id uuid) returns public.bookings`. `public.cancel_booking(p_booking_id uuid) returns public.bookings`. `public.list_upcoming_sessions_for_member() returns table(id uuid, date date, title text, instructor_name text, capacity integer, booked_count integer, my_status text)` — Task 12이 이 RPC로 회원용 시간표를 조회한다 (일반 `class_sessions`+`bookings` 임베드 조회는 "member views own" RLS 때문에 다른 회원의 예약이 필터링되어 정원 집계가 틀리므로 사용하지 않는다).
+- Consumes: `public.class_sessions` (Task 4), `tests.authenticate_as`/`tests.clear_authentication` (Task 2 — note: `clear_authentication()` switches to `anon`, it does NOT bypass RLS; see `tests.bypass_rls()` below)
+- Produces: `public.bookings` 테이블. `public.book_session(p_session_id uuid) returns public.bookings`. `public.cancel_booking(p_booking_id uuid) returns public.bookings`. `public.list_upcoming_sessions_for_member() returns table(id uuid, date date, title text, instructor_name text, capacity integer, booked_count integer, my_status text)` — Task 12이 이 RPC로 회원용 시간표를 조회한다 (일반 `class_sessions`+`bookings` 임베드 조회는 "member views own" RLS 때문에 다른 회원의 예약이 필터링되어 정원 집계가 틀리므로 사용하지 않는다). `tests.bypass_rls()` — postgres(BYPASSRLS)로 전환하는 테스트 헬퍼. 픽스처를 직접 되돌릴 때(RPC를 거치지 않는 update/select) 사용하며, 이후 Task 6도 이 헬퍼를 사용한다.
 
 - [ ] **Step 1: 마이그레이션 작성**
 
@@ -1180,6 +1180,21 @@ as $$
 $$;
 
 grant execute on function public.list_upcoming_sessions_for_member() to authenticated;
+
+-- Task 2에서 만든 tests.clear_authentication()은 "anon으로 전환"(비인증 상태 시뮬레이션)이지
+-- RLS 우회가 아니다 (anon도 일반 role이라 RLS를 그대로 받는다) — postgres만 BYPASSRLS를 가진다.
+-- 이 태스크부터 픽스처를 직접 되돌리는 테스트가 필요해, RLS를 우회하는 별도 헬퍼를 추가한다.
+create or replace function tests.bypass_rls()
+returns void
+language plpgsql
+as $$
+begin
+  perform set_config('request.jwt.claim.sub', '', true);
+  set local role postgres;
+end;
+$$;
+
+grant execute on function tests.bypass_rls() to authenticated, anon;
 ```
 
 - [ ] **Step 2: 마이그레이션 적용**
@@ -1246,9 +1261,16 @@ select is(
 );
 
 -- 5) 남의 예약은 취소할 수 없다
+-- member_2의 예약 id는 "bookings: member views own" RLS 때문에 member_1 권한으로는
+-- 애초에 조회가 안 된다 — 픽스처 조회는 bypass_rls()로 미리 해두고, 실제
+-- cancel_booking 호출만 member_1 권한으로 검증한다.
+select tests.bypass_rls();
+insert into test_fixtures (key, value)
+  select 'member_2_booking_id', id from public.bookings where session_id = 'cccccccc-0000-0000-0000-000000000000' and member_id = (select value from test_fixtures where key = 'member_2');
+
 select tests.authenticate_as((select value from test_fixtures where key = 'member_1'));
 select throws_ok(
-  format('select public.cancel_booking(%L)', (select id from public.bookings where session_id = 'cccccccc-0000-0000-0000-000000000000' and member_id = (select value from test_fixtures where key = 'member_2'))),
+  format('select public.cancel_booking(%L)', (select value from test_fixtures where key = 'member_2_booking_id')),
   'not_permitted',
   'a member cannot cancel someone else''s booking'
 );
@@ -1445,7 +1467,7 @@ EOF
 - Create: `supabase/tests/database/attendance.test.sql`
 
 **Interfaces:**
-- Consumes: `public.bookings`, `public.class_sessions` (Task 4, 5)
+- Consumes: `public.bookings`, `public.class_sessions` (Task 4, 5), `tests.bypass_rls()` (Task 5 — use this, not `tests.clear_authentication()`, when a pgTAP assertion needs to directly reset a `bookings` row's status outside the RPCs)
 - Produces: `public.mark_attendance(p_booking_id uuid, p_status text) returns public.bookings`
 
 - [ ] **Step 1: 마이그레이션 작성**
@@ -1536,8 +1558,8 @@ select is(
 
 -- 2) 다른 강사는 이 세션의 출석을 표시할 수 없다 (booking_g를 booked로 되돌려 재사용)
 -- bookings에는 authenticated용 update 정책이 없으므로(전부 RPC 전용), 픽스처를 직접
--- 되돌릴 때는 postgres로 돌아가 RLS를 우회한다.
-select tests.clear_authentication();
+-- 되돌릴 때는 bypass_rls()로 RLS를 우회한다 (clear_authentication()은 anon 전환일 뿐 우회가 아니다).
+select tests.bypass_rls();
 update public.bookings set status = 'booked' where id = (select value from test_fixtures where key = 'booking_g');
 select tests.authenticate_as((select value from test_fixtures where key = 'other_instructor'));
 select throws_ok(
@@ -1555,7 +1577,7 @@ select throws_ok(
 );
 
 -- 4) waitlisted 상태인 예약은 출석 처리할 수 없다
-select tests.clear_authentication();
+select tests.bypass_rls();
 update public.bookings set status = 'waitlisted' where id = (select value from test_fixtures where key = 'booking_g');
 select tests.authenticate_as((select value from test_fixtures where key = 'instructor_g'));
 select throws_ok(
