@@ -821,20 +821,21 @@ as $$
 declare
   v_template public.class_templates;
   v_date date;
-  v_end_date date;
 begin
   select * into v_template from public.class_templates where id = p_template_id;
   if v_template.id is null then
     raise exception 'template_not_found';
   end if;
 
-  v_end_date := current_date + (p_weeks_ahead * 7);
   v_date := current_date;
   while extract(dow from v_date)::smallint <> v_template.day_of_week loop
     v_date := v_date + 1;
   end loop;
 
-  while v_date <= v_end_date loop
+  -- 카운트 기반 루프: 시작일이 오늘의 요일과 일치해도(오프셋 0) 항상 정확히
+  -- p_weeks_ahead개를 만든다. 날짜 범위(<=) 기반 루프는 시작일이 이미 목표 요일과
+  -- 같을 때 양쪽 끝이 전부 걸려 p_weeks_ahead+1개가 생기는 off-by-one이 있었다.
+  for i in 0..(p_weeks_ahead - 1) loop
     insert into public.class_sessions (template_id, studio_id, date, instructor_id, capacity)
     values (v_template.id, v_template.studio_id, v_date, v_template.instructor_id, v_template.capacity)
     on conflict (template_id, date) do nothing;
@@ -875,8 +876,16 @@ as $$
 declare
   v_template record;
 begin
+  -- 템플릿 하나가 실패해도(예: 강사가 이후 role=member로 바뀌어
+  -- validate_instructor_ref 트리거가 막는 경우) 전체 배치가 롤백되어 다른
+  -- 모든 스튜디오의 세션 생성까지 막히면 안 되므로, 템플릿마다 서브트랜잭션으로
+  -- 격리하고 실패는 경고만 남긴 채 다음 템플릿으로 넘어간다.
   for v_template in select id from public.class_templates loop
-    perform public._generate_sessions_internal(v_template.id, 1);
+    begin
+      perform public._generate_sessions_internal(v_template.id, 1);
+    exception when others then
+      raise warning 'generate_sessions_for_all_templates: template % failed: %', v_template.id, sqlerrm;
+    end;
   end loop;
 end;
 $$;
