@@ -34,6 +34,54 @@ export type Database = {
   }
   public: {
     Tables: {
+      invites: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          role: Database["public"]["Enums"]["profile_role"]
+          studio_id: string
+          used_at: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          role: Database["public"]["Enums"]["profile_role"]
+          studio_id: string
+          used_at?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["profile_role"]
+          studio_id?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invites_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invites_studio_id_fkey"
+            columns: ["studio_id"]
+            isOneToOne: false
+            referencedRelation: "studios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           contract_status: string
@@ -95,6 +143,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_invite: {
+        Args: { p_code: string; p_full_name: string }
+        Returns: {
+          contract_status: string
+          created_at: string
+          full_name: string
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["profile_role"]
+          studio_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_studio_and_owner_profile: {
         Args: { p_full_name: string; p_studio_name: string }
         Returns: {
@@ -118,6 +184,14 @@ export type Database = {
         Returns: Database["public"]["Enums"]["profile_role"]
       }
       current_studio_id: { Args: never; Returns: string }
+      get_invite_preview: {
+        Args: { p_code: string }
+        Returns: {
+          role: Database["public"]["Enums"]["profile_role"]
+          studio_name: string
+          valid: boolean
+        }[]
+      }
     }
     Enums: {
       profile_role: "owner" | "instructor" | "member"
