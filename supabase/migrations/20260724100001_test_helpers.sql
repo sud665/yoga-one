@@ -20,6 +20,16 @@ begin
 end;
 $$;
 
+-- Postgres grants EXECUTE on newly created functions to PUBLIC by default.
+-- This helper is `security definer` with zero authorization checks: any
+-- caller can forge a profile in any studio with any role (including
+-- 'owner'), and `grant usage on schema tests to authenticated, anon` below
+-- (needed so authenticate_as/clear_authentication remain reachable after a
+-- role switch) would otherwise make this function reachable too. It must
+-- only ever be invoked from pgTAP test files, which run as postgres/
+-- superuser and are unaffected by this revoke.
+revoke execute on function tests.create_test_profile(uuid, public.profile_role, text) from public;
+
 create or replace function tests.authenticate_as(p_user_id uuid)
 returns void
 language plpgsql

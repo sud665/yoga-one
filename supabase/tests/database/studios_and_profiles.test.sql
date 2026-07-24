@@ -1,5 +1,5 @@
 begin;
-select plan(6);
+select plan(10);
 
 create temporary table test_fixtures (key text primary key, value uuid);
 
@@ -16,6 +16,23 @@ insert into test_fixtures (key, value)
   select 'owner_a', tests.create_test_profile((select value from test_fixtures where key = 'studio_a'), 'owner', 'Owner A');
 insert into test_fixtures (key, value)
   select 'member_b', tests.create_test_profile((select value from test_fixtures where key = 'studio_b'), 'member', 'Member B');
+
+-- Fixture for assertions 7-9 below: a fresh auth.users row with NO profile
+-- yet, so public.create_studio_and_owner_profile can be tested actually
+-- creating the profile itself. Inserted directly (not via
+-- tests.create_test_profile, which would pre-create the profile we're
+-- testing the RPC creates), and up front alongside the other fixtures while
+-- the session is still `postgres` -- test_fixtures only gets `select`
+-- granted to authenticated/anon below, so inserting after any
+-- authenticate_as/clear_authentication role switch would fail with
+-- permission denied.
+insert into test_fixtures (key, value) values ('new_owner', gen_random_uuid());
+insert into auth.users (id, email, encrypted_password, email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data, aud, role)
+values (
+  (select value from test_fixtures where key = 'new_owner'),
+  (select value from test_fixtures where key = 'new_owner') || '@test.local',
+  '', now(), now(), now(), '{}', '{}', 'authenticated', 'authenticated'
+);
 
 -- test_fixtures is owned by whichever role created it (postgres, the role
 -- this script connects as). Later assertions look up fixture UUIDs while
@@ -68,6 +85,39 @@ select is(
   (select count(*)::int from public.studios),
   0,
   'unauthenticated session sees no studios'
+);
+
+-- 7) 아직 프로필이 없는 새 유저(new_owner fixture)는
+--    public.create_studio_and_owner_profile로 스튜디오를 부트스트랩할 수
+--    있다 (owner role, non-null studio_id 반환)
+select tests.authenticate_as((select value from test_fixtures where key = 'new_owner'));
+
+create temporary table bootstrap_result as
+select * from public.create_studio_and_owner_profile('New Studio Name', 'New Owner');
+
+select is(
+  (select role::text from bootstrap_result),
+  'owner',
+  'create_studio_and_owner_profile returns a profile with role=owner for a fresh user'
+);
+
+select ok(
+  (select studio_id from bootstrap_result) is not null,
+  'create_studio_and_owner_profile returns a non-null studio_id'
+);
+
+-- 8) 생성된 studios row의 name이 전달한 인자와 일치한다
+select is(
+  (select name from public.studios where id = (select studio_id from bootstrap_result)),
+  'New Studio Name',
+  'create_studio_and_owner_profile creates a studio with the given name'
+);
+
+-- 9) 이미 프로필이 있는 유저가 다시 호출하면 profile_already_exists로 거부된다
+select throws_ok(
+  $$select public.create_studio_and_owner_profile('Second Studio', 'Second Owner')$$,
+  'profile_already_exists',
+  'create_studio_and_owner_profile refuses a user who already has a profile'
 );
 
 select tests.clear_authentication();

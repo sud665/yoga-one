@@ -120,4 +120,10 @@ begin
 end;
 $$;
 
+-- Explicit-grant-only: revoke the default PUBLIC execute grant so anon/
+-- PUBLIC have no path to this function at all, even though the NOT NULL
+-- auth.uid() constraint on profiles.id currently makes an anon call abort
+-- atomically (not exploitable today, but this keeps the posture consistent
+-- with the multi-tenant "no exceptions" constraint).
+revoke execute on function public.create_studio_and_owner_profile(text, text) from public;
 grant execute on function public.create_studio_and_owner_profile(text, text) to authenticated;
