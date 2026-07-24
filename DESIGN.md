@@ -1,8 +1,8 @@
 ---
 version: alpha
-name: Nike-design-analysis
+name: Yoga-Studio-Design
 description: |
-  A photography-first commerce system built on extreme typographic contrast — towering uppercase Futura display lockups burned into editorial campaign imagery, sitting above a dense, neutral, near-monochrome retail chrome of pill-shaped black CTAs, gray search and tag pills, and tight 8px-grid product cards. The brand's voice is athletic, kinetic, and absolute: pure black, pure white, a single soft surface gray, and a deliberately small set of semantic accents (sale red, success green, restrained category tints) — every chromatic moment is reserved for editorial photography or pricing signal, never decorative chrome.
+  요가원 관리 PWA를 위한 디자인 시스템. Nike 커머스 디자인 시스템의 구조적 원칙 — 극단적 타이포그래피 대비, 순흑/순백 + 단일 그레이의 절제된 크롬, 알약형(pill) CTA, 그림자 없는 플랫 카드, 8px 그리드 — 를 그대로 계승하되, 상품/캠페인 사진 중심의 커머스 어휘를 클래스 시간표·예약·강사/회원 관리 화면에 맞는 어휘로 치환했다. 컬러는 흑백 기반에 예약상태(확정/마감)와 클래스 타입 태그에만 채도를 허용하는 절제된 팔레트를 유지한다.
 
 colors:
   primary: "#111111"
@@ -16,99 +16,99 @@ colors:
   stone: "#9e9ea0"
   hairline: "#cacacb"
   hairline-soft: "#e5e5e5"
-  sale: "#d30005"
-  sale-deep: "#780700"
+  full: "#d30005"
+  full-deep: "#780700"
   success: "#007d48"
   success-bright: "#1eaa52"
   info: "#1151ff"
   info-deep: "#0034e3"
-  accent-pink: "#ed1aa0"
-  accent-pink-soft: "#ffb0dd"
-  accent-purple-soft: "#beaffd"
-  accent-purple-pale: "#d6d1ff"
-  accent-teal: "#0a7281"
-  accent-pink-deep: "#4c012d"
+  tag-a: "#ed1aa0"
+  tag-a-soft: "#ffb0dd"
+  tag-a-deep: "#4c012d"
+  tag-b-soft: "#beaffd"
+  tag-b-pale: "#d6d1ff"
+  tag-c: "#0a7281"
 
 typography:
-  display-campaign:
-    fontFamily: Nike Futura ND
-    fontSize: 96px
+  display-hero:
+    fontFamily: Bebas Neue
+    fontSize: 64px
     fontWeight: 500
-    lineHeight: 0.9
+    lineHeight: 0.95
     letterSpacing: 0
     textTransform: uppercase
   heading-xl:
-    fontFamily: Helvetica Now Display Medium
+    fontFamily: Inter
     fontSize: 32px
     fontWeight: 500
     lineHeight: 1.2
     letterSpacing: 0
   heading-lg:
-    fontFamily: Helvetica Now Display Medium
+    fontFamily: Inter
     fontSize: 24px
     fontWeight: 500
     lineHeight: 1.2
     letterSpacing: 0
   heading-md:
-    fontFamily: Helvetica Now Display Medium
+    fontFamily: Inter
     fontSize: 16px
     fontWeight: 500
     lineHeight: 1.75
     letterSpacing: 0
   body-md:
-    fontFamily: Helvetica Now Text
+    fontFamily: Inter
     fontSize: 16px
     fontWeight: 400
     lineHeight: 1.5
     letterSpacing: 0
   body-strong:
-    fontFamily: Helvetica Now Text Medium
+    fontFamily: Inter
     fontSize: 16px
     fontWeight: 500
     lineHeight: 1.5
     letterSpacing: 0
   button-lg:
-    fontFamily: Helvetica Now Display Medium
-    fontSize: 24px
+    fontFamily: Inter
+    fontSize: 20px
     fontWeight: 500
     lineHeight: 1.2
     letterSpacing: 0
   button-md:
-    fontFamily: Helvetica Now Text Medium
+    fontFamily: Inter
     fontSize: 16px
     fontWeight: 500
     lineHeight: 1.5
     letterSpacing: 0
   button-sm:
-    fontFamily: Helvetica Now Text Medium
+    fontFamily: Inter
     fontSize: 14px
     fontWeight: 500
     lineHeight: 1.5
     letterSpacing: 0
   link-md:
-    fontFamily: Helvetica Now Text
+    fontFamily: Inter
     fontSize: 16px
     fontWeight: 500
     lineHeight: 1.75
     letterSpacing: 0
     textDecoration: underline
   caption-md:
-    fontFamily: Helvetica Now Text Medium
+    fontFamily: Inter
     fontSize: 14px
     fontWeight: 500
     lineHeight: 1.5
     letterSpacing: 0
   caption-sm:
-    fontFamily: Helvetica Now Text Medium
+    fontFamily: Inter
     fontSize: 12px
     fontWeight: 500
     lineHeight: 1.5
     letterSpacing: 0
   utility-xs:
-    fontFamily: Helvetica Neue
-    fontSize: 9px
+    fontFamily: Inter
+    fontSize: 11px
     fontWeight: 500
-    lineHeight: 1.75
+    lineHeight: 1.5
     letterSpacing: 0
 
 rounded:
@@ -148,12 +148,13 @@ components:
     rounded: "{rounded.full}"
     padding: 16px 32px
     height: 48px
-  button-outline-on-image:
+  button-danger:
     backgroundColor: "{colors.canvas}"
-    textColor: "{colors.ink}"
+    textColor: "{colors.full}"
     typography: "{typography.button-md}"
     rounded: "{rounded.full}"
-    padding: 12px 24px
+    padding: 16px 32px
+    height: 48px
   button-icon-circular:
     backgroundColor: "{colors.soft-cloud}"
     textColor: "{colors.ink}"
@@ -181,43 +182,40 @@ components:
     textColor: "{colors.on-primary}"
     typography: "{typography.button-md}"
     rounded: "{rounded.full}"
-  badge-promo:
+  badge-tag:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
     typography: "{typography.caption-sm}"
     rounded: "{rounded.full}"
     padding: 4px 12px
-  badge-sale-text:
-    textColor: "{colors.sale}"
+  badge-status-text:
     typography: "{typography.caption-md}"
-  product-card:
+  tag-dot:
+    rounded: "{rounded.full}"
+    size: 12px
+  tag-dot-active:
+    rounded: "{rounded.full}"
+    size: 12px
+  session-card:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
     typography: "{typography.body-strong}"
     rounded: "{rounded.none}"
     padding: 0px
-  product-card-image:
+  session-card-media:
     backgroundColor: "{colors.soft-cloud}"
     rounded: "{rounded.none}"
-  swatch-dot:
-    backgroundColor: "{colors.ink}"
-    rounded: "{rounded.full}"
-    size: 12px
-  swatch-dot-active:
-    backgroundColor: "{colors.ink}"
-    rounded: "{rounded.full}"
-    size: 12px
-  campaign-tile:
+  hero-tile:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.on-primary}"
-    typography: "{typography.display-campaign}"
+    typography: "{typography.display-hero}"
     rounded: "{rounded.none}"
-  category-icon-card:
+  quick-action-card:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
     typography: "{typography.caption-md}"
     rounded: "{rounded.none}"
-  member-benefit-card:
+  dashboard-summary-card:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.on-primary}"
     typography: "{typography.heading-lg}"
@@ -228,19 +226,13 @@ components:
     typography: "{typography.heading-md}"
     rounded: "{rounded.none}"
     padding: 24px 0px
-  pdp-disclosure-row:
+  detail-disclosure-row:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
     typography: "{typography.body-strong}"
     rounded: "{rounded.none}"
     padding: 24px 0px
-  utility-bar:
-    backgroundColor: "{colors.soft-cloud}"
-    textColor: "{colors.ink}"
-    typography: "{typography.caption-sm}"
-    rounded: "{rounded.none}"
-    height: 36px
-  primary-nav:
+  app-nav:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
     typography: "{typography.body-strong}"
@@ -251,325 +243,178 @@ components:
     textColor: "{colors.ink}"
     typography: "{typography.body-strong}"
     rounded: "{rounded.none}"
-  footer:
-    backgroundColor: "{colors.canvas}"
-    textColor: "{colors.mute}"
-    typography: "{typography.caption-md}"
-    rounded: "{rounded.none}"
 ---
 
 ## Overview
 
-Nike's commerce system is built on a single, almost violently simple idea: photography speaks, the chrome doesn't. Every page reads as an athletic editorial — towering uppercase Futura display lockups (`{typography.display-campaign}`) burned into full-bleed campaign imagery, with everything else (nav, filters, buttons, cards, footer) reduced to neutral typography and pill geometry on `{colors.canvas}` and `{colors.soft-cloud}`. There is no decorative gradient, no soft shadow nostalgia, no accent color used for "tone" — the system saves all chromatic energy for product photography and the small handful of moments that actually need to signal (sale price `{colors.sale}`, success `{colors.success}`, swatch dots).
+이 시스템은 Nike 커머스 디자인 시스템의 뼈대를 그대로 물려받는다: 사진 대신 정보가 주인공이라는 점만 다르다. 화면을 채우는 건 상품 사진이 아니라 클래스 시간표, 예약 현황, 강사·회원 목록이지만 — 크롬(nav, 필터, 버튼, 카드, 배지)은 Nike와 동일하게 `{colors.canvas}`와 `{colors.soft-cloud}` 위의 중립적인 타이포그래피와 알약(pill) 지오메트리로 환원된다. 장식적 그라디언트나 소프트 섀도우는 없고, 액센트 컬러는 "분위기"가 아니라 실제로 신호가 필요한 소수의 순간(정원마감 `{colors.full}`, 예약확정 `{colors.success}`, 클래스 타입 태그)에만 예약되어 있다.
 
-The result is a layout that feels physical — campaign hero, product grid, sport tile, footer — stacked like a printed catalog rather than animated like a typical SaaS landing page. Density is high but never crowded, because the system relies on three relentless devices: square or near-square 1:1 product imagery on `{colors.soft-cloud}`, pill-shaped black CTAs (`{rounded.full}`) anchoring every actionable surface, and a tight 8px-base spacing scale that keeps cards and filters mathematically aligned across PLP, PDP, and editorial pages.
+밀도는 높지만 산만하지 않다 — 세 가지 장치 덕분이다: `{colors.soft-cloud}` 위에 올라간 세션 카드, 모든 실행 가능한 표면을 고정하는 알약형 검정 CTA(`{rounded.full}`), 그리고 카드와 필터를 수학적으로 정렬시키는 8px 기반 촘촘한 스페이싱 스케일.
 
-Across `/men`, the trail-running listing, the Zegama PDP, `/membership`, and Jordan Golf, the same chrome appears in identical proportions — only the photography and copy change. That is the system's signature: maximum editorial expression in the imagery, maximum mechanical restraint everywhere else.
+원장/강사/회원 세 역할 화면(`/admin`, `/instructor`, `/member`) 전부 동일한 크롬을 공유한다 — 역할에 따라 데이터와 내비게이션 구성만 달라질 뿐, 버튼·카드·배지·타이포 시스템은 하나다.
 
-**Key Characteristics:**
-- Editorial campaign hero with `{typography.display-campaign}` (Nike Futura ND, 96px, line-height 0.9, uppercase) burned directly into full-bleed photography
-- Pure black/white/single-gray UI palette: `{colors.ink}`, `{colors.canvas}`, and `{colors.soft-cloud}` carry ~95% of the chrome surface area
-- Pill geometry everywhere: every CTA, search field, filter chip, and badge uses `{rounded.full}` (30px) or `{rounded.md}` (24px) — there are no sharp-cornered buttons in the system
-- Product cards have zero radius, zero shadow, sit directly on `{colors.soft-cloud}` swatch backgrounds — the photograph is the card
-- Two-tone CTA hierarchy: `{component.button-primary}` (black on anything light) versus `{component.button-secondary}` (`{colors.soft-cloud}` on anything bright) — never both at once on the same surface
-- 8px spacing system with section rhythm at `{spacing.section}` (48px) creating consistent vertical breathing across PLP, PDP, and editorial pages
-- Sale signaling is the only place a non-neutral color appears in retail chrome: `{colors.sale}` price + strike-through original price, no badge background
+**핵심 특징**
+- 로그인/온보딩 화면에만 `{typography.display-hero}`(Bebas Neue, 64px, line-height 0.95, uppercase)를 사용한 임팩트 있는 헤드라인 — 앱 내부 화면에는 절대 쓰지 않는다
+- 순흑/순백/단일 그레이 팔레트: `{colors.ink}`, `{colors.canvas}`, `{colors.soft-cloud}`가 전체 크롬의 ~95%를 차지
+- 모든 CTA·검색창·필터칩·배지는 `{rounded.full}`(9999px) 또는 `{rounded.md}`(24px) — 각진 버튼 없음
+- 세션 카드는 radius 0, 그림자 0, `{colors.canvas}` 위에 그대로 얹힘
+- 2단 CTA 위계: `{component.button-primary}`(예약하기·저장 등 1순위 액션) vs `{component.button-secondary}`(취소·더보기 등 보조 액션) — 같은 화면에 검정 CTA는 하나만
+- 8px 스페이싱, 섹션 리듬은 `{spacing.section}`(48px)
+- 채도 있는 색은 정원마감(`{colors.full}`)과 예약확정(`{colors.success}`) 같은 상태 신호, 그리고 클래스 타입 태그(`{colors.tag-a}`, `{colors.tag-c}` 등)에만 등장
 
 ## Colors
 
-> **Source pages:** `/men` (primary), `/w/mens-acg-trail-running-shoes-…`, `/t/acg-zegama-…`, `/membership`, `/w/jordan-golf-…`. The chrome palette is identical across all five — only photography varies.
-
-### Brand & Accent
-- **Nike Black** (`{colors.ink}` — `#111111`): The brand's only "color." It is the primary CTA, the swatch dot, the active filter chip, the campaign overlay, the headline color, and the body text. When Nike wants to assert anything, it goes black.
-- **Pure White** (`{colors.on-primary}`, `{colors.canvas}` — `#ffffff`): Equal partner to black. Carries every page background, the on-image CTA, and the inverse text on `{colors.ink}` surfaces.
-
-### Surface
-- **Soft Cloud** (`{colors.soft-cloud}` — `#f5f5f5`): The most-used non-white surface in the entire system. Product card image backgrounds, search pill, secondary CTA, utility bar, sport-category swatch tiles. It is the "color" of every product photograph's stage.
-- **Hairline** (`{colors.hairline}` — `#cacacb`): 1px dividers between filter rows, footer columns, and PDP disclosure rows.
-- **Hairline Soft** (`{colors.hairline-soft}` — `#e5e5e5`): Inset 1px shadow under sticky bars and tab strips, the only "shadow" the system uses.
+### Brand & Neutral
+- **Ink** (`{colors.ink}` — `#111111`): 유일한 "브랜드 컬러". 기본 CTA, 활성 필터칩, 히어로 배경, 헤드라인·본문 텍스트 전부 이 색.
+- **Canvas** (`{colors.canvas}` — `#ffffff`): 모든 페이지 배경, 인크 위의 반전 텍스트.
+- **Soft Cloud** (`{colors.soft-cloud}` — `#f5f5f5`): 세션 카드 미디어 영역, 검색창, 보조 CTA 배경. 시스템에서 가장 많이 쓰이는 비백색 표면.
+- **Hairline** / **Hairline Soft**: 필터 행 구분선, 스티키 바 하단 인셋 그림자용 1px 라인.
 
 ### Text
-- **Ink** (`{colors.ink}` — `#111111`): Primary text on light surfaces — headlines, product names, prices, nav.
-- **Charcoal** (`{colors.charcoal}` — `#39393b`): Slightly softer body where ink is too heavy.
-- **Ash** (`{colors.ash}` — `#4b4b4d`): Disabled secondary border on dark surfaces and very low-emphasis utility text.
-- **Mute** (`{colors.mute}` — `#707072`): Product category subtitles ("Men's Trail Running Shoes"), footer link text, secondary metadata.
-- **Stone** (`{colors.stone}` — `#9e9ea0`): Inverse secondary text on dark surfaces and lowest-emphasis utility text.
+- **Ink** `#111111`: 헤드라인, 클래스명, 본문.
+- **Charcoal** `#39393b`, **Ash** `#4b4b4d`: ink가 과하게 무거운 자리의 대체.
+- **Mute** `#707072`: 카테고리/부제(강사명, 시간), 캡션.
+- **Stone** `#9e9ea0`: 어두운 배경 위 최저 강조 텍스트.
 
-### Semantic
-- **Sale** (`{colors.sale}` — `#d30005`): Discounted price color and "% off" copy — the only red in the entire retail chrome.
-- **Sale Deep** (`{colors.sale-deep}` — `#780700`): Sale price hover/pressed and dark-mode sale anchor.
-- **Success** (`{colors.success}` — `#007d48`): Confirmation messages, in-stock indicators, eligibility ticks.
-- **Success Bright** (`{colors.success-bright}` — `#1eaa52`): Inverse success on dark surfaces.
-- **Info** (`{colors.info}` — `#1151ff`): Informational link/badge accent in member-experience callouts.
-- **Info Deep** (`{colors.info-deep}` — `#0034e3`): Pressed state for info accent.
+### Semantic (상태)
+- **Full** (`{colors.full}` — `#d30005`): 정원마감·예약취소 신호. 예약 버튼 대신 노출되는 유일한 레드.
+- **Full Deep** (`{colors.full-deep}`): 눌림/호버 상태.
+- **Success** (`{colors.success}` — `#007d48`): 예약확정·출석 신호.
+- **Success Bright**: 어두운 배경 위 반전 success.
+- **Info** (`{colors.info}` — `#1151ff`): 공지·안내 배지.
+- **Info Deep**: 눌림 상태.
 
-### Category Accents (sport / collection chips)
-These appear sparingly — almost exclusively as small chip backgrounds, swatch dots, or category illustrations in editorial tiles. They are never used as text or primary CTA color.
-- **Accent Pink** (`{colors.accent-pink}` — `#ed1aa0`): SKIMS / women's collection moments.
-- **Accent Pink Soft** (`{colors.accent-pink-soft}` — `#ffb0dd`): Soft tinting on member-experience tiles.
-- **Accent Purple Soft** (`{colors.accent-purple-soft}` — `#beaffd`): Editorial swatch dot, soft category chip.
-- **Accent Purple Pale** (`{colors.accent-purple-pale}` — `#d6d1ff`): Lightest soft-tile fill.
-- **Accent Teal** (`{colors.accent-teal}` — `#0a7281`): Trail / outdoor / ACG editorial accent in lockups.
-- **Accent Pink Deep** (`{colors.accent-pink-deep}` — `#4c012d`): Deepest editorial overlay tint, used as wash on heritage / Jordan tiles.
+### Tag (클래스 타입 라벨)
+아주 절제해서 쓴다 — 필터 칩, 태그점(tag-dot), 시간표의 소규모 컬러 라벨에만. 본문 텍스트나 주요 CTA 색으로는 절대 쓰지 않는다.
+- **Tag A** (`{colors.tag-a}` — `#ed1aa0`) / soft / deep 변형 — 예: 회원 전용 클래스
+- **Tag B soft/pale** (`#beaffd` / `#d6d1ff`) — 예: 초급/입문 클래스
+- **Tag C** (`{colors.tag-c}` — `#0a7281`) — 예: 야외/특강
+
+클래스 타입과 태그 색상의 실제 매핑은 요가원(studio)마다 다르므로 앱 설정에서 지정한다 — 토큰 자체는 특정 클래스명에 고정되지 않는다.
 
 ## Typography
 
 ### Font Family
-- **Nike Futura ND** (display campaign only) — proprietary geometric sans for the towering uppercase headlines burned into campaign hero photography. Falls back to Helvetica Now Text Medium → Helvetica → Arial.
-- **Helvetica Now Display Medium** (headings 16–32px) — modern Helvetica cut tuned for display sizes; carries every section title, PDP product name, and dialog headline.
-- **Helvetica Now Text Medium** (UI 12–16px) — buttons, captions, swatch labels, badge text. The system's UI workhorse.
-- **Helvetica Now Text** (body and links) — long-form body and underlined inline links.
-- **Neue Frutiger Arabic** — RTL pairing for Arabic locales at `{typography.heading-lg}` and caption sizes.
-- **Helvetica Neue 9px** — legal-fine-print utility row only (`{typography.utility-xs}`).
-
-When substituting on systems without proprietary Nike fonts: pair **Inter** (Display 700 for body chrome, Display 500 for buttons) with **Bebas Neue** or **Anton** at 96px/0.9 line-height for the campaign headline tier. Tighten letter-spacing slightly (-0.5%) on the substitute to approximate Futura ND's optical weight.
+- **Bebas Neue** — `{typography.display-hero}` 전용. 로그인/온보딩 화면 임팩트 헤드라인. Google Fonts 무료 폰트, Nike Futura ND 대체.
+- **Inter** — 그 외 전체(heading/body/button/caption). Nike의 Helvetica Now Text/Display 대체로 시스템 자체가 권장하는 조합이며, 무료·오픈소스(OFL)라 라이선스 문제 없음.
 
 ### Hierarchy
+동일한 8단계 대비 구조를 유지한다: `{typography.display-hero}`(64px)에서 `{typography.heading-xl}`(32px)로, 다시 `{typography.body-md}`(16px)로 급격히 떨어지는 "히어로 위, 콘텐츠 아래" 구조. 중간 크기를 늘리지 않는다.
 
-| Token | Size | Weight | Line Height | Letter Spacing | Use |
-|---|---|---|---|---|---|
-| `{typography.display-campaign}` | 96px | 500 | 0.9 | 0 | Editorial campaign headline burned into hero photography (uppercase) |
-| `{typography.heading-xl}` | 32px | 500 | 1.2 | 0 | Section headers — "FEATURED FOOTWEAR", "LATEST IN CLOTHING", PDP product title block |
-| `{typography.heading-lg}` | 24px | 500 | 1.2 | 0 | Subsection / member-benefit card title, large CTA label, PDP price |
-| `{typography.heading-md}` | 16px | 500 | 1.75 | 0 | Card title, FAQ row label, filter group header |
-| `{typography.body-md}` | 16px | 400 | 1.5 | 0 | Body copy, search-pill placeholder, product description |
-| `{typography.body-strong}` | 16px | 500 | 1.5 | 0 | Product card name, filter row label, primary nav link |
-| `{typography.button-lg}` | 24px | 500 | 1.2 | 0 | Pressed-letter campaign CTA inside hero blocks |
-| `{typography.button-md}` | 16px | 500 | 1.5 | 0 | Standard pill CTAs across the system |
-| `{typography.button-sm}` | 14px | 500 | 1.5 | 0 | Compact pill CTA, badge label, geo-selector button |
-| `{typography.link-md}` | 16px | 500 | 1.75 | 0 | Underlined inline link, "View Product Details" |
-| `{typography.caption-md}` | 14px | 500 | 1.5 | 0 | Product subtitle ("Men's Trail Running Shoes"), filter count, footer link |
-| `{typography.caption-sm}` | 12px | 500 | 1.5 | 0 | Filter chip label, badge text, color count |
-| `{typography.utility-xs}` | 9px | 500 | 1.75 | 0 | Legal copyright / fine-print row at the very bottom |
-
-### Principles
-The system runs on extreme typographic contrast: a single 96px uppercase display tier reserved for editorial campaign moments, and a quiet 12–16px Helvetica Now Text/Medium tier carrying everything else. There is almost no middle ground — the jump from `{typography.heading-xl}` (32px) directly to `{typography.body-strong}` (16px) is intentional and creates the "billboard above, catalog below" effect across every page. Letter-spacing is left at 0 (Futura ND and Helvetica Now are both cut for tight optical fit at scale).
-
-### Note on Font Substitutes
-The closest open-source path to Nike's display tier is **Bebas Neue** (free, geometric condensed) at 96px / 0.9 / uppercase / 500. For UI text, **Inter** is the safest substitute — match weights 400/500 and the system reads almost identically at button and caption sizes.
+| Token | Size | Weight | Use |
+|---|---|---|---|
+| `{typography.display-hero}` | 64px | 500 | 로그인/온보딩 히어로 헤드라인 (uppercase) |
+| `{typography.heading-xl}` | 32px | 500 | 대시보드 섹션 타이틀 |
+| `{typography.heading-lg}` | 24px | 500 | 요약카드 타이틀, 다이얼로그 헤드라인 |
+| `{typography.heading-md}` | 16px | 500 | 세션 카드 타이틀, FAQ 행, 필터 그룹 헤더 |
+| `{typography.body-md}` | 16px | 400 | 본문, 설명 텍스트 |
+| `{typography.body-strong}` | 16px | 500 | 클래스명, nav 링크, 목록 항목 라벨 |
+| `{typography.button-lg}` | 20px | 500 | 히어로 내 큰 CTA |
+| `{typography.button-md}` | 16px | 500 | 표준 알약 CTA (예약하기 등) |
+| `{typography.button-sm}` | 14px | 500 | 소형 CTA, 배지 라벨 |
+| `{typography.link-md}` | 16px | 500 | 밑줄 인라인 링크 |
+| `{typography.caption-md}` | 14px | 500 | 부제(강사명·시간), 필터 카운트 |
+| `{typography.caption-sm}` | 12px | 500 | 필터칩 라벨, 배지 텍스트 |
+| `{typography.utility-xs}` | 11px | 500 | 타임스탬프, 최하단 유틸리티 텍스트 |
 
 ## Layout
 
-### Spacing System
-- **Base unit:** 8px
-- **Tokens (front matter):** `{spacing.xxs}` (2px) · `{spacing.xs}` (4px) · `{spacing.sm}` (8px) · `{spacing.md}` (12px) · `{spacing.lg}` (18px) · `{spacing.xl}` (24px) · `{spacing.xxl}` (30px) · `{spacing.section}` (48px+)
-- **Universal rhythm:** every page in the set uses `{spacing.section}` (48px) as the vertical gap between major content blocks (campaign hero → trending row → featured row → shop-by-sport → latest-in-clothing → footer). PLP card grids use `{spacing.sm}` (8px) gutters. PDP disclosure rows are stacked at `{spacing.xl}` (24px) vertical padding.
-- **Card internal padding:** product cards use 0px internal padding — image is full-bleed; metadata rows sit directly below with `{spacing.sm}` (8px) gap between name, subtitle, and price.
+### Spacing
+- 기준 단위 8px. `{spacing.section}`(48px)을 대시보드 주요 블록 사이(요약카드 행 → 시간표 → 예약목록) 수직 리듬으로 사용.
+- 세션 카드 그리드는 `{spacing.sm}`(8px) 거터, 상세정보 아코디언은 `{spacing.xl}`(24px) 수직 패딩.
 
 ### Grid & Container
-- **Max width:** ~1440px content area with edge gutters that grow to ~80px at 1920px (the system lets very wide viewports breathe rather than stretch).
-- **Column patterns:** PLP listing uses 3-up at desktop, collapsing to 2-up at 1023px and 1-up at 599px. The men's home `/men` mixes a 2-up campaign hero row, a 3- or 4-up "Trending Now" row, a horizontal-scroll "Shop by Sport" rail, and a 4-up "Latest in Clothing" thumbnail grid.
-- **Filter sidebar:** ~220px fixed-width left rail on PLP at desktop, collapsing into a `Hide Filters` toggle button at narrow widths.
+- 최대 폭 ~1200px 콘텐츠 영역 (커머스형 1440px보다 좁게 — 관리형 앱 데이터 밀도에 맞춤).
+- 시간표: 데스크톱 주간 캘린더 그리드(요일×시간), 태블릿 이하는 일자별 리스트로 전환.
+- 필터 사이드바(요일/강사): 데스크톱 ~220px 고정폭, 좁은 화면에서는 "필터" 토글 버튼으로 축소.
 
 ### Whitespace Philosophy
-Whitespace is a tool for separation, not for breath. Sections butt directly against each other vertically with `{spacing.section}` rhythm, and product photos tile edge-to-edge inside their grid — there is no padding wrapped around the product image itself. The "air" comes from the `{colors.soft-cloud}` background of the photograph, not from layout margin. Headlines do not have decorative whitespace above them; they sit immediately under the section divider line.
+섹션은 `{spacing.section}` 리듬으로 붙여 배치하고 장식적 구분선은 두지 않는다 — 여백은 분리를 위한 도구이지 장식이 아니다.
 
 ## Elevation & Depth
 
 | Level | Treatment | Use |
 |---|---|---|
-| 0 — Flat | No shadow, no border | Default for cards, buttons, sections — the dominant treatment |
-| 1 — Hairline divider | 1px solid `{colors.hairline}` | Filter row separators, footer column borders, PDP disclosure-row separators |
-| 2 — Inset bottom-line | `box-shadow: inset 0 -1px 0 {colors.hairline-soft}` | Sticky utility/sub-nav bar bottom edge, tab strip underline |
+| 0 — Flat | 그림자 없음 | 카드·버튼·섹션의 기본값 |
+| 1 — Hairline | 1px solid `{colors.hairline}` | 필터 행 구분선, 상세정보 아코디언 구분선 |
+| 2 — Inset bottom-line | `inset 0 -1px 0 {colors.hairline-soft}` | 스티키 상단바 하단 |
 
-The system has no drop-shadow elevation in its retail chrome at all. Cards do not lift on the page. The only depth cue is the 1px inset hairline on sticky strips and the contrast between full-bleed photography and `{colors.soft-cloud}` product backdrops.
-
-### Decorative Depth
-Depth in Nike's system comes entirely from photography, not from CSS effects:
-- **Editorial campaign tiles** create depth via cinematic perspective — a runner on a trail, a model in a courtyard — with the Futura display headline overlaid in white or `{colors.ink}` directly on the image.
-- **Product card photography** is shot on flat `{colors.soft-cloud}` to remove any background depth, so the product itself is the only thing with form on the page.
-- **Sport-category tiles** on the home page are full-bleed cinematic photography with a small `{component.button-outline-on-image}` pill anchored at the bottom-left, giving a moment of crisp white pill against atmospheric image.
+카드는 페이지 위에서 들뜨지 않는다. 깊이감은 색 대비(`{colors.ink}` 요약카드 vs `{colors.canvas}` 배경)로만 표현한다.
 
 ## Shapes
 
-### Border Radius Scale
-
 | Token | Value | Use |
 |---|---|---|
-| `{rounded.none}` | 0px | Cards, campaign tiles, product imagery, navigation, footer — every container in the system |
-| `{rounded.sm}` | 18px | Avatar / icon container in member-benefit lockups |
-| `{rounded.md}` | 24px | Search pill, search submit, filter input |
-| `{rounded.lg}` | 30px | Every CTA pill — primary, secondary, on-image, filter chip, geo-selector, "Notify Me" |
-| `{rounded.full}` | 9999px | Color swatch dots and circular icon buttons (back, share, favorite, carousel paddle) |
-
-### Photography Geometry
-- **Product cards:** consistent 1:1 square or near-square (~4:5 portrait on tall product crops), full-bleed within the card with no padding, sitting on `{colors.soft-cloud}` backdrop.
-- **Editorial campaign hero:** ~16:9 or wider cinematic crop, full-bleed across the content max-width, with the Futura display headline burned into the lower-left or upper-left third.
-- **Sport-category rail:** 4:5 portrait full-bleed thumbnails with a small CTA pill anchored bottom-left.
-- **PDP main image:** square primary image with vertical thumbnail rail to its left (~5–7 thumbnails stacked at small size), enabling rapid color/angle browsing without leaving the page.
-- **Avatar / category icon cards:** centered illustrated icon at ~80–96px on `{colors.canvas}` with `{typography.caption-md}` label below.
+| `{rounded.none}` | 0px | 카드, 요약카드, nav, 시간표 그리드 — 컨테이너 전부 |
+| `{rounded.sm}` | 18px | 아바타/아이콘 컨테이너 |
+| `{rounded.md}` | 24px | 검색창, 필터 입력창 |
+| `{rounded.lg}` | 30px | (레거시 참고용 — 현재 CTA는 `{rounded.full}` 사용) |
+| `{rounded.full}` | 9999px | 모든 CTA 알약, 태그점, 원형 아이콘 버튼 |
 
 ## Components
 
-> **No hover states documented** per system policy. Each spec covers Default and Active/Pressed only; variants live as separate `components:` entries in the front matter.
-
 ### Buttons
+- **`button-primary`** — 화면당 1순위 액션 하나. `{colors.ink}` 배경, `{rounded.full}` 알약. "예약하기", "저장", "초대 링크 발급", "가입하기".
+- **`button-secondary`** — 보조 액션. `{colors.soft-cloud}` 배경. "취소", "더보기".
+- **`button-danger`** — 파괴적 액션(예약 취소 확정, 강사/회원 삭제). 배경은 `{colors.canvas}`, 텍스트만 `{colors.full}` — 배경을 채우지 않아 실수로 누르기 쉬운 강한 빨강 버튼을 피한다.
+- **`button-icon-circular`** — 뒤로가기, 즐겨찾기, 필터 토글 등 아이콘 전용 컨트롤.
 
-**`button-primary`** — the universal Nike CTA
-- Background `{colors.ink}`, text `{colors.on-primary}`, type `{typography.button-md}`, padding `16px 32px`, height `{spacing.section}` (48px), rounded `{rounded.lg}` (30px pill).
-- Used on every primary action in the system: "Sign Up", "Notify Me", "Buy", "Türkiye" geo-confirm, "Shop" overlay on sport tiles, "Continue".
-- Pressed state lives in `button-primary-active` — the bg stays `{colors.ink}` while the surface shrinks to `scale(0.5)` with `opacity: 0.5` (Nike's signature "tap collapse" feedback that's extracted across all five pages).
+### Inputs & Filters
+- **`search-pill`** — 강사/회원/클래스 검색.
+- **`filter-chip`** / **`filter-chip-active`** — 요일·강사·클래스타입 필터. 선택 시 완전 반전(`{colors.ink}` 배경).
 
-**`button-secondary`** — soft alternative on light surfaces
-- Background `{colors.soft-cloud}`, text `{colors.ink}`, type `{typography.button-md}`, padding `16px 32px`, rounded `{rounded.lg}`.
-- Used as the lower-emphasis alternate when a primary CTA already exists, e.g., "United States" geo-decline next to the black "Türkiye" confirm; "Cancel" or "Discover More" on light cards.
+### Cards
+- **`session-card`** — 시간표의 핵심 단위. 상단 `{component.session-card-media}`(선택적 썸네일, 없으면 `{colors.soft-cloud}` 단색), 그 아래 클래스명(`{typography.body-strong}`), 강사·시간(`{typography.caption-md}` `{colors.mute}`), 정원 현황 배지, 예약 CTA.
+  - 정원 마감 시 카드 우상단에 `{component.badge-status-text}`를 `{colors.full}`로 "마감" 표시하고 CTA는 "대기 등록"으로 전환.
+  - 예약 완료 시 CTA 자리에 `{colors.success}` "예약완료" 상태 텍스트만 표시(버튼 아님).
+- **`dashboard-summary-card`** — 원장/강사/회원 홈 화면 요약(오늘 수업 수, 대기 인원, 다음 예약 등). `{colors.ink}` 배경에 `{typography.heading-lg}` 큰 숫자/타이틀.
+- **`quick-action-card`** — 원장 대시보드의 바로가기(강사관리·회원관리·시간표관리 진입 카드). 중앙 아이콘 + `{typography.caption-md}` 라벨.
+- **`tag-dot`** / **`tag-dot-active`** — 시간표에서 클래스 타입을 구분하는 12px 색점.
 
-**`button-outline-on-image`** — overlay CTA on photography
-- Background `{colors.canvas}`, text `{colors.ink}`, type `{typography.button-md}`, padding `12px 24px`, rounded `{rounded.lg}`.
-- The crisp white pill that anchors the bottom-left of every full-bleed sport-category and editorial campaign tile.
-
-**`button-icon-circular`** — chrome icon controls
-- Background `{colors.soft-cloud}` or transparent, icon `{colors.ink}`, rounded `{rounded.full}`, size 40px.
-- Used for back-arrow, carousel paddle (left/right), wishlist heart, share, and "Hide Filters" toggle.
-
-**`filter-chip`** + **`filter-chip-active`**
-- Default: background `{colors.canvas}`, text `{colors.ink}`, 1px hairline `{colors.hairline}`, type `{typography.button-md}`, rounded `{rounded.lg}`, padding `8px 16px`.
-- Active: background `{colors.ink}`, text `{colors.on-primary}` — the chip flips fully inverted when selected. No middle state.
-
-### Inputs & Forms
-
-**`search-pill`** + **`search-pill-focused`**
-- Default: background `{colors.soft-cloud}`, text `{colors.ink}`, type `{typography.body-md}`, rounded `{rounded.md}` (24px), padding `8px 16px`, height `40px`. Anchored to the right of the primary nav with a small magnifier icon.
-- Focused: background `{colors.canvas}`, 2px solid border `{colors.ink}`, with a 12px outer halo of `{colors.soft-cloud}` (the system's only "focus ring" effect). The pill shape stays `{rounded.md}` so the halo reads as a soft glove, not a hard outline.
-
-### Cards & Containers
-
-**`product-card`**
-- Container: background `{colors.canvas}`, rounded `{rounded.none}`, padding 0, no shadow.
-- Image area: `{component.product-card-image}` — full-bleed product photo on `{colors.soft-cloud}` square.
-- Below image (in this order with `{spacing.sm}` between): swatch dot row (3–6 dots at 12px circular), promo badge if applicable (`{component.badge-promo}` "Just In", "Coming Soon", "Recycled Materials"), product name `{typography.body-strong}` `{colors.ink}`, category subtitle `{typography.caption-md}` `{colors.mute}`, price row.
-- Price row: regular price `{typography.body-strong}` `{colors.ink}`. If on sale: discounted price `{colors.sale}` followed by strike-through original `{colors.mute}` followed by "% off" in `{colors.sale}`.
-
-**`campaign-tile`** — the brand's signature editorial unit
-- Full-bleed photography with `{typography.display-campaign}` headline burned in (uppercase, 96px, line-height 0.9).
-- Headline color is whichever of `{colors.canvas}` or `{colors.ink}` reads against the underlying image — not parameterized; chosen per-asset.
-- A single `{component.button-outline-on-image}` pill anchored bottom-left of the tile carries the call-to-action.
-
-**`category-icon-card`**
-- Container: background `{colors.canvas}`, rounded `{rounded.none}`.
-- Centered category illustration (~80px) + label `{typography.caption-md}` `{colors.ink}` directly below. Used in the "Latest in Clothing" 4–8-up icon strip on `/men`.
-
-**`member-benefit-card`**
-- Full-bleed photographic card on a dark image background; copy slot at the bottom-left with `{typography.heading-lg}` headline `{colors.on-primary}` and a `{component.button-outline-on-image}` "Explore" pill below.
-- Used in the `/membership` "Member Benefits" 3-up grid.
-
-**`swatch-dot`** + **`swatch-dot-active`**
-- 12px circle, rounded `{rounded.full}`, no border in default state. Renders the colorway options on every product card and PDP color picker.
-- Default: filled with the colorway's actual product color (extracted at runtime from the product image), 1px subtle outer ring in `{colors.hairline}` for white/light colorways so they remain visible on `{colors.canvas}`.
-- Active: identical fill with a 2px `{colors.ink}` outer ring and 2px white interior gap, creating Nike's signature concentric-ring "selected" state. No size change between default and active.
-
-**`badge-promo`**
-- Background `{colors.canvas}` with 1px hairline `{colors.hairline}`, text `{colors.ink}`, type `{typography.caption-sm}`, rounded `{rounded.lg}`, padding `4px 12px`.
-- Sits on top of product imagery (top-left of card) with copy like "Just In", "Coming Soon", "Recycled Materials", "Member Exclusive".
-
-**`badge-sale-text`**
-- Inline price-row text in `{colors.sale}` with no background — the only "badge" in the system that has no container.
+### Disclosure & Info
+- **`faq-row`** — 도움말 화면 아코디언.
+- **`detail-disclosure-row`** — 클래스 상세정보(강사 소개, 준비물, 환불 안내 등) 아코디언 행.
 
 ### Navigation
-
-**`utility-bar`** — top utility strip
-- Background `{colors.soft-cloud}`, text `{colors.ink}`, type `{typography.caption-sm}`, height ~36px, rounded `{rounded.none}`.
-- Right-aligned cluster: "Find a Store · Help · Join Us · Sign In". Always present; never collapses.
-
-**`primary-nav`** — main navigation
-- Background `{colors.canvas}`, text `{colors.ink}`, type `{typography.body-strong}` for nav links, height 56–64px, rounded `{rounded.none}`.
-- Layout: Nike swoosh logo at left (32×32), centered nav row ("New & Featured · Men · Women · Kids · Jordan · Nike SKIMS · Sport"), right cluster (search pill, wishlist heart icon, bag icon).
-- The active section gets a 2px-bottom underline in `{colors.ink}` — no background fill.
-
-**Sub-nav strip** (PLP) — appears under primary nav with breadcrumb + sort + hide-filters controls.
-- Same `{colors.canvas}` background with a 1px inset hairline-soft bottom edge.
-- Left: breadcrumb in `{typography.caption-md}` `{colors.mute}` separated by " / ".
-- Right: "Hide Filters" toggle + "Sort By: …" dropdown — both in `{typography.button-md}` with chevron icons.
-
-**Top Nav (Mobile)**
-- Hamburger menu icon (left), Nike swoosh (center), search + bag icons (right).
-- Search pill collapses into an icon-only button at narrow widths; tapping expands a full-width overlay search pill with `{rounded.md}`.
-- Primary nav collapses into a full-height drawer that slides in from the left, listing nav rows top-down with `{spacing.xl}` vertical padding.
-
-### Signature Components
-
-**`pdp-disclosure-row`** — PDP information accordion rows
-- Stacked rows for "View Product Details", "Shipping & Returns", "Reviews (n)" with `{spacing.xl}` vertical padding and a 1px `{colors.hairline}` divider below each.
-- Label `{typography.body-strong}` `{colors.ink}` left-aligned; chevron `{colors.ink}` right-aligned.
-
-**`faq-row`** — `/membership` FAQ accordion
-- Identical pattern to `pdp-disclosure-row` but with `{typography.heading-md}` label weight; 1px `{colors.hairline}` divider below each.
-
-**`filter-sidebar`** — PLP left rail
-- Container `{colors.canvas}`, rounded `{rounded.none}`.
-- Section headers `{typography.body-strong}` `{colors.ink}` with `{spacing.lg}` (18px) vertical gap between groups.
-- Active filters get a 1px ink underline; counts in parentheses use `{colors.mute}`.
-
-**`footer`**
-- Background `{colors.canvas}` with a single 1px `{colors.hairline}` top divider.
-- Four columns: Resources / Help / Company / Promotions & Discounts, each with column header `{typography.body-strong}` `{colors.ink}` and link list `{typography.caption-md}` `{colors.mute}`.
-- Below the columns: a horizontal rule, then a fine-print row with `{typography.utility-xs}` `{colors.mute}` (copyright, locale switcher, terms, privacy, supply-chain act).
+- **`app-nav`** — 역할별 상단/하단 내비게이션. 원장: 대시보드·강사·회원·시간표. 강사: 내 수업. 회원: 시간표·내 예약. `{colors.canvas}` 배경, 활성 항목은 `{colors.ink}` 2px 하단 밑줄.
+- **`filter-sidebar`** — 시간표 화면 좌측 요일/강사 필터 레일.
 
 ## Do's and Don'ts
 
 ### Do
-- Reserve `{typography.display-campaign}` exclusively for editorial campaign hero lockups — never use 96px Futura for section headers or product titles.
-- Use `{component.button-primary}` (`{colors.ink}` pill) as the single primary action per viewport. Pair it at most with `{component.button-secondary}` (`{colors.soft-cloud}` pill) for a soft alternative.
-- Stage every product photograph on `{colors.soft-cloud}` — the gray is the system's "studio."
-- Keep all CTAs pill-shaped at `{rounded.lg}` (30px). Never introduce a square or `{rounded.sm}` button.
-- Use `{colors.sale}` only on price rows — never on backgrounds, badges, or chrome.
-- Stack content sections at `{spacing.section}` (48px) rhythm with no decorative dividers between them; the photography's bleed-edge is the divider.
-- Anchor on-image CTAs with `{component.button-outline-on-image}` (white pill) at bottom-left — the system's universal "shop this image" position.
+- `{typography.display-hero}`는 로그인/온보딩 화면에만 — 앱 내부 화면 제목에 쓰지 않는다.
+- 화면당 `{component.button-primary}`는 하나만. 나머지는 `{component.button-secondary}`.
+- 세션 카드 썸네일은 `{colors.soft-cloud}` 위에 얹는다(썸네일 없어도 동일 배경 유지로 그리드 정렬 흔들리지 않게).
+- CTA는 전부 `{rounded.full}` 알약형으로 통일.
+- `{colors.full}`은 정원마감·취소 신호에만 — 배경이나 장식色으로 쓰지 않는다.
 
 ### Don't
-- Don't introduce drop shadows or card elevation. Cards sit flat on the page; the only depth cue is the 1px inset hairline on sticky bars.
-- Don't use any of the category accent colors (`{colors.accent-pink}`, `{colors.accent-purple-soft}`, `{colors.accent-teal}`) for primary chrome — they belong to swatch dots, soft tile fills, and editorial moments only.
-- Don't replace `{colors.ink}` with a near-black gray like `{colors.charcoal}` for a CTA — Nike's primary pill is true `#111111`.
-- Don't pad inside product cards. The image is full-bleed; metadata sits directly below with `{spacing.sm}` (8px) between rows.
-- Don't put two campaign-tile lockups in the same row at the same scale — Nike alternates a single full-bleed editorial tile with a 2-up or 4-up product/category grid.
-- Don't underline anything other than `{typography.link-md}` inline links and the active primary-nav indicator. Buttons, headings, and prices stay un-underlined.
-- Don't introduce a third button shape. Pill or icon-circular — that's the entire button shape vocabulary.
+- 그림자/카드 elevation 넣지 않는다.
+- 태그 컬러(`{colors.tag-a}`, `{colors.tag-c}` 등)를 주요 CTA나 본문 텍스트 색으로 쓰지 않는다 — 태그점·필터칩 전용.
+- `{colors.ink}`를 `{colors.charcoal}` 같은 미묘한 회색으로 대체하지 않는다 — 기본 CTA는 순정 `#111111`.
+- 세션 카드 내부에 여백을 넣지 않는다 — 메타데이터는 미디어 영역 바로 아래 `{spacing.sm}` 간격으로.
+- 버튼 모양을 세 번째로 늘리지 않는다 — 알약형 또는 원형 아이콘, 그게 전부.
 
 ## Responsive Behavior
 
-### Breakpoints
-
 | Name | Width | Key Changes |
 |---|---|---|
-| ultrawide | 1920px+ | Content max-width holds at ~1440px; outer gutters grow to ~80px on each side |
-| desktop-large | 1440px | Default desktop layout — 3-up product grid, 4-up clothing strip, full primary nav |
-| desktop | 1200px | Same as large with slightly narrower outer gutters |
-| desktop-small | 1024px | Filter sidebar starts compressing; sport rail shows ~3 visible tiles |
-| tablet | 1023–961px | 3-up PLP collapses to 2-up; "Hide Filters" becomes a default toggle |
-| tablet-narrow | 960–640px | Primary nav center cluster collapses to a hamburger drawer; search pill becomes icon-only |
-| mobile-landscape | 639–600px | 2-up PLP collapses to 1-up; product cards become full-width with image and metadata stacking |
-| mobile | 599–320px | Single-column everything; campaign tiles render at full screen width with shorter Futura sizes (~64px) |
+| desktop | 1200px+ | 시간표 주간 캘린더 그리드, 필터 사이드바 고정폭 |
+| tablet | 768–1199px | 시간표 2일씩 묶어보기, 필터는 토글형 |
+| mobile | ~767px 이하 | 시간표 일자별 세로 리스트 1열, 하단 탭 내비게이션(app-nav) |
 
-### Touch Targets
-All interactive elements meet WCAG AAA (44×44px minimum). Pills (`{component.button-primary}`, `{component.button-secondary}`) sit at 48px height with 32px horizontal padding. Icon-circular buttons (`{component.button-icon-circular}`) sit at 40px — Nike's PDP carousel paddle and wishlist heart sit just under AAA but above AA at 40×40, with hit-target padding extending the tappable area to 48px+. Filter-chip pills are 40px height with 16px padding.
-
-### Collapsing Strategy
-- **Primary nav:** desktop center cluster → mobile drawer triggered by hamburger at left of the swoosh.
-- **PLP grid:** 3-up → 2-up → 1-up at 1023, 599, and below; gutters drop from `{spacing.sm}` to `{spacing.xs}` on mobile.
-- **Filter sidebar:** 220px fixed → "Hide Filters" toggle → off-canvas full-screen filter drawer at mobile.
-- **Sport rail:** desktop horizontal scroll with ~5 visible → mobile horizontal scroll with ~1.5 visible (peek-next-card pattern).
-- **Section spacing:** `{spacing.section}` 48px desktop → 32px tablet → 24px mobile to keep editorial rhythm tight on small screens.
-- **Editorial campaign headline:** desktop 96px → tablet 64px → mobile 48px, line-height stays at 0.9 across all sizes.
-
-### Image Behavior
-- Product imagery is responsive at the same 1:1 ratio across all breakpoints — the image scales, the ratio doesn't.
-- Editorial campaign tiles use art-direction crops: a 16:9 wide hero on desktop swaps to a 4:5 portrait on mobile so the figure stays centered and the headline still has burn-in space.
-- All non-critical product imagery is lazy-loaded as the user scrolls into the next grid row.
+- 터치 타겟은 WCAG AAA(44×44px) 기준 충족 — CTA 48px, 아이콘 버튼 40px(히트 영역 48px+로 확장).
+- 섹션 간격은 데스크톱 48px → 태블릿 32px → 모바일 24px로 축소.
 
 ## Iteration Guide
 
-1. Focus on ONE component at a time. Pull its YAML entry from the front matter and verify every property resolves.
-2. Reference component names and tokens directly (`{colors.ink}`, `{component.button-primary-active}`, `{rounded.lg}`) — do not paraphrase color names or radii in prose.
-3. Run `npx @google/design.md lint DESIGN.md` after edits — `broken-ref`, `contrast-ratio`, and `orphaned-tokens` warnings flag issues automatically.
-4. Add new variants as separate component entries (`-active`, `-disabled`, `-focused`) — do not bury them inside prose. Nike's pressed state (`scale(0.5) opacity 0.5`) is intentional and must be its own entry, not a hover stand-in.
-5. Default body to `{typography.body-md}`; reach for `{typography.body-strong}` for product names and primary nav links; reserve `{typography.display-campaign}` strictly for hero campaign lockups.
-6. Keep `{colors.ink}` scarce per viewport — if more than one solid-black pill or block appears in the same fold, neutralize one to `{component.button-secondary}` or `{component.button-outline-on-image}`.
-7. When introducing a new component, ask whether it can be expressed with the existing pill + flat-card + photography-on-`{colors.soft-cloud}` vocabulary before adding new tokens. The system's strength is that it almost never needs new ones.
+1. 새 화면을 만들 때는 기존 컴포넌트 어휘(session-card, dashboard-summary-card, quick-action-card, filter-chip, disclosure-row)로 표현 가능한지 먼저 검토하고, 정말 필요할 때만 새 컴포넌트를 추가한다.
+2. 컬러·타이포 값은 프로즈에서 풀어쓰지 말고 토큰(`{colors.ink}`, `{typography.body-strong}`)으로 직접 참조한다.
+3. 새 상태(비활성/포커스 등)는 별도 컴포넌트 엔트리(`-active`, `-disabled`)로 추가하고 프로즈 속에 묻지 않는다.
+4. 뷰포트당 `{colors.ink}` 사용을 절제한다 — 같은 화면에 검정 블록/알약이 두 개 이상 보이면 하나는 `{component.button-secondary}`나 `{colors.soft-cloud}`로 중화한다.
 
 ## Known Gaps
 
-- **Mobile screenshots not captured** — responsive behavior described above synthesizes Nike's known mobile pattern (hamburger drawer, 1-up grid, headline downscale) from desktop evidence and the breakpoint list extracted from tokens.
-- **Hover states not documented** by system policy — Nike's CSS uses `--pds-color-element-hover` and `--pds-color-text-hover` tokens but these are not included here.
-- **Dialog / modal styling** beyond the geo-selector and the country-confirmation pill pair could not be confirmed from the captured surfaces; bag, wishlist, and login overlays are not documented.
-- **Form field styling** for checkout, sign-up, and address forms is not present in the captured surfaces — only the search pill is documented.
-- **Bag and wishlist** icon-state variants (filled count badges) not visible in the captured pages.
+- 회원가입/로그인 폼 필드 스타일은 검색창(search-pill) 패턴을 참고해 추후 정의 필요.
+- 채팅/단체채팅 화면 컴포넌트는 해당 기능이 별도 스펙으로 진행될 때 이 문서에 추가한다.
+- 수강료관리(결제, 영수증) 화면 컴포넌트도 해당 스펙 진행 시 추가한다.
