@@ -23,6 +23,7 @@
 - `class_templates`/`class_sessions`의 `instructor_id`는 role이 `instructor`뿐 아니라 `owner`인 프로필도 참조 가능해야 한다.
 - 모든 파일 경로는 저장소 루트(`/Users/max/Desktop/max/yoga-one`) 기준 상대경로다. 각 태스크 시작 전 저장소 루트로 이동한다: `cd /Users/max/Desktop/max/yoga-one`.
 - DB 마이그레이션 적용 후에는 항상 `npx supabase db reset`으로 전체 재적용하고, `npx supabase test db`로 pgTAP 테스트를 돌린 뒤, `npx supabase gen types typescript --local > lib/database.types.ts`로 타입을 재생성한다.
+- SECURITY DEFINER RPC/트리거 안에서 `public.current_role()`, `public.current_studio_id()`, `auth.uid()`의 반환값을 비교할 때는 `<>` 대신 `is distinct from`을 쓴다. 이 세 함수는 호출자가 아직 `profiles` 행이 없으면(가입 직후, 온보딩 미완료 등 실제로 도달 가능한 상태) NULL을 반환하고, PL/pgSQL의 `if <NULL 조건> then`은 조용히 스킵되어 인가 체크 자체가 무력화된다 (Task 4에서 실제로 발견·수정된 버그). `is distinct from`은 NULL을 안전하게 처리해 항상 TRUE/FALSE만 반환한다.
 
 ---
 
@@ -857,7 +858,7 @@ begin
   if v_studio_id is null then
     raise exception 'template_not_found';
   end if;
-  if public.current_role() <> 'owner' or v_studio_id <> public.current_studio_id() then
+  if public.current_role() is distinct from 'owner' or v_studio_id is distinct from public.current_studio_id() then
     raise exception 'not_permitted';
   end if;
 
@@ -1059,7 +1060,7 @@ declare
   v_status text;
   v_booking public.bookings;
 begin
-  if public.current_role() <> 'member' then
+  if public.current_role() is distinct from 'member' then
     raise exception 'only_members_can_book';
   end if;
 
@@ -1067,7 +1068,7 @@ begin
   if v_session.id is null then
     raise exception 'session_not_found';
   end if;
-  if v_session.studio_id <> public.current_studio_id() then
+  if v_session.studio_id is distinct from public.current_studio_id() then
     raise exception 'not_permitted';
   end if;
   if v_session.status <> 'scheduled' then
@@ -1113,7 +1114,7 @@ begin
   if v_booking.id is null then
     raise exception 'booking_not_found';
   end if;
-  if v_booking.member_id <> auth.uid() then
+  if v_booking.member_id is distinct from auth.uid() then
     raise exception 'not_permitted';
   end if;
   if v_booking.status not in ('booked', 'waitlisted') then
@@ -1495,10 +1496,10 @@ begin
   end if;
 
   select * into v_session from public.class_sessions where id = v_booking.session_id;
-  if v_session.studio_id <> public.current_studio_id() then
+  if v_session.studio_id is distinct from public.current_studio_id() then
     raise exception 'not_permitted';
   end if;
-  if v_session.instructor_id <> auth.uid() and public.current_role() <> 'owner' then
+  if v_session.instructor_id is distinct from auth.uid() and public.current_role() is distinct from 'owner' then
     raise exception 'not_permitted';
   end if;
   if v_booking.status <> 'booked' then
