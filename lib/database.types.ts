@@ -34,6 +34,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          created_at: string
+          id: string
+          member_id: string
+          session_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          member_id: string
+          session_id: string
+          status: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          member_id?: string
+          session_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "class_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       class_sessions: {
         Row: {
           capacity: number
@@ -286,6 +325,38 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      book_session: {
+        Args: { p_session_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          member_id: string
+          session_id: string
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      cancel_booking: {
+        Args: { p_booking_id: string }
+        Returns: {
+          created_at: string
+          id: string
+          member_id: string
+          session_id: string
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_studio_and_owner_profile: {
         Args: { p_full_name: string; p_studio_name: string }
         Returns: {
@@ -335,6 +406,18 @@ export type Database = {
           role: Database["public"]["Enums"]["profile_role"]
           studio_name: string
           valid: boolean
+        }[]
+      }
+      list_upcoming_sessions_for_member: {
+        Args: never
+        Returns: {
+          booked_count: number
+          capacity: number
+          date: string
+          id: string
+          instructor_name: string
+          my_status: string
+          title: string
         }[]
       }
     }
