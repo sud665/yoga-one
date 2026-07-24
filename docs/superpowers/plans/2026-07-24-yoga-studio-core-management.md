@@ -1528,6 +1528,9 @@ begin;
 select plan(4);
 
 create temporary table test_fixtures (key text primary key, value uuid);
+-- 이 파일은 fixture 생성 후 authenticate_as로 역할을 바꾼 다음에도 test_fixtures에
+-- insert(예약 id 캡처)해야 하므로, postgres(테이블 소유자) 상태에서 미리 권한을 준다.
+grant select, insert on test_fixtures to authenticated, anon;
 
 insert into public.studios (id, name) values ('dddddddd-0000-0000-0000-000000000000', 'Studio G');
 insert into test_fixtures values ('studio_g', 'dddddddd-0000-0000-0000-000000000000');
