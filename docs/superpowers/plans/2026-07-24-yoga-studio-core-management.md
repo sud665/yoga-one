@@ -1026,9 +1026,17 @@ create table public.bookings (
   session_id uuid not null references public.class_sessions(id) on delete cascade,
   member_id uuid not null references public.profiles(id),
   status text not null check (status in ('booked', 'waitlisted', 'cancelled', 'attended', 'no_show')),
-  created_at timestamptz not null default now(),
-  unique (session_id, member_id)
+  created_at timestamptz not null default now()
 );
+
+-- 활성 예약(booked/waitlisted)만 세션당 1건으로 제한한다. 테이블 전체에 거는
+-- unique (session_id, member_id)는 취소 이력(cancelled) 행까지 잡아버려서,
+-- 한 번 취소한 회원이 같은 세션을 영영 재예약할 수 없게 만든다(23505 raw 에러).
+-- 취소 후 재예약은 요가원에서 흔한 흐름이므로 partial unique index로 활성 상태만 막고,
+-- cancelled/attended/no_show 이력 행은 여러 개 쌓이도록 허용한다.
+create unique index bookings_one_active_per_session_member
+  on public.bookings (session_id, member_id)
+  where status in ('booked', 'waitlisted');
 
 alter table public.bookings enable row level security;
 
