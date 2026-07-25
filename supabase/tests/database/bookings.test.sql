@@ -1,5 +1,5 @@
 begin;
-select plan(7);
+select plan(9);
 
 create temporary table test_fixtures (key text primary key, value uuid);
 
@@ -106,6 +106,31 @@ select is(
   (select booked_count from public.list_upcoming_sessions_for_member() where id = 'cccccccc-0000-0000-0000-000000000000'),
   1,
   'list_upcoming_sessions_for_member reports the true booked count regardless of row-level bookings RLS'
+);
+
+-- 8) 취소 후 재예약 회귀 테스트. member_1은 assertion 4에서 이미 이 세션을 취소했고, 그
+--    cancelled 행은 여전히 남아있다. 테이블 전체에 거는 unique (session_id, member_id)였다면
+--    이 두 번째 book_session 호출은 그 cancelled 행과 충돌해 (already_booked가 아니라) raw
+--    23505 unique_violation을 던졌을 것이다 -- 활성 상태만 제한하는 partial unique index
+--    (bookings_one_active_per_session_member)로 바뀐 뒤에는 정상적으로 새 행을 만들 수 있어야
+--    한다. 정원(1)은 이미 member_2가 차지하고 있으므로(바로 위 assertion 7에서 확인) 결과는
+--    'booked'가 아니라 결정론적으로 'waitlisted'여야 한다.
+select tests.authenticate_as((select value from test_fixtures where key = 'member_1'));
+select is(
+  (select status from public.book_session('cccccccc-0000-0000-0000-000000000000')),
+  'waitlisted',
+  'a member can book again after cancelling, even though a cancelled row for the same session/member already exists'
+);
+
+-- 9) 위 재예약이 assertion 4의 cancelled 행을 지우거나 덮어쓴 게 아니라 취소 이력은 그대로 두고
+--    새 활성 행만 추가했는지 확인한다 -- partial index가 "활성 상태만" 제한하고 이력 행은 여러 개
+--    쌓이도록 허용한다는 마이그레이션 주석의 주장을 직접 증명한다. 지금 authenticated as
+--    member_1이고 member_1 본인 행을 조회하는 것이므로 "bookings: member views own" RLS
+--    (member_id = auth.uid())가 그대로 통과시킨다 -- bypass_rls() 불필요.
+select is(
+  (select count(*)::int from public.bookings where session_id = 'cccccccc-0000-0000-0000-000000000000' and member_id = (select value from test_fixtures where key = 'member_1')),
+  2,
+  'the cancelled booking row is preserved as history alongside the new active row, not replaced'
 );
 
 select tests.clear_authentication();
