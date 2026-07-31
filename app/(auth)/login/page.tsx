@@ -17,6 +17,7 @@ function LoginForm() {
   const [isPending, startTransition] = useTransition()
   const searchParams = useSearchParams()
   const kakaoError = searchParams.get('kakaoError')
+  const signupError = searchParams.get('signupError')
 
   function handleSubmit(formData: FormData) {
     setError(null)
@@ -67,6 +68,11 @@ function LoginForm() {
         {kakaoError && (
           <p role="alert" className="mt-4 text-sm text-[#d30005]">
             카카오 로그인에 실패했습니다. 이메일로 로그인해주세요.
+          </p>
+        )}
+        {signupError && (
+          <p role="alert" className="mt-4 text-sm text-[#d30005]">
+            회원가입 처리 중 문제가 발생했습니다. 다시 시도하거나 고객센터에 문의해주세요.
           </p>
         )}
       </div>

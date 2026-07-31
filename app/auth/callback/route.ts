@@ -32,10 +32,13 @@ export async function GET(request: Request) {
 
   if (pendingStudioName) {
     cookieStore.delete('pending_studio_name')
-    await supabase.rpc('create_studio_and_owner_profile', {
+    const { error: rpcError } = await supabase.rpc('create_studio_and_owner_profile', {
       p_studio_name: pendingStudioName,
       p_full_name: user.user_metadata?.name ?? '원장',
     })
+    if (rpcError) {
+      return NextResponse.redirect(`${origin}/login?signupError=1`)
+    }
     return NextResponse.redirect(`${origin}/admin`)
   }
 
