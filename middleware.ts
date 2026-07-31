@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createMiddlewareClient } from '@/lib/supabase/middleware'
 
-const PUBLIC_PREFIXES = ['/login', '/signup', '/invite', '/auth/callback', '/onboarding']
+const PUBLIC_PREFIXES = ['/login', '/signup', '/invite', '/auth/callback', '/onboarding', '/error']
 
 function roleHomePath(role: 'owner' | 'instructor' | 'member') {
   return role === 'owner' ? '/admin' : `/${role}`

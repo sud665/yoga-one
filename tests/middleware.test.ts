@@ -102,3 +102,27 @@ describe('middleware invite-flow access (Finding 2)', () => {
     expect(res.headers.get('location')).toBeNull()
   })
 })
+
+describe('middleware /error page access (Task 16)', () => {
+  beforeEach(() => {
+    vi.mocked(createMiddlewareClient).mockReset()
+  })
+
+  it('lets an unauthenticated visitor reach /error/forbidden instead of bouncing to /login', async () => {
+    mockClient({ user: null, profile: null })
+
+    const res = await middleware(new NextRequest('http://localhost:3000/error/forbidden'))
+
+    expect(res.status).not.toBe(307)
+    expect(res.headers.get('location')).toBeNull()
+  })
+
+  it('lets a role-mismatched authenticated user reach /error/forbidden instead of bouncing to their role home', async () => {
+    mockClient({ user: { id: 'user-1' }, profile: { role: 'member' } })
+
+    const res = await middleware(new NextRequest('http://localhost:3000/error/forbidden'))
+
+    expect(res.status).not.toBe(307)
+    expect(res.headers.get('location')).toBeNull()
+  })
+})
