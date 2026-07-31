@@ -34,7 +34,15 @@ async function signUpOwnerAndCreateSchedule(page: import('@playwright/test').Pag
 async function issueMemberInviteLink(page: import('@playwright/test').Page) {
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '회원 초대 링크 발급' }).click()
-  const link = page.getByRole('link').first()
+  // getByRole('link', { name: /\/invite\// }), not .first(): Task 15 added an app-wide nav
+  // (app/admin/layout.tsx) with 6 <Link>s ahead of every admin page's own content, so an
+  // unqualified getByRole('link').first() now resolves to the nav's own "대시보드" link instead
+  // of the just-generated invite link. Filtering by the generated URL's own "/invite/" path
+  // segment -- which none of the nav's Korean labels ever contain -- uniquely targets the invite
+  // <a> regardless of how many nav links precede it in the DOM. Same fix applied in
+  // instructor-attendance.spec.ts / invite-accept.spec.ts / roster-management.spec.ts (see
+  // task-15-report.md).
+  const link = page.getByRole('link', { name: /\/invite\// })
   return await link.getAttribute('href')
 }
 

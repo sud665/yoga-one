@@ -43,7 +43,15 @@ test('instructor can view booked members for their own session and mark attendan
   // back to the owner and instructor again, all with their own live sessions.
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '강사 초대 링크 발급' }).click()
-  const instructorInviteUrl = await page.getByRole('link').first().getAttribute('href')
+  // getByRole('link', { name: /\/invite\// }), not .first(): Task 15 added an app-wide nav
+  // (app/admin/layout.tsx) with 6 <Link>s ahead of every admin page's own content, so an
+  // unqualified getByRole('link').first() now resolves to the nav's own "대시보드" link instead
+  // of the just-generated invite link. Filtering by the generated URL's own "/invite/" path
+  // segment -- which none of the nav's Korean labels ever contain -- uniquely targets the invite
+  // <a> regardless of how many nav links precede it in the DOM. Same fix applied below and in
+  // invite-accept.spec.ts / member-booking.spec.ts / roster-management.spec.ts (see
+  // task-15-report.md).
+  const instructorInviteUrl = await page.getByRole('link', { name: /\/invite\// }).getAttribute('href')
   expect(instructorInviteUrl).toBeTruthy()
 
   const instructorContext = await browser.newContext()
@@ -72,7 +80,9 @@ test('instructor can view booked members for their own session and mark attendan
   // Member books the generated session.
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '회원 초대 링크 발급' }).click()
-  const memberInviteUrl = await page.getByRole('link').first().getAttribute('href')
+  // getByRole('link', { name: /\/invite\// }): see the identical comment above this test's
+  // instructorInviteUrl lookup -- same nav-collision fix.
+  const memberInviteUrl = await page.getByRole('link', { name: /\/invite\// }).getAttribute('href')
   expect(memberInviteUrl).toBeTruthy()
 
   const memberContext = await browser.newContext()
