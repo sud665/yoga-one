@@ -420,6 +420,22 @@ export type Database = {
           title: string
         }[]
       }
+      mark_attendance: {
+        Args: { p_booking_id: string; p_status: string }
+        Returns: {
+          created_at: string
+          id: string
+          member_id: string
+          session_id: string
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       profile_role: "owner" | "instructor" | "member"
