@@ -1732,7 +1732,13 @@ export function createMiddlewareClient(request: NextRequest) {
     }
   )
 
-  return { supabase, response }
+  // getResponse()를 함수로 반환한다 — response를 값으로 그냥 반환하면(구조분해),
+  // 토큰 리프레시로 setAll이 나중에(supabase.auth.* 호출 도중) response를 재할당해도
+  // 호출자는 이미 예전 값을 구조분해해서 들고 있어 절대 그 갱신을 못 본다.
+  // 그러면 미들웨어의 모든 반환 경로(특히 NextResponse.redirect로 새로 만든 응답들)가
+  // 갱신된 세션 쿠키 없이 나가서, 토큰이 리프레시될 때마다 사용자가 무단 로그아웃될 수 있다.
+  // 호출자는 반드시 모든 supabase 호출이 끝난 뒤 getResponse()를 호출해야 한다.
+  return { supabase, getResponse: () => response }
 }
 ```
 
@@ -2108,32 +2114,42 @@ function roleHomePath(role: 'owner' | 'instructor' | 'member') {
 }
 
 export async function middleware(request: NextRequest) {
-  const { supabase, response } = createMiddlewareClient(request)
+  const { supabase, getResponse } = createMiddlewareClient(request)
   const { data: { user } } = await supabase.auth.getUser()
   const path = request.nextUrl.pathname
   const isPublic = PUBLIC_PREFIXES.some((prefix) => path.startsWith(prefix))
 
+  // 리다이렉트는 항상 새 NextResponse.redirect(...)를 만들기 때문에, getResponse()가
+  // 들고 있는(토큰 리프레시로 setAll이 갱신했을 수도 있는) 쿠키를 명시적으로 옮겨 싣지
+  // 않으면 리다이렉트 경로에서는 갱신된 세션 쿠키가 전부 유실된다.
+  function redirect(url: string) {
+    const redirectResponse = NextResponse.redirect(new URL(url, request.url))
+    getResponse().cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie))
+    return redirectResponse
+  }
+
   if (!user) {
-    if (isPublic) return response
-    return NextResponse.redirect(new URL('/login', request.url))
+    if (isPublic) return getResponse()
+    return redirect('/login')
   }
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
 
   if (!profile) {
-    if (path.startsWith('/onboarding')) return response
-    return NextResponse.redirect(new URL('/onboarding/studio-name', request.url))
+    // /onboarding뿐 아니라 /invite도 예외 처리해야 한다 — 초대 수락 흐름(Task 10)은
+    // 정확히 "인증은 됐지만 아직 profiles 행이 없는" 사용자가 /invite/[code]에 도달해야
+    // accept_invite를 호출할 수 있다. /onboarding만 예외 처리하면 초대받은 강사/회원이
+    // 전부 원장 온보딩 화면으로 잘못 튕겨나간다.
+    if (isPublic) return getResponse()
+    return redirect('/onboarding/studio-name')
   }
 
   const homePath = roleHomePath(profile.role)
-  if (path === '/' ) {
-    return NextResponse.redirect(new URL(homePath, request.url))
-  }
   if (!isPublic && !path.startsWith(homePath)) {
-    return NextResponse.redirect(new URL(homePath, request.url))
+    return redirect(homePath)
   }
 
-  return response
+  return getResponse()
 }
 
 export const config = {
