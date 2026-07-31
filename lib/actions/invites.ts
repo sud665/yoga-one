@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { nanoid } from 'nanoid'
+import type { AuthError } from '@supabase/supabase-js'
 
 export async function createInvite(role: 'instructor' | 'member'): Promise<{ error: string } | { url: string }> {
   const supabase = await createClient()
@@ -47,12 +48,36 @@ export async function acceptInviteWithPassword(
 
   const supabase = await createClient()
   const { error: signUpError } = await supabase.auth.signUp({ email, password })
-  if (signUpError) return { error: signUpError.message }
+  if (signUpError) {
+    if (isEmailAlreadyRegisteredError(signUpError)) {
+      // signUp() rejects a pre-existing email with its own AuthApiError --
+      // never accept_invite's profile_already_exists exception, since we
+      // never get far enough to call that RPC. Route it through the same
+      // mapping anyway so the user sees the identical friendly message
+      // instead of Supabase's raw (and untranslated) "User already
+      // registered" text.
+      return { error: mapAcceptInviteError('profile_already_exists') }
+    }
+    return { error: signUpError.message }
+  }
 
   const { error: acceptError } = await supabase.rpc('accept_invite', { p_code: code, p_full_name: fullName })
   if (acceptError) return { error: mapAcceptInviteError(acceptError.message) }
 
   return { success: true }
+}
+
+// Checked against the installed @supabase/supabase-js's AuthError shape
+// (verified locally: signUp() for an already-registered, confirmed email
+// returns an AuthApiError with code 'user_already_exists' and message 'User
+// already registered'). `code` is preferred since it's stable and
+// locale-independent; `email_exists` is also accepted as the newer unified
+// -identity error code covering the same condition in later GoTrue versions.
+// The message substring check is only a fallback for cases where neither
+// code comes through.
+function isEmailAlreadyRegisteredError(error: AuthError): boolean {
+  if (error.code === 'user_already_exists' || error.code === 'email_exists') return true
+  return error.message.toLowerCase().includes('already registered')
 }
 
 // Not exported: every export from a 'use server' file is compiled into a

@@ -21,14 +21,30 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/login?kakaoError=1`)
   }
 
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
-  if (profile) {
-    return NextResponse.redirect(`${origin}/`)
-  }
-
+  // Read pending-invite cookies before the profile check below (not just
+  // after): an already-registered user (e.g. someone from Studio A) who
+  // clicks a Kakao invite link for Studio B re-authenticates into their
+  // *existing* account here, so the profile check below fires for them too.
+  // Without the pending invite code in hand at that point, they'd get
+  // silently bounced to `/` with no sign their invite click did anything.
   const cookieStore = await cookies()
   const pendingStudioName = cookieStore.get('pending_studio_name')?.value
   const pendingInviteCode = cookieStore.get('pending_invite_code')?.value
+
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+  if (profile) {
+    if (pendingInviteCode) {
+      // Mirrors accept_invite's own rejection for this same situation (see
+      // the pendingInviteCode branch below) so the invite page renders the
+      // exact same friendly message via its existing describeInviteError
+      // mapping, instead of the user landing on `/` with no explanation.
+      cookieStore.delete('pending_invite_code')
+      return NextResponse.redirect(
+        `${origin}/invite/${pendingInviteCode}?error=${encodeURIComponent('profile_already_exists')}`
+      )
+    }
+    return NextResponse.redirect(`${origin}/`)
+  }
 
   if (pendingStudioName) {
     cookieStore.delete('pending_studio_name')
