@@ -66,7 +66,7 @@ export default function SignupPage() {
           </button>
         </form>
         <button
-          onClick={() => signInWithKakao(studioName)}
+          onClick={() => signInWithKakao({ pendingStudioName: studioName })}
           className="mt-3 w-full rounded-full bg-zinc-100 px-8 py-3 text-base font-medium text-black transition hover:bg-zinc-200"
         >
           카카오로 가입

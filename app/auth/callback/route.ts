@@ -43,7 +43,15 @@ export async function GET(request: Request) {
   }
 
   if (pendingInviteCode) {
-    return NextResponse.redirect(`${origin}/invite/${pendingInviteCode}?completeSignup=1`)
+    cookieStore.delete('pending_invite_code')
+    const { error } = await supabase.rpc('accept_invite', {
+      p_code: pendingInviteCode,
+      p_full_name: user.user_metadata?.name ?? '신규 사용자',
+    })
+    if (error) {
+      return NextResponse.redirect(`${origin}/invite/${pendingInviteCode}?error=${encodeURIComponent(error.message)}`)
+    }
+    return NextResponse.redirect(`${origin}/`)
   }
 
   return NextResponse.redirect(`${origin}/onboarding/studio-name`)

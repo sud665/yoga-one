@@ -44,12 +44,15 @@ export async function signInWithPassword(formData: FormData) {
   redirect('/')
 }
 
-export async function signInWithKakao(pendingStudioName?: string) {
+export async function signInWithKakao(options?: { pendingStudioName?: string; pendingInviteCode?: string }) {
   const supabase = await createClient()
   const cookieStore = await cookies()
 
-  if (pendingStudioName) {
-    cookieStore.set('pending_studio_name', pendingStudioName, { maxAge: 600, httpOnly: true })
+  if (options?.pendingStudioName) {
+    cookieStore.set('pending_studio_name', options.pendingStudioName, { maxAge: 600, httpOnly: true })
+  }
+  if (options?.pendingInviteCode) {
+    cookieStore.set('pending_invite_code', options.pendingInviteCode, { maxAge: 600, httpOnly: true })
   }
 
   const { data, error } = await supabase.auth.signInWithOAuth({
