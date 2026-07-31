@@ -8,32 +8,35 @@ function roleHomePath(role: 'owner' | 'instructor' | 'member') {
 }
 
 export async function middleware(request: NextRequest) {
-  const { supabase, response } = createMiddlewareClient(request)
+  const { supabase, getResponse } = createMiddlewareClient(request)
   const { data: { user } } = await supabase.auth.getUser()
   const path = request.nextUrl.pathname
   const isPublic = PUBLIC_PREFIXES.some((prefix) => path.startsWith(prefix))
 
+  function redirect(url: string) {
+    const redirectResponse = NextResponse.redirect(new URL(url, request.url))
+    getResponse().cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie))
+    return redirectResponse
+  }
+
   if (!user) {
-    if (isPublic) return response
-    return NextResponse.redirect(new URL('/login', request.url))
+    if (isPublic) return getResponse()
+    return redirect('/login')
   }
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
 
   if (!profile) {
-    if (path.startsWith('/onboarding')) return response
-    return NextResponse.redirect(new URL('/onboarding/studio-name', request.url))
+    if (isPublic) return getResponse()
+    return redirect('/onboarding/studio-name')
   }
 
   const homePath = roleHomePath(profile.role)
-  if (path === '/' ) {
-    return NextResponse.redirect(new URL(homePath, request.url))
-  }
   if (!isPublic && !path.startsWith(homePath)) {
-    return NextResponse.redirect(new URL(homePath, request.url))
+    return redirect(homePath)
   }
 
-  return response
+  return getResponse()
 }
 
 export const config = {
