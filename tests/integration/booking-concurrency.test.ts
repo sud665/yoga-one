@@ -39,6 +39,7 @@ async function createAuthedClient(admin: SupabaseClient, email: string): Promise
 describe('book_session concurrency', () => {
   let admin: SupabaseClient
   let studioId: string
+  let ownerUserId: string
   let sessionId: string
   let member1: { client: SupabaseClient; userId: string }
   let member2: { client: SupabaseClient; userId: string }
@@ -61,7 +62,8 @@ describe('book_session concurrency', () => {
       email_confirm: true,
     })
     if (ownerError || !owner.user) throw ownerError ?? new Error('owner user creation failed')
-    await admin.from('profiles').insert({ id: owner.user.id, studio_id: studioId, role: 'owner', full_name: 'Owner' })
+    ownerUserId = owner.user.id
+    await admin.from('profiles').insert({ id: ownerUserId, studio_id: studioId, role: 'owner', full_name: 'Owner' })
 
     member1 = await createAuthedClient(admin, `member1-concurrency-${RUN_ID}@test.local`)
     member2 = await createAuthedClient(admin, `member2-concurrency-${RUN_ID}@test.local`)
@@ -73,7 +75,7 @@ describe('book_session concurrency', () => {
       .insert({
         studio_id: studioId,
         title: 'Race Class',
-        instructor_id: owner!.user!.id,
+        instructor_id: ownerUserId,
         day_of_week: 1,
         start_time: '09:00',
         duration_min: 60,
@@ -88,7 +90,7 @@ describe('book_session concurrency', () => {
         template_id: template!.id,
         studio_id: studioId,
         date: new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10),
-        instructor_id: owner!.user!.id,
+        instructor_id: ownerUserId,
         capacity: 1,
       })
       .select()
@@ -105,5 +107,70 @@ describe('book_session concurrency', () => {
 
     const statuses = [result1.data?.status, result2.data?.status].sort()
     expect(statuses).toEqual(['booked', 'waitlisted'])
+  })
+
+  // Final whole-branch review: cancel_booking used to lock the *booking* row
+  // first, then class_sessions, then (when promoting) the waitlist head --
+  // the reverse of book_session's class_sessions-first order. Two concurrent
+  // cancel_booking calls on the same session -- one cancelling the 'booked'
+  // row (which then reaches for the waitlist head), another cancelling that
+  // exact waitlisted row -- could each end up holding the lock the other
+  // needed next, a genuine Postgres deadlock (reproduced live before the
+  // fix). This needs a dedicated, fresh session (not the shared `sessionId`
+  // above, which the previous test already books out) so the two starting
+  // bookings here are deterministically 'booked'/'waitlisted'.
+  it('two concurrent cancellations on the same session (one booked, one waitlisted) do not deadlock', async () => {
+    const { data: template } = await admin
+      .from('class_templates')
+      .insert({
+        studio_id: studioId,
+        title: 'Cancel Race Class',
+        instructor_id: ownerUserId,
+        day_of_week: 2,
+        start_time: '10:00',
+        duration_min: 60,
+        capacity: 1,
+      })
+      .select()
+      .single()
+
+    const { data: session } = await admin
+      .from('class_sessions')
+      .insert({
+        template_id: template!.id,
+        studio_id: studioId,
+        date: new Date(Date.now() + 7 * 86_400_000).toISOString().slice(0, 10),
+        instructor_id: ownerUserId,
+        capacity: 1,
+      })
+      .select()
+      .single()
+
+    const cancelSessionId = session!.id
+
+    const booking1 = await member1.client.rpc('book_session', { p_session_id: cancelSessionId })
+    const booking2 = await member2.client.rpc('book_session', { p_session_id: cancelSessionId })
+    expect(booking1.error).toBeNull()
+    expect(booking2.error).toBeNull()
+    expect([booking1.data?.status, booking2.data?.status].sort()).toEqual(['booked', 'waitlisted'])
+
+    // Cancel whichever role ('booked' vs 'waitlisted') each member actually
+    // ended up with, rather than assuming member1 always won the race above
+    // -- book_session's own capacity race means either member could have
+    // been first.
+    const bookedBooking = booking1.data?.status === 'booked' ? booking1.data : booking2.data
+    const waitlistedBooking = booking1.data?.status === 'waitlisted' ? booking1.data : booking2.data
+    const bookedClient = booking1.data?.status === 'booked' ? member1.client : member2.client
+    const waitlistedClient = booking1.data?.status === 'waitlisted' ? member1.client : member2.client
+
+    const [cancelBooked, cancelWaitlisted] = await Promise.all([
+      bookedClient.rpc('cancel_booking', { p_booking_id: bookedBooking!.id }),
+      waitlistedClient.rpc('cancel_booking', { p_booking_id: waitlistedBooking!.id }),
+    ])
+
+    // Before the fix, one of these two would fail with a Postgres deadlock
+    // error (SQLSTATE 40P01) instead of both cleanly cancelling.
+    expect(cancelBooked.error).toBeNull()
+    expect(cancelWaitlisted.error).toBeNull()
   })
 })

@@ -8,6 +8,12 @@ export default function MyBookingsPage() {
   // app/member/page.tsx가 같은 방식(`Awaited<ReturnType<typeof ...>>`)을 쓰고 있어
   // 새 타입을 export하지 않고도 동일한 관용구로 any를 피할 수 있다.
   const [bookings, setBookings] = useState<Awaited<ReturnType<typeof listMyBookings>>>([])
+  // app/member/page.tsx의 handleBook과 동일한 관용구 -- cancelBooking()의 결과를
+  // 그냥 버리지 않고 성공/실패 모두 사용자에게 보여준다. 최종 리뷰 이전에는
+  // cancel_booking이 실패해도(데드락으로 abort된 경우 등) 아무 피드백 없이 조용히
+  // 아무 일도 일어나지 않은 것처럼 보였다.
+  const [message, setMessage] = useState<string | null>(null)
+  const [messageTone, setMessageTone] = useState<'success' | 'error'>('success')
 
   const refresh = useCallback(() => {
     listMyBookings().then(setBookings)
@@ -18,13 +24,32 @@ export default function MyBookingsPage() {
   }, [refresh])
 
   async function handleCancel(bookingId: string) {
-    await cancelBooking(bookingId)
+    setMessage(null)
+    const result = await cancelBooking(bookingId)
+    if ('error' in result) {
+      setMessageTone('error')
+      setMessage(result.error)
+      return
+    }
+    setMessageTone('success')
+    setMessage('예약이 취소되었습니다.')
     refresh()
   }
 
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-12">
       <h1 className="mb-8 text-3xl font-medium text-black">내 예약</h1>
+
+      {message && (
+        <p
+          role="status"
+          className={`mb-6 rounded-2xl px-4 py-3 text-sm font-medium ${
+            messageTone === 'error' ? 'bg-zinc-100 text-[#d30005]' : 'bg-zinc-100 text-[#007d48]'
+          }`}
+        >
+          {message}
+        </p>
+      )}
 
       <ul className="flex flex-col">
         {bookings.map((b) => (

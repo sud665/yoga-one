@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { kstToday } from '@/lib/date'
 
 // No `: any` annotations on the map callback (deviating from the brief's literal
 // `(s: any) => ...` / `(b: any) => ...`): supabase-js infers the select()'s row shape
@@ -25,7 +26,7 @@ export async function listSessionsWithRoster() {
     .select(
       '*, template:class_templates(title), instructor:profiles!class_sessions_instructor_id_fkey(full_name), bookings(id, status, member:profiles!bookings_member_id_fkey(full_name))'
     )
-    .gte('date', new Date().toISOString().slice(0, 10))
+    .gte('date', kstToday())
     .order('date')
 
   return (data ?? []).map((s) => ({
@@ -46,7 +47,7 @@ export async function listSessionsWithRoster() {
 // so no explicit `.eq('studio_id', ...)` filter is needed or added.
 export async function getDashboardSummary() {
   const supabase = await createClient()
-  const today = new Date().toISOString().slice(0, 10)
+  const today = kstToday()
 
   const { count: todaySessionCount } = await supabase
     .from('class_sessions')

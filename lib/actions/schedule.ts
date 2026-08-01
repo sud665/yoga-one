@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { kstToday } from '@/lib/date'
 import type { ClassSession, ClassTemplate, ProfileRole } from '@/lib/types'
 
 const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토']
@@ -85,7 +86,7 @@ export async function listTemplatesWithUpcomingSessions(): Promise<{
   const { data: sessions } = await supabase
     .from('class_sessions')
     .select('*')
-    .gte('date', new Date().toISOString().slice(0, 10))
+    .gte('date', kstToday())
     .order('date')
 
   return {
