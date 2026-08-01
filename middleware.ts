@@ -7,6 +7,21 @@ function roleHomePath(role: 'owner' | 'instructor' | 'member') {
   return role === 'owner' ? '/admin' : `/${role}`
 }
 
+// Only an owner gets a second allowed prefix. The design spec explicitly
+// supports an owner who teaches their own classes in a small studio
+// ("원장이 직접 수업을 진행하는 소규모 요가원을 지원하기 위함"), and
+// lib/actions/schedule.ts's listInstructors() already lets an owner assign
+// themselves as a session's instructor_id -- mark_attendance and the
+// "bookings: instructor views own session bookings" RLS policy already
+// authorize an owner acting on their own assigned sessions. Without this, an
+// owner assigned as instructor had no route to reach an attendance screen at
+// all: this was purely a routing gap, not a data/RLS one. Instructor/member
+// confinement is unchanged -- only owners gain the extra allowed prefix.
+function allowedPathPrefixes(role: 'owner' | 'instructor' | 'member') {
+  const home = roleHomePath(role)
+  return role === 'owner' ? [home, '/instructor'] : [home]
+}
+
 export async function middleware(request: NextRequest) {
   const { supabase, getResponse } = createMiddlewareClient(request)
   const { data: { user } } = await supabase.auth.getUser()
@@ -28,12 +43,24 @@ export async function middleware(request: NextRequest) {
 
   if (!profile) {
     if (isPublic) return getResponse()
+    // A pending invite code (set by acceptInviteWithPassword/signInWithKakao
+    // when signUp() couldn't establish a session immediately -- hosted email
+    // confirmations, see lib/actions/invites.ts) means this authenticated,
+    // profile-less user is mid-invite-acceptance, not a brand-new owner.
+    // Defaulting straight to owner onboarding here would let them silently
+    // become the OWNER of a new studio instead of resuming their invite,
+    // inverting the "no signup without a valid invite" invariant. Route them
+    // back to the invite page instead so they can complete acceptance.
+    const pendingInviteCode = request.cookies.get('pending_invite_code')?.value
+    if (pendingInviteCode) {
+      return redirect(`/invite/${pendingInviteCode}`)
+    }
     return redirect('/onboarding/studio-name')
   }
 
-  const homePath = roleHomePath(profile.role)
-  if (!isPublic && !path.startsWith(homePath)) {
-    return redirect(homePath)
+  const allowedPrefixes = allowedPathPrefixes(profile.role)
+  if (!isPublic && !allowedPrefixes.some((prefix) => path.startsWith(prefix))) {
+    return redirect(roleHomePath(profile.role))
   }
 
   return getResponse()

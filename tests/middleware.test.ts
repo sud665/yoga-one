@@ -103,6 +103,76 @@ describe('middleware invite-flow access (Finding 2)', () => {
   })
 })
 
+// Final whole-branch review, Finding 2: a profile-less authenticated user
+// with a pending_invite_code cookie (set by acceptInviteWithPassword/
+// signInWithKakao when signUp() couldn't establish a session immediately)
+// must be routed back to their invite instead of defaulting straight to
+// owner onboarding, which would otherwise silently make them the OWNER of a
+// brand-new studio and leave their invite unconsumed.
+describe('middleware pending-invite routing before the owner-onboarding default (Finding 2)', () => {
+  beforeEach(() => {
+    vi.mocked(createMiddlewareClient).mockReset()
+  })
+
+  it('redirects a profile-less user with a pending invite cookie to their invite page instead of owner onboarding', async () => {
+    mockClient({ user: { id: 'user-1' }, profile: null })
+
+    const res = await middleware(
+      new NextRequest('http://localhost:3000/admin', { headers: { cookie: 'pending_invite_code=SOMECODE' } })
+    )
+
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toContain('/invite/SOMECODE')
+  })
+
+  it('still redirects a profile-less user with no pending invite cookie to owner onboarding (unchanged behavior)', async () => {
+    mockClient({ user: { id: 'user-1' }, profile: null })
+
+    const res = await middleware(new NextRequest('http://localhost:3000/admin'))
+
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toContain('/onboarding/studio-name')
+  })
+})
+
+// Final whole-branch review, Finding 4: an owner assigned as a session's
+// instructor_id had no route to reach an attendance screen for it --
+// middleware confined every owner-role profile to /admin regardless of
+// instructor_id assignment. Instructor/member confinement must stay
+// unchanged; only owners gain the extra allowed prefix.
+describe('middleware owner-as-instructor routing (Finding 4)', () => {
+  beforeEach(() => {
+    vi.mocked(createMiddlewareClient).mockReset()
+  })
+
+  it('lets an owner-role profile reach /instructor instead of bouncing to /admin', async () => {
+    mockClient({ user: { id: 'user-1' }, profile: { role: 'owner' } })
+
+    const res = await middleware(new NextRequest('http://localhost:3000/instructor'))
+
+    expect(res.status).not.toBe(307)
+    expect(res.headers.get('location')).toBeNull()
+  })
+
+  it('still confines an owner-role profile away from /member', async () => {
+    mockClient({ user: { id: 'user-1' }, profile: { role: 'owner' } })
+
+    const res = await middleware(new NextRequest('http://localhost:3000/member'))
+
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toContain('/admin')
+  })
+
+  it('still confines an instructor-role profile to /instructor (cannot reach /admin)', async () => {
+    mockClient({ user: { id: 'user-1' }, profile: { role: 'instructor' } })
+
+    const res = await middleware(new NextRequest('http://localhost:3000/admin'))
+
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toContain('/instructor')
+  })
+})
+
 describe('middleware /error page access (Task 16)', () => {
   beforeEach(() => {
     vi.mocked(createMiddlewareClient).mockReset()

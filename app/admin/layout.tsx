@@ -15,6 +15,11 @@ const NAV_ITEMS = [
   { href: '/admin/roster/members', label: '회원관리' },
   { href: '/admin/invites', label: '초대관리' },
   { href: '/admin/bookings', label: '예약현황' },
+  // 원장이 직접 수업을 진행하는 소규모 요가원 지원 (DESIGN.md, middleware.ts의
+  // allowedPathPrefixes) -- 원장이 세션의 instructor_id로 자신을 배정했다면
+  // 이 링크로 출석 체크 화면(/instructor)에 도달할 수 있다. 강사/회원 nav에는
+  // 해당 사항 없음 -- 이 레이아웃은 owner 전용이므로 항목을 role로 분기하지 않는다.
+  { href: '/instructor', label: '내 수업' },
 ] as const
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
