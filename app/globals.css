@@ -12,13 +12,16 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* DESIGN.md is an explicitly light-only design system (black/white/single-gray
+   on a white ground, "순흑/순백/단일 그레이 팔레트") -- this app has no dark
+   variant. The create-next-app scaffold originally shipped a
+   `@media (prefers-color-scheme: dark)` override here that flipped
+   --background to near-black (#0a0a0a) while every authenticated screen
+   (app/admin/**, app/instructor/page.tsx, app/member/**) renders text-black
+   headings with no explicit bg-white of its own -- in OS dark mode that made
+   every one of those screens render near-black text on near-black,
+   effectively invisible. Removed entirely (not patched per-page) so there are
+   no dark CSS variables left to accidentally pick back up. */
 body {
   background: var(--background);
   color: var(--foreground);
