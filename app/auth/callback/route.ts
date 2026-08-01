@@ -29,7 +29,17 @@ export async function GET(request: Request) {
   // silently bounced to `/` with no sign their invite click did anything.
   const cookieStore = await cookies()
   const pendingStudioName = cookieStore.get('pending_studio_name')?.value
-  const pendingInviteCode = cookieStore.get('pending_invite_code')?.value
+  // The cookie (maxAge 600s, browser-local) is the fast path but isn't
+  // device- or time-durable -- already gone by the time this route runs
+  // whenever the confirmation email is opened later than 10 minutes after
+  // signup or on a different device (e.g. tapped from a phone's mail app),
+  // both ordinary for async email. Fall back to user_metadata's own
+  // invite_code (stashed by acceptInviteWithPassword's signUp() call, see
+  // lib/actions/invites.ts -- device-independent and non-expiring) in that
+  // case. accept_invite below still independently validates the code is
+  // real/unused/unexpired server-side regardless of which path supplied it,
+  // so this user-writable metadata field confers no new privilege.
+  const pendingInviteCode = cookieStore.get('pending_invite_code')?.value ?? user.user_metadata?.invite_code
 
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
   if (profile) {

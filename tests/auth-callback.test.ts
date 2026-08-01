@@ -29,12 +29,18 @@ function mockCookies(values: Record<string, string>) {
   return { deleteSpy }
 }
 
-function mockSupabase({ profile }: { profile: { role: string } | null }) {
+function mockSupabase({
+  profile,
+  userMetadata = {},
+}: {
+  profile: { role: string } | null
+  userMetadata?: Record<string, unknown>
+}) {
   const rpc = vi.fn()
   const client = {
     auth: {
       exchangeCodeForSession: vi.fn(async () => ({ error: null })),
-      getUser: vi.fn(async () => ({ data: { user: { id: 'user-1', user_metadata: {} } } })),
+      getUser: vi.fn(async () => ({ data: { user: { id: 'user-1', user_metadata: userMetadata } } })),
     },
     from: vi.fn(() => ({
       select: vi.fn(() => ({
@@ -120,6 +126,70 @@ describe('auth callback route -- resumes a pending invite once a real session ex
 
   it('still redirects to owner onboarding when a profile-less user has no pending state at all (unchanged behavior)', async () => {
     const { rpc } = mockSupabase({ profile: null })
+    mockCookies({})
+
+    const res = await GET(new Request('http://localhost:3000/auth/callback?code=fake-code'))
+
+    expect(rpc).not.toHaveBeenCalled()
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('http://localhost:3000/onboarding/studio-name')
+  })
+})
+
+// Durability hardening on bf2a818/Finding 2: the pending_invite_code cookie
+// is maxAge 600 (10 min) and browser-local, so it's gone whenever the
+// confirmation email is opened later than that or on a different device --
+// both ordinary for async email, unlike the Kakao OAuth round-trip this
+// cookie mechanism was originally built for. lib/actions/invites.ts now also
+// stashes the invite code in user_metadata (device-independent,
+// non-expiring) precisely for this case; this route must fall back to it
+// when the cookie is absent instead of defaulting to owner onboarding.
+describe('auth callback route -- user_metadata.invite_code fallback when the cookie has expired or is on another device', () => {
+  beforeEach(() => {
+    vi.mocked(createClient).mockReset()
+    vi.mocked(cookies).mockReset()
+  })
+
+  it('calls accept_invite and redirects home when a profile-less authenticated user has no cookie but a user_metadata.invite_code', async () => {
+    const { rpc } = mockSupabase({ profile: null, userMetadata: { invite_code: 'METACODE' } })
+    rpc.mockResolvedValue({ error: null })
+    const { deleteSpy } = mockCookies({})
+
+    const res = await GET(new Request('http://localhost:3000/auth/callback?code=fake-code'))
+
+    expect(rpc).toHaveBeenCalledWith('accept_invite', { p_code: 'METACODE', p_full_name: '신규 사용자' })
+    // Still attempted (harmless no-op when the cookie was never set) so the
+    // resume branch doesn't need to know which source supplied the code.
+    expect(deleteSpy).toHaveBeenCalledWith('pending_invite_code')
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('http://localhost:3000/')
+  })
+
+  it('prefers the cookie over user_metadata when both are present (cookie stays the fast path)', async () => {
+    const { rpc } = mockSupabase({ profile: null, userMetadata: { invite_code: 'METACODE' } })
+    rpc.mockResolvedValue({ error: null })
+    mockCookies({ pending_invite_code: 'COOKIECODE' })
+
+    const res = await GET(new Request('http://localhost:3000/auth/callback?code=fake-code'))
+
+    expect(rpc).toHaveBeenCalledWith('accept_invite', { p_code: 'COOKIECODE', p_full_name: '신규 사용자' })
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('http://localhost:3000/')
+  })
+
+  it('redirects to the invite page with a profile_already_exists error when an already-registered user has no cookie but a user_metadata.invite_code', async () => {
+    const { rpc } = mockSupabase({ profile: { role: 'member' }, userMetadata: { invite_code: 'METACODE' } })
+    mockCookies({})
+
+    const res = await GET(new Request('http://localhost:3000/auth/callback?code=fake-code'))
+
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('http://localhost:3000/invite/METACODE?error=profile_already_exists')
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('still redirects to owner onboarding when a profile-less user has an empty user_metadata and no cookie (unchanged behavior)', async () => {
+    const { rpc } = mockSupabase({ profile: null, userMetadata: {} })
     mockCookies({})
 
     const res = await GET(new Request('http://localhost:3000/auth/callback?code=fake-code'))

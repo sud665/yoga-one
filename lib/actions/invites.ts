@@ -58,12 +58,27 @@ export async function acceptInviteWithPassword(
       // user once they click the confirmation link, with a `code` param
       // /auth/callback exchanges for a real session.
       emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
-      // Stashed in user_metadata so /auth/callback's existing resume logic
-      // (`user.user_metadata?.name ?? '신규 사용자'`, built in Task 10 for
-      // the Kakao path) picks up the name actually typed into this form
+      // `name` stashed in user_metadata so /auth/callback's existing resume
+      // logic (`user.user_metadata?.name ?? '신규 사용자'`, built in Task 10
+      // for the Kakao path) picks up the name actually typed into this form
       // instead of falling back to the generic default when it later calls
       // accept_invite on this user's behalf.
-      data: { name: fullName },
+      //
+      // `invite_code` stashed alongside it as a device/time-durable fallback
+      // for the pending_invite_code cookie set below: that cookie is
+      // maxAge 600 (10 min) and browser-local, so it's already gone by the
+      // time a real session exists whenever the confirmation email is opened
+      // later than that or on a different device (e.g. tapped from a phone's
+      // mail app) -- both ordinary for async email, unlike the Kakao OAuth
+      // round-trip this cookie mechanism was originally built for.
+      // user_metadata has neither limitation. middleware.ts and
+      // /auth/callback both fall back to `user.user_metadata?.invite_code`
+      // when the cookie is absent -- this field is user-writable (any
+      // signed-up user could forge one via the client SDK), but that confers
+      // no new privilege: accept_invite still independently validates the
+      // code is real/unused/unexpired server-side regardless of which path
+      // supplied it.
+      data: { name: fullName, invite_code: code },
     },
   })
   if (signUpError) {
@@ -90,7 +105,10 @@ export async function acceptInviteWithPassword(
     // signInWithKakao's pending-studio-name mechanism does (a short-lived
     // httpOnly cookie) so /auth/callback can resume accept_invite once the
     // user confirms their email and a real session exists, then tell the
-    // user to go check their email instead of silently failing here.
+    // user to go check their email instead of silently failing here. This
+    // cookie is only the fast path -- the `invite_code` in user_metadata
+    // (see the signUp options.data comment above) is what actually makes
+    // resumption durable across the 10-minute expiry and across devices.
     const cookieStore = await cookies()
     cookieStore.set('pending_invite_code', code, { maxAge: 600, httpOnly: true })
     return { pendingConfirmation: true }

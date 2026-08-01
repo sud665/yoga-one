@@ -13,7 +13,7 @@ function mockClient({
   user,
   profile,
 }: {
-  user: { id: string } | null
+  user: { id: string; user_metadata?: Record<string, unknown> } | null
   profile: { role: string } | null
 }) {
   // Simulates the real setAll() closure behavior: the underlying `response`
@@ -127,6 +127,57 @@ describe('middleware pending-invite routing before the owner-onboarding default 
 
   it('still redirects a profile-less user with no pending invite cookie to owner onboarding (unchanged behavior)', async () => {
     mockClient({ user: { id: 'user-1' }, profile: null })
+
+    const res = await middleware(new NextRequest('http://localhost:3000/admin'))
+
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toContain('/onboarding/studio-name')
+  })
+})
+
+// Durability hardening on bf2a818/Finding 2: the pending_invite_code cookie
+// is maxAge 600 (10 min) and browser-local, so it's gone whenever the
+// confirmation email is opened later than that or on a different device --
+// both ordinary for async email. lib/actions/invites.ts now also stashes the
+// invite code in user_metadata (device-independent, non-expiring) precisely
+// for this case; middleware.ts must fall back to it when the cookie is
+// absent instead of defaulting to owner onboarding.
+describe('middleware pending-invite user_metadata fallback when the cookie has expired or is on another device', () => {
+  beforeEach(() => {
+    vi.mocked(createMiddlewareClient).mockReset()
+  })
+
+  it('redirects a profile-less user with no cookie but a user_metadata.invite_code to their invite page', async () => {
+    mockClient({
+      user: { id: 'user-1', user_metadata: { invite_code: 'METACODE' } },
+      profile: null,
+    })
+
+    const res = await middleware(new NextRequest('http://localhost:3000/admin'))
+
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toContain('/invite/METACODE')
+  })
+
+  it('prefers the cookie over user_metadata when both are present (cookie stays the fast path)', async () => {
+    mockClient({
+      user: { id: 'user-1', user_metadata: { invite_code: 'METACODE' } },
+      profile: null,
+    })
+
+    const res = await middleware(
+      new NextRequest('http://localhost:3000/admin', { headers: { cookie: 'pending_invite_code=COOKIECODE' } })
+    )
+
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toContain('/invite/COOKIECODE')
+  })
+
+  it('still redirects to owner onboarding when neither the cookie nor user_metadata carries an invite code (unchanged behavior)', async () => {
+    mockClient({
+      user: { id: 'user-1', user_metadata: {} },
+      profile: null,
+    })
 
     const res = await middleware(new NextRequest('http://localhost:3000/admin'))
 

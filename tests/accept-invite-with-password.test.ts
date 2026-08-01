@@ -155,7 +155,12 @@ describe('acceptInviteWithPassword error mapping (Finding 1 & 2)', () => {
     expect(signUp).toHaveBeenCalledWith({
       email: 'test@test.local',
       password: 'password123',
-      options: expect.objectContaining({ data: { name: 'Test User' } }),
+      // invite_code alongside name (durability hardening on bf2a818): stashed
+      // in user_metadata so middleware.ts/auth/callback can resume invite
+      // acceptance even if the pending_invite_code cookie has expired or the
+      // confirmation link is opened on a different device -- see the signUp
+      // options.data comment in lib/actions/invites.ts.
+      options: expect.objectContaining({ data: { name: 'Test User', invite_code: 'SOMECODE' } }),
     })
     expect(rpc).toHaveBeenCalledWith('accept_invite', { p_code: 'SOMECODE', p_full_name: 'Test User' })
   })
@@ -191,6 +196,25 @@ describe('acceptInviteWithPassword email-confirmation branching (session: null)'
     await acceptInviteWithPassword('SOMECODE', validForm())
 
     expect(setSpy).toHaveBeenCalledWith('pending_invite_code', 'SOMECODE', expect.objectContaining({ httpOnly: true }))
+  })
+
+  // Durability hardening on bf2a818: the cookie above is maxAge 600 (10 min)
+  // and browser-local, so it's gone whenever the confirmation email is
+  // opened later than that or on a different device. signUp() must also
+  // stash the code in user_metadata (device-independent, non-expiring) so
+  // middleware.ts/auth/callback can fall back to it -- this is the only
+  // place that data actually originates from.
+  it('also stashes the invite code in user_metadata via signUp so it survives an expired or cross-device cookie', async () => {
+    const { signUp } = mockSupabase({ session: null })
+    mockCookies()
+
+    await acceptInviteWithPassword('SOMECODE', validForm())
+
+    expect(signUp).toHaveBeenCalledWith({
+      email: 'test@test.local',
+      password: 'password123',
+      options: expect.objectContaining({ data: { name: 'Test User', invite_code: 'SOMECODE' } }),
+    })
   })
 
   it('still calls accept_invite immediately when signUp returns a session (local/immediate-session case, unchanged)', async () => {

@@ -1,5 +1,5 @@
 begin;
-select plan(10);
+select plan(11);
 
 create temporary table test_fixtures (key text primary key, value uuid);
 
@@ -136,6 +136,34 @@ select throws_ok(
   $$select public.create_studio_and_owner_profile('Second Studio', 'Second Owner')$$,
   'profile_already_exists',
   'create_studio_and_owner_profile refuses a user who already has a profile'
+);
+
+-- 10) service_role/postgres 컨텍스트에서는 profiles_prevent_privilege_escalation
+--    트리거 자체가 여전히 살아있다. 최종 리뷰(Task 19)가 profiles의 UPDATE
+--    grant를 authenticated에서 완전히 제거한 뒤로(assertion 4/5 참고),
+--    assertion 4가 원래 검증하던 not_permitted_role_change 예외는 grant
+--    단계의 42501 permission denied에 가려져 더 이상 어떤 assertion도 이
+--    트리거에 도달하지 못하고 있었다 -- 이제 이 트리거는 오직 service_role
+--    (자기 UPDATE grant를 그대로 유지하고, RLS를 우회하더라도 트리거 실행
+--    대상에서 예외가 되는 건 아니다)을 통해서만 도달 가능한데, 그 경로를
+--    검증하는 assertion이 하나도 없었다. 아래는 그 경로를 직접 재현한다.
+--
+-- class_schedule.test.sql의 크론 격리 회귀 테스트(7-8번, instructor_g 강등)와
+-- 동일한 패턴을 그대로 따른다: tests.bypass_rls()가 아니라
+-- tests.authenticate_as로 request.jwt.claim.sub을 원하는 행위자(member_b,
+-- non-owner)로 고정해 둔 채 `set local role postgres`만 호출해 실행 role만
+-- postgres로 올린다. tests.bypass_rls()는 claim도 함께 지워버려
+-- current_role()이 NULL이 되므로 -- NULL도 'owner'와는 distinct라 트리거는
+-- 여전히 막겠지만, 그러면 "특정 non-owner 프로필이 행위자인 경우"라는 이
+-- assertion의 조건 자체가 흐려진다. 이 상태에서 UPDATE 자체는 grant/RLS를
+-- 모두 통과하므로, 트리거가 여전히 살아서 not_permitted_role_change를
+-- 던지는지만 순수하게 검증한다.
+select tests.authenticate_as((select value from test_fixtures where key = 'member_b'));
+set local role postgres;
+select throws_ok(
+  format('update public.profiles set role = %L where id = %L', 'owner', (select value from test_fixtures where key = 'member_b')),
+  'not_permitted_role_change',
+  'profiles_prevent_privilege_escalation still rejects a non-owner role change when the UPDATE reaches the table (service_role/postgres context, past the grant-level block)'
 );
 
 select tests.clear_authentication();

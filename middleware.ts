@@ -51,7 +51,20 @@ export async function middleware(request: NextRequest) {
     // become the OWNER of a new studio instead of resuming their invite,
     // inverting the "no signup without a valid invite" invariant. Route them
     // back to the invite page instead so they can complete acceptance.
-    const pendingInviteCode = request.cookies.get('pending_invite_code')?.value
+    //
+    // The cookie is the fast path but isn't device- or time-durable: maxAge
+    // 600s (10 min) and browser-local, so it's already gone by the time this
+    // runs whenever the confirmation email is opened later than that or on a
+    // different device (e.g. tapped from a phone's mail app) -- both
+    // ordinary for async email, unlike the Kakao OAuth round-trip this
+    // cookie mechanism was originally built for. Fall back to
+    // user_metadata's own invite_code (stashed by acceptInviteWithPassword's
+    // signUp() call, see lib/actions/invites.ts -- device-independent and
+    // non-expiring) in that case. accept_invite still independently
+    // validates the code is real/unused/unexpired server-side regardless of
+    // which path supplied it, so this user-writable metadata field confers
+    // no new privilege.
+    const pendingInviteCode = request.cookies.get('pending_invite_code')?.value ?? user.user_metadata?.invite_code
     if (pendingInviteCode) {
       return redirect(`/invite/${pendingInviteCode}`)
     }
