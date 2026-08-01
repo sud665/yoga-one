@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { acceptInviteWithPassword } from '@/lib/actions/invites'
 import { createClient } from '@/lib/supabase/server'
+import { cookies } from 'next/headers'
 
 // acceptInviteWithPassword only touches Next.js indirectly through
 // createClient() (no cookies()/redirect() calls of its own), so -- unlike
@@ -26,6 +27,16 @@ vi.mock('@/lib/supabase/server', () => ({
   createClient: vi.fn(),
 }))
 
+// Needed for the email-confirmation branching added in the final
+// whole-branch review: when signUp() returns no session, acceptInviteWithPassword
+// now persists the invite code via cookies() (same mechanism
+// signInWithKakao already uses for pending_studio_name/pending_invite_code)
+// instead of falling through to accept_invite. Mirrors tests/auth-callback.test.ts's
+// mockCookies helper.
+vi.mock('next/headers', () => ({
+  cookies: vi.fn(),
+}))
+
 function buildFormData(fields: Record<string, string>) {
   const fd = new FormData()
   for (const [key, value] of Object.entries(fields)) fd.set(key, value)
@@ -34,14 +45,32 @@ function buildFormData(fields: Record<string, string>) {
 
 const validForm = () => buildFormData({ fullName: 'Test User', email: 'test@test.local', password: 'password123' })
 
+function mockCookies() {
+  const store = new Map<string, string>()
+  const setSpy = vi.fn((name: string, value: string) => store.set(name, value))
+  vi.mocked(cookies).mockResolvedValue({
+    set: setSpy,
+    get: (name: string) => (store.has(name) ? { name, value: store.get(name)! } : undefined),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any)
+  return { setSpy }
+}
+
 function mockSupabase({
   signUpError,
   acceptError,
+  session = {},
 }: {
   signUpError?: { message: string; code?: string } | null
   acceptError?: { message: string } | null
+  // Defaults to a truthy stand-in session object, matching every existing
+  // signup-dependent test in this codebase, which all assume local
+  // Supabase's enable_confirmations=false (immediate session). Pass `null`
+  // to simulate the hosted-with-confirmations-on case.
+  session?: object | null
 }) {
-  const signUp = vi.fn(async () => ({ error: signUpError ?? null }))
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const signUp = vi.fn(async () => ({ data: { session, user: {} }, error: signUpError ?? null }) as any)
   const rpc = vi.fn(async () => ({ error: acceptError ?? null }))
   const client = {
     auth: { signUp },
@@ -55,6 +84,7 @@ function mockSupabase({
 describe('acceptInviteWithPassword error mapping (Finding 1 & 2)', () => {
   beforeEach(() => {
     vi.mocked(createClient).mockReset()
+    vi.mocked(cookies).mockReset()
   })
 
   it('maps accept_invite\'s invite_expired exception to the friendly expired-link message', async () => {
@@ -114,12 +144,63 @@ describe('acceptInviteWithPassword error mapping (Finding 1 & 2)', () => {
   })
 
   it('succeeds when signUp and accept_invite both succeed', async () => {
+    // No mockCookies() here: with the default truthy `session`, the function
+    // never enters the pending-confirmation branch, so cookies() is never
+    // called on this path.
     const { signUp, rpc } = mockSupabase({})
 
     const result = await acceptInviteWithPassword('SOMECODE', validForm())
 
     expect(result).toEqual({ success: true })
-    expect(signUp).toHaveBeenCalledWith({ email: 'test@test.local', password: 'password123' })
+    expect(signUp).toHaveBeenCalledWith({
+      email: 'test@test.local',
+      password: 'password123',
+      options: expect.objectContaining({ data: { name: 'Test User' } }),
+    })
+    expect(rpc).toHaveBeenCalledWith('accept_invite', { p_code: 'SOMECODE', p_full_name: 'Test User' })
+  })
+})
+
+// Final whole-branch review, Finding 2: local Supabase CLI defaults
+// enable_confirmations to false, but hosted Supabase defaults it to true. If
+// the production project has it on, signUp() returns { user, session: null }
+// with no error -- previously every caller here fell straight through to
+// calling accept_invite anyway, which then ran as `anon` (no EXECUTE grant)
+// and surfaced a raw "permission denied" instead of ever consuming the
+// invite, while the invite itself stayed unconsumed.
+describe('acceptInviteWithPassword email-confirmation branching (session: null)', () => {
+  beforeEach(() => {
+    vi.mocked(createClient).mockReset()
+    vi.mocked(cookies).mockReset()
+  })
+
+  it('does not call accept_invite and reports a pending-confirmation state when signUp returns no session', async () => {
+    const { rpc } = mockSupabase({ session: null })
+    mockCookies()
+
+    const result = await acceptInviteWithPassword('SOMECODE', validForm())
+
+    expect(result).toEqual({ pendingConfirmation: true })
+    expect(rpc).not.toHaveBeenCalled()
+  })
+
+  it('persists the invite code in a short-lived httpOnly cookie so /auth/callback can resume it later', async () => {
+    mockSupabase({ session: null })
+    const { setSpy } = mockCookies()
+
+    await acceptInviteWithPassword('SOMECODE', validForm())
+
+    expect(setSpy).toHaveBeenCalledWith('pending_invite_code', 'SOMECODE', expect.objectContaining({ httpOnly: true }))
+  })
+
+  it('still calls accept_invite immediately when signUp returns a session (local/immediate-session case, unchanged)', async () => {
+    // No mockCookies() here either, for the same reason as the "succeeds"
+    // test above -- a truthy session never reaches the cookies() call.
+    const { rpc } = mockSupabase({ session: { access_token: 'fake' } })
+
+    const result = await acceptInviteWithPassword('SOMECODE', validForm())
+
+    expect(result).toEqual({ success: true })
     expect(rpc).toHaveBeenCalledWith('accept_invite', { p_code: 'SOMECODE', p_full_name: 'Test User' })
   })
 })

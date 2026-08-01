@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { nanoid } from 'nanoid'
+import { cookies } from 'next/headers'
 import type { AuthError } from '@supabase/supabase-js'
 
 export async function createInvite(role: 'instructor' | 'member'): Promise<{ error: string } | { url: string }> {
@@ -37,7 +38,7 @@ export async function listInvites() {
 export async function acceptInviteWithPassword(
   code: string,
   formData: FormData
-): Promise<{ error: string } | { success: true }> {
+): Promise<{ error: string } | { success: true } | { pendingConfirmation: true }> {
   const fullName = String(formData.get('fullName') ?? '').trim()
   const email = String(formData.get('email') ?? '').trim()
   const password = String(formData.get('password') ?? '')
@@ -47,7 +48,24 @@ export async function acceptInviteWithPassword(
   }
 
   const supabase = await createClient()
-  const { error: signUpError } = await supabase.auth.signUp({ email, password })
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      // Only meaningful when the (hosted-only, locally disabled --
+      // supabase/config.toml's auth.email.enable_confirmations = false)
+      // email-confirmation flow is on: this is where Supabase redirects the
+      // user once they click the confirmation link, with a `code` param
+      // /auth/callback exchanges for a real session.
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
+      // Stashed in user_metadata so /auth/callback's existing resume logic
+      // (`user.user_metadata?.name ?? '신규 사용자'`, built in Task 10 for
+      // the Kakao path) picks up the name actually typed into this form
+      // instead of falling back to the generic default when it later calls
+      // accept_invite on this user's behalf.
+      data: { name: fullName },
+    },
+  })
   if (signUpError) {
     if (isEmailAlreadyRegisteredError(signUpError)) {
       // signUp() rejects a pre-existing email with its own AuthApiError --
@@ -59,6 +77,23 @@ export async function acceptInviteWithPassword(
       return { error: mapAcceptInviteError('profile_already_exists') }
     }
     return { error: signUpError.message }
+  }
+
+  if (!signUpData.session) {
+    // Local Supabase CLI defaults auth.email.enable_confirmations to false,
+    // but hosted Supabase defaults it to true -- if the production project
+    // has it on, signUp() returns a user with no session and no error. Every
+    // caller of this branch used to fall straight through to accept_invite
+    // below, which then ran as `anon` (no EXECUTE grant on accept_invite) and
+    // surfaced a raw, confusing "permission denied" instead of ever
+    // consuming the invite. Persist the invite code the same way
+    // signInWithKakao's pending-studio-name mechanism does (a short-lived
+    // httpOnly cookie) so /auth/callback can resume accept_invite once the
+    // user confirms their email and a real session exists, then tell the
+    // user to go check their email instead of silently failing here.
+    const cookieStore = await cookies()
+    cookieStore.set('pending_invite_code', code, { maxAge: 600, httpOnly: true })
+    return { pendingConfirmation: true }
   }
 
   const { error: acceptError } = await supabase.rpc('accept_invite', { p_code: code, p_full_name: fullName })

@@ -81,3 +81,51 @@ describe('auth callback route -- Kakao-path profile_already_exists (Finding 1)',
     expect(res.headers.get('location')).toBe('http://localhost:3000/')
   })
 })
+
+// Final whole-branch review, Finding 2: acceptInviteWithPassword now sets the
+// same pending_invite_code cookie for the password/email-confirmation path
+// that signInWithKakao already set for the Kakao path -- this suite confirms
+// the route's existing pendingInviteCode resume logic (built in Task 10 for
+// Kakao) generically resumes accept_invite for a profile-less user regardless
+// of which path set the cookie, with no changes needed to route.ts itself.
+describe('auth callback route -- resumes a pending invite once a real session exists (Finding 2)', () => {
+  beforeEach(() => {
+    vi.mocked(createClient).mockReset()
+    vi.mocked(cookies).mockReset()
+  })
+
+  it('calls accept_invite and redirects home when a profile-less authenticated user has a pending invite code', async () => {
+    const { rpc } = mockSupabase({ profile: null })
+    rpc.mockResolvedValue({ error: null })
+    const { deleteSpy } = mockCookies({ pending_invite_code: 'SOMECODE' })
+
+    const res = await GET(new Request('http://localhost:3000/auth/callback?code=fake-code'))
+
+    expect(rpc).toHaveBeenCalledWith('accept_invite', { p_code: 'SOMECODE', p_full_name: '신규 사용자' })
+    expect(deleteSpy).toHaveBeenCalledWith('pending_invite_code')
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('http://localhost:3000/')
+  })
+
+  it('redirects back to the invite page carrying the RPC error when accept_invite fails on resume', async () => {
+    const { rpc } = mockSupabase({ profile: null })
+    rpc.mockResolvedValue({ error: { message: 'invite_expired' } })
+    mockCookies({ pending_invite_code: 'SOMECODE' })
+
+    const res = await GET(new Request('http://localhost:3000/auth/callback?code=fake-code'))
+
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('http://localhost:3000/invite/SOMECODE?error=invite_expired')
+  })
+
+  it('still redirects to owner onboarding when a profile-less user has no pending state at all (unchanged behavior)', async () => {
+    const { rpc } = mockSupabase({ profile: null })
+    mockCookies({})
+
+    const res = await GET(new Request('http://localhost:3000/auth/callback?code=fake-code'))
+
+    expect(rpc).not.toHaveBeenCalled()
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('http://localhost:3000/onboarding/studio-name')
+  })
+})
