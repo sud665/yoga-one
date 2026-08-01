@@ -47,5 +47,8 @@ next-env.d.ts
 # worktrees used for isolated implementation workspaces
 .worktrees/
 
+# local Claude Code dev-server launch config (per-machine port choice, not shared)
+.claude/
+
 # serwist (generated service worker — differs between dev/prod builds)
 public/sw*

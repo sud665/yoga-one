@@ -99,7 +99,14 @@ test('member booking fills capacity, next member is waitlisted, and cancel promo
 
   await member1.goto('/member/bookings')
   await member1.getByRole('button', { name: '취소' }).click()
-  await expect(member1.getByText('대기중')).toHaveCount(0)
+  // Wait for cancel_booking's server round-trip (and its atomic waitlist promotion) to actually
+  // commit before moving to member2, not just for the click to register. '대기중' never appears
+  // on member1's own bookings page (their booking was never waitlisted), so asserting its count is
+  // 0 is vacuous and passes immediately regardless of server state. The '취소' button only
+  // disappears after refresh() re-fetches and finds the booking gone (lib/actions/bookings.ts's
+  // listMyBookings() only returns status in ('booked','waitlisted')), so waiting on it actually
+  // gates the next step. Same fix as tests/e2e/full-flow.spec.ts.
+  await expect(member1.getByRole('button', { name: '취소' })).toHaveCount(0)
 
   await member2.goto('/member')
   await expect(member2.getByText('예약완료')).toBeVisible()
