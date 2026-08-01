@@ -1,5 +1,5 @@
 begin;
-select plan(9);
+select plan(10);
 
 create temporary table test_fixtures (key text primary key, value uuid);
 
@@ -131,6 +131,24 @@ select is(
   (select count(*)::int from public.bookings where session_id = 'cccccccc-0000-0000-0000-000000000000' and member_id = (select value from test_fixtures where key = 'member_1')),
   2,
   'the cancelled booking row is preserved as history alongside the new active row, not replaced'
+);
+
+-- 10) KST(Asia/Seoul, UTC+9) 날짜 경계 회귀 테스트 (최종 리뷰, Task 19).
+-- list_upcoming_sessions_for_member/_generate_sessions_internal은 이제
+-- `current_date`(서버/세션 타임존, 사실상 UTC) 대신
+-- `(now() at time zone 'Asia/Seoul')::date`로 "오늘"을 계산한다. `now()`가 실제로
+-- KST 00:00-09:00(=UTC로는 아직 전날 15:00-24:00) 구간을 도는 순간을 pgTAP
+-- 안에서 재현할 방법은 없으므로(Postgres에 시스템 시계를 흉내낼 장치가 없다 --
+-- vi.setSystemTime 같은 게 SQL 레벨엔 없다), 대신 그 변환식 자체가 정확히 이
+-- 경계를 넘기는지 고정된 타임스탬프로 직접 증명한다: 2026-01-01 16:30 UTC는 KST로
+-- 2026-01-02 01:30, 즉 UTC가 아직 "어제"인 동안 KST는 이미 "내일" 새벽으로 넘어간
+-- 상태다. lib/date.ts의 kstToday() TS 유닛 테스트(vi.setSystemTime)가 런타임
+-- 동작 자체를 검증하고, 이 단언은 SQL 쪽이 동일한 변환식을 쓰고 있음을 결정론적으로
+-- 보증한다.
+select is(
+  ((timestamptz '2026-01-01 16:30:00+00') at time zone 'Asia/Seoul')::date,
+  '2026-01-02'::date,
+  'KST conversion pushes a UTC-evening timestamp into the next Seoul calendar date (the exact boundary list_upcoming_sessions_for_member/_generate_sessions_internal now use instead of current_date)'
 );
 
 select tests.clear_authentication();

@@ -177,24 +177,29 @@ values (
   10
 );
 
--- instructor_g가 나중에 'member'로 강등된다: owner_g가 같은 스튜디오의 다른
--- 프로필 row를 바꾸는 것이므로 profiles_prevent_privilege_escalation
--- (current_role() = 'owner'라 통과)과 RLS의
--- "profiles: self or owner update" (studio_id 일치 + current_role() =
--- 'owner') 둘 다 자연스럽게 만족되어, 별도 bypass 없이 일반 authenticated
--- UPDATE로 충분하다.
-update public.profiles set role = 'member'
-where id = (select value from test_fixtures where key = 'instructor_g');
-
--- generate_sessions_for_all_templates has no grant to authenticated/anon at
--- all (cron-only, by design -- see the migration's own comment), so it can
--- only be reached by a superuser. This codebase has no tests.bypass_rls()
--- helper (grepped for it -- it doesn't exist), so switch back to `postgres`
--- directly: permission to `set role` is checked against the session user
--- (postgres, a superuser, fixed for the life of this connection), not the
+-- instructor_g가 나중에 'member'로 강등된다, 그리고 뒤이어
+-- generate_sessions_for_all_templates(cron 전용, authenticated/anon에 grant가
+-- 아예 없음)를 호출해야 한다 -- 둘 다 postgres로 전환한 뒤 실행한다.
+--
+-- (1) 강등 update: 원래 이 자리의 주석은 "owner_g가 같은 스튜디오의 다른 프로필
+-- row를 바꾸는 것이므로 profiles_prevent_privilege_escalation과 RLS의 'profiles:
+-- self or owner update' 둘 다 자연스럽게 만족되어 별도 bypass 없이 일반
+-- authenticated UPDATE로 충분하다"였다. 최종 리뷰(Task 19)에서 profiles의 UPDATE
+-- grant/정책을 authenticated에서 완전히 제거했으므로 이제는 그 전제가 깨졌다 --
+-- 트리거 통과 여부와 무관하게 어떤 authenticated UPDATE도 42501 permission
+-- denied로 막힌다. 이 테스트가 실제로 검증하려는 건 프로필 UPDATE 권한이 아니라
+-- 크론 배치의 스튜디오별 에러 격리이므로, 픽스처는 postgres(테이블 소유자 --
+-- grant/RLS는 모두 우회하지만 트리거는 그대로 실행됨)로 전환한 뒤 직접 강등시킨다.
+--
+-- (2) generate_sessions_for_all_templates 자체도 postgres여야 호출 가능 --
+-- permission to `set role` is checked against the session user (postgres, a
+-- superuser, fixed for the life of this connection), not the
 -- currently-lowered role, so this succeeds regardless of the
 -- authenticate_as(owner_g) call above.
 set local role postgres;
+update public.profiles set role = 'member'
+where id = (select value from test_fixtures where key = 'instructor_g');
+
 select lives_ok(
   $$select public.generate_sessions_for_all_templates()$$,
   'generate_sessions_for_all_templates does not raise when one template fails validation'

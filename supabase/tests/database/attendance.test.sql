@@ -1,5 +1,5 @@
 begin;
-select plan(6);
+select plan(7);
 
 create temporary table test_fixtures (key text primary key, value uuid);
 -- 이 파일은 fixture 생성 후 authenticate_as로 역할을 바꾼 다음에도 test_fixtures에
@@ -14,7 +14,7 @@ insert into test_fixtures (key, value)
   select 'other_instructor', tests.create_test_profile((select value from test_fixtures where key = 'studio_g'), 'instructor', 'Other Instructor');
 insert into test_fixtures (key, value)
   select 'member_g', tests.create_test_profile((select value from test_fixtures where key = 'studio_g'), 'member', 'Member G');
--- owner_g: 5번(오너 권한 분기)과 6번(스튜디오 간 격리) 단언의 호출자로 쓰인다.
+-- owner_g: 6번(오너 권한 분기)과 7번(스튜디오 간 격리) 단언의 호출자로 쓰인다.
 -- tests.create_test_profile은 postgres 상태에서만 호출 가능하므로(첫 authenticate_as
 -- 이전), 다른 fixture들과 함께 여기서 미리 만들어 둔다.
 insert into test_fixtures (key, value)
@@ -78,7 +78,20 @@ select throws_ok(
   'an invalid attendance status is rejected'
 );
 
--- 4) waitlisted 상태인 예약은 출석 처리할 수 없다
+-- 4) NULL 상태값도 거부된다 (최종 리뷰, Task 6 원 리뷰에서 이월된 항목). 이전에는
+-- `p_status not in ('attended', 'no_show')`가 p_status가 NULL이면 NULL로 평가되고
+-- PL/pgSQL의 `if <NULL> then`은 false로 취급되어, invalid_status 가드를 조용히
+-- 우회했다 -- CLAUDE.md가 문서화한 `<>`의 NULL 전파 버그와 같은 부류지만 신원 비교가
+-- 아니라 입력 검증에서 발생한 것. booking_g는 바로 위 3번 단언이 예외를 던지기 전에
+-- 끝나 아직 'booked' 상태이고, instructor_g로 인증된 상태도 그대로이므로 별도
+-- bypass_rls() 없이 이어서 검증한다.
+select throws_ok(
+  format('select public.mark_attendance(%L, %L)', (select value from test_fixtures where key = 'booking_g'), null),
+  'invalid_status',
+  'a NULL attendance status is rejected, not silently skipped via NULL propagation through the IN check'
+);
+
+-- 5) waitlisted 상태인 예약은 출석 처리할 수 없다
 select tests.bypass_rls();
 update public.bookings set status = 'waitlisted' where id = (select value from test_fixtures where key = 'booking_g');
 select tests.authenticate_as((select value from test_fixtures where key = 'instructor_g'));
@@ -88,7 +101,7 @@ select throws_ok(
   'a waitlisted (not booked) booking cannot be marked as attended'
 );
 
--- 5) 담당 강사가 아니어도 studio owner라면 출석을 표시할 수 있다 (booking_g를
+-- 6) 담당 강사가 아니어도 studio owner라면 출석을 표시할 수 있다 (booking_g를
 -- booked로 되돌려 재사용). mark_attendance의 두 번째 검사는
 -- `v_session.instructor_id is distinct from auth.uid() and public.current_role()
 -- is distinct from 'owner'`이므로, owner_g는 instructor_g가 아니지만
@@ -103,7 +116,7 @@ select is(
   'studio owner can mark attendance for a booking even when not the assigned instructor'
 );
 
--- 6) 다른 스튜디오(Studio H)의 예약은 studio_g의 owner라도 건드릴 수 없다.
+-- 7) 다른 스튜디오(Studio H)의 예약은 studio_g의 owner라도 건드릴 수 없다.
 -- 호출자로 owner_g를 쓰는 것이 핵심이다: owner_g의 current_role()은 'owner'이므로
 -- studio_id만 일치했다면 두 번째 검사(담당 강사-또는-오너)는 그냥 통과했을
 -- 사람이다. 따라서 이 호출이 실패한다면 그 원인은 오직 첫 번째 검사

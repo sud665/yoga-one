@@ -64,19 +64,37 @@ select is(
   'member B sees profiles scoped to their own studio'
 );
 
--- 4) member가 본인 role을 owner로 바꾸려 하면 거부된다
+-- 4) member가 본인 role을 owner로 바꾸려 하면 거부된다. 최종 리뷰(Task 19)에서
+--    profiles의 UPDATE grant/정책을 authenticated에서 완전히 제거했으므로, 이제는
+--    profiles_prevent_privilege_escalation 트리거가 실행되기도 전에 grant 단계에서
+--    42501 permission denied로 막힌다 -- 원래 이 자리에서 검증하던 'not_permitted_role_change'
+--    (트리거가 던지는 커스텀 예외)보다 한 단계 앞서 차단되는 셈이라, 기대 에러 문구를
+--    Postgres의 grant-check 메시지로 바꾼다.
+--
+-- throws_ok(sql, arg2, arg3)의 실제 디스패치(pgTAP 소스로 직접 확인): arg2가
+-- 정확히 5바이트면 SQLSTATE 코드로 취급해 arg3를 "설명"이 아니라 기대 에러
+-- *메시지*로 소비한다(throws_ok(sql, arg2::char(5), arg3, NULL) 호출로 위임 --
+-- 4번째 desctext 자리가 없다). 그래서 '42501'(정확히 5바이트)을 2번째 인자로 쓰면
+-- 3번째 인자가 사람이 읽는 설명이 아니라 매칭 대상 메시지로 소비되어 항상 실패한다
+-- (직접 재현해 확인함). 이 코드베이스의 기존 관용구대로(예: 'not_permitted',
+-- 'already_booked') 전체 에러 메시지 문자열을 매칭 대상으로 쓴다 -- 5바이트가 아니므로
+-- throws_ok(sql, NULL, arg2, arg3)로 위임되어 arg3가 정상적으로 설명 자리에 들어간다.
 select throws_ok(
   format('update public.profiles set role = %L where id = %L', 'owner', (select value from test_fixtures where key = 'member_b')),
-  'not_permitted_role_change',
-  'member cannot escalate their own role'
+  'permission denied for table profiles',
+  'member cannot escalate their own role (blocked at the grant level -- no UPDATE grant on profiles at all now)'
 );
 
--- 5) member가 본인 이름은 바꿀 수 있다
-update public.profiles set full_name = 'Member B Updated' where id = (select value from test_fixtures where key = 'member_b');
-select is(
-  (select full_name from public.profiles where id = (select value from test_fixtures where key = 'member_b')),
-  'Member B Updated',
-  'member can update their own non-privileged fields'
+-- 5) member는 이제 본인의 비특권 필드(full_name)조차 수정할 수 없다 -- UPDATE grant
+--    자체를 제거했으므로 "자기 자신의 안전한 필드"라는 예외 없이 전체 UPDATE 표면이
+--    막힌다 (Task 19 최종 리뷰: 아무 코드도 profiles를 update하지 않으므로 이 표면은
+--    쓰이지 않는 리스크였다). 프로필 자체 수정이 실제로 필요해지면 전용 RPC로 다시
+--    열 것 -- 지금은 client SDK로 role/studio_id/contract_status를 직접 조작할 수
+--    있는 통로가 아예 없어야 한다.
+select throws_ok(
+  format('update public.profiles set full_name = %L where id = %L', 'Member B Updated', (select value from test_fixtures where key = 'member_b')),
+  'permission denied for table profiles',
+  'a member can no longer update even their own non-privileged fields directly (UPDATE grant removed entirely)'
 );
 
 -- 6) 인증 없이는 studios가 하나도 안 보인다
