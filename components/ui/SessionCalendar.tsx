@@ -110,7 +110,13 @@ export function SessionCalendar({ selected, onSelect, datesWithSessions, classNa
       components={COMPONENTS}
       className={className}
       classNames={{
-        root: cx('w-fit rounded-card border border-hairline bg-canvas p-4', defaults.root),
+        // Full width of whatever contains it -- the page container's own
+        // padding is the only inset. Columns flex to share the width evenly;
+        // the day *button* stays a fixed 36px circle centered in its cell, so
+        // widening the grid spreads the columns out instead of stretching the
+        // circles into ovals.
+        root: cx('w-full rounded-card border border-hairline bg-canvas p-4', defaults.root),
+        month_grid: cx('w-full', defaults.month_grid),
         months: cx('relative flex flex-col', defaults.months),
         month: cx('flex w-full flex-col gap-2', defaults.month),
         nav: cx('absolute inset-x-0 top-0 flex items-center justify-between', defaults.nav),
@@ -122,9 +128,9 @@ export function SessionCalendar({ selected, onSelect, datesWithSessions, classNa
         month_caption: cx('flex h-8 items-center justify-center', defaults.month_caption),
         caption_label: cx('text-body-strong text-ink', defaults.caption_label),
         weekdays: cx('flex', defaults.weekdays),
-        weekday: cx('w-9 text-caption text-muted', defaults.weekday),
+        weekday: cx('flex-1 text-caption text-muted', defaults.weekday),
         week: cx('mt-1 flex', defaults.week),
-        day: cx('p-0', defaults.day),
+        day: cx('flex flex-1 justify-center p-0', defaults.day),
       }}
     />
   )
