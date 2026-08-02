@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { PeriodFilter } from '@/components/ui/PeriodFilter'
+import { usePeriodFilter } from '@/lib/use-period-filter'
 import { X } from 'lucide-react'
 
 export default function MyBookingsPage() {
@@ -19,6 +21,7 @@ export default function MyBookingsPage() {
   // 아무 일도 일어나지 않은 것처럼 보였다.
   const [message, setMessage] = useState<string | null>(null)
   const [messageTone, setMessageTone] = useState<'success' | 'error'>('success')
+  const period = usePeriodFilter()
 
   const refresh = useCallback(() => {
     listMyBookings().then(setBookings)
@@ -41,9 +44,22 @@ export default function MyBookingsPage() {
     refresh()
   }
 
+  const visible = bookings === null ? null : period.filter(bookings, (b) => b.session?.date)
+
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-12">
       <h1 className="mb-8 text-heading-lg text-ink">내 예약</h1>
+
+      {bookings !== null && bookings.length > 0 && (
+        <PeriodFilter
+          className="mb-8"
+          granularity={period.granularity}
+          anchor={period.anchor}
+          onGranularityChange={period.setGranularity}
+          onAnchorChange={period.setAnchor}
+          matchCount={visible?.length}
+        />
+      )}
 
       {message && (
         <p
@@ -56,16 +72,18 @@ export default function MyBookingsPage() {
         </p>
       )}
 
-      {bookings === null ? (
+      {visible === null ? (
         <div className="flex flex-col gap-3">
           <Skeleton variant="block" className="h-16" />
           <Skeleton variant="block" className="h-16" />
         </div>
-      ) : bookings.length === 0 ? (
+      ) : bookings !== null && bookings.length === 0 ? (
         <EmptyState title="예약 내역이 없습니다" description="시간표에서 수업을 예약하면 여기에 표시됩니다." />
+      ) : visible.length === 0 ? (
+        <EmptyState title="이 기간에는 예약이 없습니다" description="기간을 넓히거나 다른 기간을 확인해보세요." />
       ) : (
         <ul className="flex flex-col">
-          {bookings.map((b) => (
+          {visible.map((b) => (
             <li
               key={b.id}
               className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline py-4 text-body-md text-ink first:border-t-0"

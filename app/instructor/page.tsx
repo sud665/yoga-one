@@ -5,6 +5,8 @@ import { listMySessionsWithBookings, markAttendance } from '@/lib/actions/attend
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { PeriodFilter } from '@/components/ui/PeriodFilter'
+import { usePeriodFilter } from '@/lib/use-period-filter'
 import { Check, X } from 'lucide-react'
 
 // b.status ('booked'/'attended'/'no_show') is rendered verbatim as the raw
@@ -24,6 +26,7 @@ export default function InstructorHomePage() {
   // app/member/bookings/page.tsx가 listMyBookings()에 쓰는 것과 동일한 관용구
   // (`Awaited<ReturnType<typeof ...>>`)로, 새 타입을 export하지 않고도 any를 피한다.
   const [sessions, setSessions] = useState<Awaited<ReturnType<typeof listMySessionsWithBookings>> | null>(null)
+  const period = usePeriodFilter()
 
   const refresh = useCallback(() => {
     listMySessionsWithBookings().then(setSessions)
@@ -38,19 +41,34 @@ export default function InstructorHomePage() {
     refresh()
   }
 
+  const visible = sessions === null ? null : period.filter(sessions, (s) => s.date)
+
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-12">
       <h1 className="mb-8 text-heading-lg text-ink">내 수업</h1>
 
-      {sessions === null ? (
+      {sessions !== null && sessions.length > 0 && (
+        <PeriodFilter
+          className="mb-8"
+          granularity={period.granularity}
+          anchor={period.anchor}
+          onGranularityChange={period.setGranularity}
+          onAnchorChange={period.setAnchor}
+          matchCount={visible?.length}
+        />
+      )}
+
+      {visible === null ? (
         <div className="flex flex-col gap-3">
           <Skeleton variant="block" className="h-32" />
           <Skeleton variant="block" className="h-32" />
         </div>
-      ) : sessions.length === 0 ? (
+      ) : sessions !== null && sessions.length === 0 ? (
         <EmptyState title="예정된 수업이 없습니다" description="담당 수업이 배정되면 여기에 표시됩니다." />
+      ) : visible.length === 0 ? (
+        <EmptyState title="이 기간에는 수업이 없습니다" description="기간을 넓히거나 다른 기간을 확인해보세요." />
       ) : (
-        sessions.map((s) => (
+        visible.map((s) => (
           <section key={s.id} className="mb-10">
             <h2 className="mb-2 text-heading-md text-ink">
               {s.date} · {s.template?.title}

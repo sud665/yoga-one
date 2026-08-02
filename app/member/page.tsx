@@ -5,6 +5,8 @@ import { listUpcomingSessionsWithBookingState, bookSession } from '@/lib/actions
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { PeriodFilter } from '@/components/ui/PeriodFilter'
+import { usePeriodFilter } from '@/lib/use-period-filter'
 import { EmptyState } from '@/components/ui/EmptyState'
 
 export default function MemberSchedulePage() {
@@ -13,6 +15,7 @@ export default function MemberSchedulePage() {
   )
   const [message, setMessage] = useState<string | null>(null)
   const [messageTone, setMessageTone] = useState<'success' | 'error'>('success')
+  const period = usePeriodFilter()
 
   const refresh = useCallback(() => {
     listUpcomingSessionsWithBookingState().then(setSessions)
@@ -35,9 +38,22 @@ export default function MemberSchedulePage() {
     refresh()
   }
 
+  const visible = sessions === null ? null : period.filter(sessions, (s) => s.date)
+
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-12">
       <h1 className="mb-8 text-heading-lg text-ink">시간표</h1>
+
+      {sessions !== null && sessions.length > 0 && (
+        <PeriodFilter
+          className="mb-8"
+          granularity={period.granularity}
+          anchor={period.anchor}
+          onGranularityChange={period.setGranularity}
+          onAnchorChange={period.setAnchor}
+          matchCount={visible?.length}
+        />
+      )}
 
       {message && (
         <p
@@ -50,17 +66,19 @@ export default function MemberSchedulePage() {
         </p>
       )}
 
-      {sessions === null ? (
+      {visible === null ? (
         <div className="flex flex-col gap-3">
           <Skeleton variant="block" className="h-16" />
           <Skeleton variant="block" className="h-16" />
           <Skeleton variant="block" className="h-16" />
         </div>
-      ) : sessions.length === 0 ? (
+      ) : sessions !== null && sessions.length === 0 ? (
         <EmptyState title="예정된 수업이 없습니다" description="새로운 시간표가 등록되면 여기에 표시됩니다." />
+      ) : visible.length === 0 ? (
+        <EmptyState title="이 기간에는 수업이 없습니다" description="기간을 넓히거나 다른 기간을 확인해보세요." />
       ) : (
         <ul className="flex flex-col">
-          {sessions.map((s) => (
+          {visible.map((s) => (
             <li
               key={s.id}
               className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline py-4 first:border-t-0"
