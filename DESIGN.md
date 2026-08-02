@@ -340,6 +340,7 @@ Airtable 원본이 명시한 규칙 그대로: **pill/full은 아이콘·배지�
 
 ### Navigation
 - **`admin-sidebar`** — `/admin` 전용, 유지. 240px 고정폭, `{colors.canvas}` + 우측 hairline 보더(이전엔 색 대비만으로 구분, 이제 보더 추가). 활성 항목은 `{colors.info-tint}` 배경 + `{colors.info}` 좌측 4px 보더 + `{colors.info}` 텍스트.
+  - **2단 구조(신규)**: 최상위 항목 5개 — 대시보드 / 시간표관리 / 인력관리(하위메뉴) / 예약현황 / 내 수업. "인력관리"는 부모 항목으로, 하위에 강사관리·회원관리·초대관리 3개를 묶는다(이전 버전의 flat 7항목에서 강사/회원/초대 3개를 인력관리 하위로 통합). 부모 항목 클릭 시 하위메뉴가 펼쳐진다(아코디언) — 현재 라우트가 하위메뉴 항목 중 하나면 부모는 기본 펼침 상태로 시작한다(예: `/admin/roster/instructors` 진입 시 인력관리가 이미 열려 있어야 함, 접힌 채로 시작해 사용자가 직접 펼쳐야 하면 안 됨). 하위메뉴 항목은 부모보다 한 단계 들여쓰기, `{typography.body-md}`(부모는 `{typography.body-strong}`)로 위계 차이를 표현. 모바일 하단 탭 바는 항목이 5개로 줄어 스크롤 없이 한 화면에 다 들어간다 — "인력관리" 탭은 누르면 하위 3개를 보여주는 서브 시트/드로어로 전환(하단 탭 바 자체에 2단 구조를 그대로 욱여넣지 않는다).
 - **`admin-bottom-tabs`** — `/admin` 모바일 전용, 유지. `{colors.canvas}` + 상단 hairline 보더. 활성 탭은 상단 `{colors.info}` 보더 + `{colors.info}` 텍스트.
 - **`app-nav`** — `/instructor`·`/member` 상단 바. `{colors.canvas}` + 하단 hairline 보더, 활성 항목 `{colors.info}` 텍스트.
 
