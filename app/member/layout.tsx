@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
+import { SignOutButton } from '@/components/ui/SignOutButton'
+
 const NAV_ITEMS = [
   { href: '/member', label: '시간표' },
   { href: '/member/bookings', label: '내 예약' },
@@ -33,6 +35,7 @@ export default function MemberLayout({ children }: { children: React.ReactNode }
             </Link>
           )
         })}
+        <SignOutButton className="ml-auto" />
       </nav>
       {children}
     </div>

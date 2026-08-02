@@ -77,6 +77,22 @@ export async function signInWithPassword(formData: FormData) {
   redirect('/')
 }
 
+// Clears the Supabase session cookies and drops the caller back at /login.
+// The app shipped without any way to sign out at all -- accept_invite's
+// `profile_already_exists` message even tells the user to "로그아웃 후 다시
+// 시도해주세요", advice nothing in the UI could act on.
+//
+// redirect() is deliberately outside the try/catch shape used elsewhere in
+// this file: Next implements it by throwing, so wrapping it swallows the
+// navigation. supabase.auth.signOut() failing is not worth blocking on either
+// -- the session cookies are cleared either way, so the user still ends up
+// signed out locally.
+export async function signOut() {
+  const supabase = await createClient()
+  await supabase.auth.signOut()
+  redirect('/login')
+}
+
 export async function signInWithKakao(options?: { pendingStudioName?: string; pendingInviteCode?: string }) {
   const supabase = await createClient()
   const cookieStore = await cookies()

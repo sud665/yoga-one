@@ -87,3 +87,28 @@ test('an owner assigned as a session instructor can reach /instructor and mark a
   await page.getByRole('button', { name: '출석' }).click()
   await expect(page.getByText('원장강사 회원 · attended')).toBeVisible()
 })
+
+// Sign-out shipped late: the app had none at all, while accept_invite's
+// `profile_already_exists` message told users to "로그아웃 후 다시 시도해주세요"
+// -- advice nothing in the UI could act on. This covers the whole loop rather
+// than the button's presence, since a control that clears the cookie but
+// leaves the session usable would still pass a render-only assertion.
+test('signing out clears the session and protects the previous route', async ({ page }) => {
+  const email = `signout-${Date.now()}@test.local`
+
+  await page.goto('/signup')
+  await page.getByPlaceholder('요가원 이름').fill('로그아웃 테스트 요가원')
+  await page.getByPlaceholder('이름', { exact: true }).fill('로그아웃 원장')
+  await page.getByPlaceholder('이메일').fill(email)
+  await page.getByPlaceholder('비밀번호').fill('test-password-123')
+  await page.getByRole('button', { name: '가입하기' }).click()
+  await expect(page).toHaveURL(/\/admin/)
+
+  await page.getByRole('button', { name: '로그아웃' }).click()
+  await expect(page).toHaveURL(/\/login/)
+
+  // Back to an authenticated route: middleware must bounce it, proving the
+  // session is actually gone rather than just navigated away from.
+  await page.goto('/admin')
+  await expect(page).toHaveURL(/\/login/)
+})

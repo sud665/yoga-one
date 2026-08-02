@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cx } from '@/components/ui/utils'
+import { SignOutButton } from '@/components/ui/SignOutButton'
 
 // DESIGN.md "2단 구조(신규)": 7 flat items -> 5 top-level items, with
 // 강사관리/회원관리/초대관리 folded under a single "인력관리" parent. Every
@@ -84,6 +85,9 @@ function DesktopSidebar({ pathname }: { pathname: string }) {
           <SidebarLeaf key={item.href} item={item} active={isActiveHref(pathname, item.href)} />
         )
       )}
+      {/* Pushed to the bottom of the sidebar, away from the navigation items:
+          signing out is an exit, not a destination. */}
+      <SignOutButton className="mt-auto px-3 pt-4" />
     </nav>
   )
 }
