@@ -2,9 +2,15 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { listUpcomingSessionsWithBookingState, bookSession } from '@/lib/actions/bookings'
+import { Button } from '@/components/ui/Button'
+import { StatusBadge } from '@/components/ui/Badge'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 export default function MemberSchedulePage() {
-  const [sessions, setSessions] = useState<Awaited<ReturnType<typeof listUpcomingSessionsWithBookingState>>>([])
+  const [sessions, setSessions] = useState<Awaited<ReturnType<typeof listUpcomingSessionsWithBookingState>> | null>(
+    null
+  )
   const [message, setMessage] = useState<string | null>(null)
   const [messageTone, setMessageTone] = useState<'success' | 'error'>('success')
 
@@ -31,49 +37,56 @@ export default function MemberSchedulePage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-12">
-      <h1 className="mb-8 text-3xl font-medium text-black">시간표</h1>
+      <h1 className="mb-8 text-heading-lg text-ink">시간표</h1>
 
       {message && (
         <p
           role="status"
-          className={`mb-6 rounded-2xl px-4 py-3 text-sm font-medium ${
-            messageTone === 'error' ? 'bg-zinc-100 text-[#d30005]' : 'bg-zinc-100 text-[#007d48]'
+          className={`mb-6 rounded-card px-4 py-3 text-body-strong ${
+            messageTone === 'error' ? 'bg-danger-tint text-danger' : 'bg-success-tint text-success'
           }`}
         >
           {message}
         </p>
       )}
 
-      <ul className="flex flex-col">
-        {sessions.map((s) => (
-          <li
-            key={s.id}
-            className="flex flex-wrap items-center justify-between gap-3 border-t border-zinc-200 py-4 first:border-t-0"
-          >
-            <div className="text-sm text-black">
-              <span className="font-medium">
-                {s.date} · {s.title}
-              </span>
-              <span className="text-zinc-500">
-                {' '}
-                · {s.instructorName} · {s.bookedCount}/{s.capacity}
-              </span>
-              {s.isFull && !s.myStatus && <span className="ml-2 text-xs font-medium text-[#d30005]">마감</span>}
-            </div>
+      {sessions === null ? (
+        <div className="flex flex-col gap-3">
+          <Skeleton variant="block" className="h-16" />
+          <Skeleton variant="block" className="h-16" />
+          <Skeleton variant="block" className="h-16" />
+        </div>
+      ) : sessions.length === 0 ? (
+        <EmptyState title="예정된 수업이 없습니다" description="새로운 시간표가 등록되면 여기에 표시됩니다." />
+      ) : (
+        <ul className="flex flex-col">
+          {sessions.map((s) => (
+            <li
+              key={s.id}
+              className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline py-4 first:border-t-0"
+            >
+              <div className="text-body-md text-ink">
+                <span className="text-body-strong">
+                  {s.date} · {s.title}
+                </span>
+                <span className="text-muted">
+                  {' '}
+                  · {s.instructorName} · {s.bookedCount}/{s.capacity}
+                </span>
+                {s.isFull && !s.myStatus && (
+                  <StatusBadge tone="danger" className="ml-2">
+                    마감
+                  </StatusBadge>
+                )}
+              </div>
 
-            {s.myStatus === 'booked' && <span className="text-sm font-medium text-[#007d48]">예약완료</span>}
-            {s.myStatus === 'waitlisted' && <span className="text-sm font-medium text-zinc-500">대기중</span>}
-            {!s.myStatus && (
-              <button
-                onClick={() => handleBook(s.id)}
-                className="rounded-full bg-black px-6 py-2 text-sm font-medium text-white transition hover:bg-zinc-800"
-              >
-                {s.isFull ? '대기 등록' : '예약하기'}
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+              {s.myStatus === 'booked' && <StatusBadge tone="success">예약완료</StatusBadge>}
+              {s.myStatus === 'waitlisted' && <StatusBadge tone="waitlisted">대기중</StatusBadge>}
+              {!s.myStatus && <Button onClick={() => handleBook(s.id)}>{s.isFull ? '대기 등록' : '예약하기'}</Button>}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
