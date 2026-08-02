@@ -6,6 +6,8 @@ import { revalidatePath } from 'next/cache'
 export type MemberScheduleSession = {
   id: string
   date: string
+  /** 'HH:MM'. Trimmed here so no consumer has to re-derive it. */
+  startTime: string
   title: string
   instructorName: string
   capacity: number
@@ -29,6 +31,12 @@ export async function listUpcomingSessionsWithBookingState(): Promise<MemberSche
   return sessions.map((s) => ({
     id: s.id,
     date: s.date,
+    // start_time lives on class_templates, not class_sessions, so it reaches
+    // this screen only because migration 20260802000000 added it to the RPC's
+    // return table -- and this RPC is the only permitted read path here (see
+    // the comment above). Postgres `time` serializes as 'HH:MM:SS'; sliced
+    // once at the data layer, same as listTemplatesWithUpcomingSessions does.
+    startTime: s.start_time.slice(0, 5),
     title: s.title,
     instructorName: s.instructor_name,
     capacity: s.capacity,

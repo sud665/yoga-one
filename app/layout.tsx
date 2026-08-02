@@ -24,7 +24,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#181d26",
+  // Matches --color-brand-deep and public/manifest.json's theme_color: this
+  // tints the browser/OS chrome around an installed PWA, so all three have
+  // to agree or the app frame and the app disagree on what color it is.
+  themeColor: "#4f6d55",
 };
 
 export default function RootLayout({

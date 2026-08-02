@@ -67,7 +67,7 @@ export default function MemberSchedulePage() {
             >
               <div className="text-body-md text-ink">
                 <span className="text-body-strong">
-                  {s.date} · {s.title}
+                  {s.date} {s.startTime} · {s.title}
                 </span>
                 <span className="text-muted">
                   {' '}

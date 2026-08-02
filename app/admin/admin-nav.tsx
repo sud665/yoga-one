@@ -67,8 +67,8 @@ export function AdminNav() {
 // ---- Desktop/tablet (DESIGN.md: 768px+) --------------------------------
 // Persistent 240px left sidebar, never collapsed/toggled at the top level
 // (only the 인력관리 parent itself expands/collapses). DESIGN.md
-// `admin-sidebar-item-active`: info-tint background + 4px info left border
-// + info text -- adapted here as border-l-4 + rounded-r-card (rounding only
+// `admin-sidebar-item-active`: brand-tint background + 4px brand-deep left
+// border + brand-deep text -- adapted here as border-l-4 + rounded-r-card (rounding only
 // the right corners keeps the left accent reading as a flush vertical bar
 // instead of tracing the card curve on both ends).
 function DesktopSidebar({ pathname }: { pathname: string }) {
@@ -99,7 +99,7 @@ function SidebarLeaf({ item, active, indent = false }: { item: NavLeaf; active: 
         // DESIGN.md: 하위메뉴 항목은 부모보다 한 단계 들여쓰기, body-md로
         // (부모/최상위 항목은 body-strong으로) 위계 차이를 표현.
         indent ? 'pl-8 text-body-md' : 'pl-3 text-body-strong',
-        active ? 'border-info bg-info/[0.06] text-info' : 'border-transparent text-ink hover:bg-surface-soft'
+        active ? 'border-brand-deep bg-brand-tint text-brand-deep' : 'border-transparent text-ink hover:bg-surface-soft'
       )}
     >
       <Icon />
@@ -147,7 +147,7 @@ function SidebarParent({ item, pathname }: { item: NavParent; pathname: string }
           // Kept lit even while collapsed whenever a child route is active,
           // so collapsing the section manually while standing on e.g.
           // /admin/invites never leaves the sidebar with zero location cue.
-          isChildActive ? 'border-info bg-info/[0.06] text-info' : 'border-transparent text-ink hover:bg-surface-soft'
+          isChildActive ? 'border-brand-deep bg-brand-tint text-brand-deep' : 'border-transparent text-ink hover:bg-surface-soft'
         )}
       >
         <Icon />
@@ -210,7 +210,7 @@ function MobileTabBar({ pathname }: { pathname: string }) {
                 aria-expanded={sheetOpen}
                 className={cx(
                   'flex flex-1 flex-col items-center justify-center gap-1 border-t-2 px-2 text-utility-xs',
-                  isRosterActive ? 'border-info text-info' : 'border-transparent text-muted'
+                  isRosterActive ? 'border-brand-deep text-brand-deep' : 'border-transparent text-muted'
                 )}
               >
                 <Icon />
@@ -237,7 +237,7 @@ function MobileTabBar({ pathname }: { pathname: string }) {
               aria-current={active ? 'page' : undefined}
               className={cx(
                 'flex flex-1 flex-col items-center justify-center gap-1 border-t-2 px-2 text-utility-xs',
-                active ? 'border-info text-info' : 'border-transparent text-muted'
+                active ? 'border-brand-deep text-brand-deep' : 'border-transparent text-muted'
               )}
             >
               <Icon />
@@ -292,7 +292,7 @@ function RosterSheet({ item, pathname, onClose }: { item: NavParent; pathname: s
                 aria-current={active ? 'page' : undefined}
                 className={cx(
                   'flex items-center gap-3 rounded-input px-3 py-3 text-body-strong transition-colors',
-                  active ? 'bg-info-tint text-info' : 'text-ink hover:bg-surface-soft'
+                  active ? 'bg-brand-tint text-brand-deep' : 'text-ink hover:bg-surface-soft'
                 )}
               >
                 <Icon />

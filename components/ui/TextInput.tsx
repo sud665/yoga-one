@@ -27,7 +27,7 @@ export type TextInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, '
 // center single-line text at a fixed height -- more robust across browsers
 // than tuning line-height to exactly fill the box.
 const FIELD_CLASSES =
-  'flex h-11 w-full items-center rounded-input border border-hairline bg-canvas px-3.5 text-body-md text-ink placeholder:text-muted transition-colors duration-150 focus:border-info focus:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+  'flex h-11 w-full items-center rounded-input border border-hairline bg-canvas px-3.5 text-body-md text-ink placeholder:text-muted transition-colors duration-150 focus:border-brand-deep focus:outline-none disabled:cursor-not-allowed disabled:opacity-50'
 
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(function TextInput(
   { className, ...rest },

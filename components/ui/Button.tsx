@@ -32,10 +32,11 @@ type ButtonAsLinkProps = CommonProps &
 export type ButtonProps = ButtonAsButtonProps | ButtonAsLinkProps
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: 'bg-ink text-on-ink hover:bg-ink-active',
+  // Sage pass: the primary CTA is the brand surface now, not a near-black
+  // block. brand-deep rather than brand because white text sits on it.
+  primary: 'bg-brand-deep text-on-brand hover:bg-brand-pressed',
   // DESIGN.md button-secondary: canvas background + hairline border, ink
-  // text -- Airtable's signature near-black-primary/white-outline-secondary
-  // pair, carried over verbatim.
+  // text -- the restrained outline counterpart to the filled primary.
   secondary: 'border border-hairline bg-canvas text-ink hover:bg-surface-soft',
   // DESIGN.md button-danger: canvas background, danger-colored text AND
   // border (not a filled red button) -- a destructive action is never one

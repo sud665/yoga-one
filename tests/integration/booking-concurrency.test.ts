@@ -5,7 +5,11 @@ import { describe, it, expect, beforeAll } from 'vitest'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// Same publishable-then-legacy-anon fallback as lib/supabase/env.ts. Spelled
+// out rather than imported because this file loads .env.local itself, before
+// any app module is pulled in.
+const ANON_KEY = (process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)!
 const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
 // Unique per run so `npm run test:integration` can be re-run without an

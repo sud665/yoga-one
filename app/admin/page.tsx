@@ -52,7 +52,7 @@ export default function AdminDashboardPage() {
       {/* DESIGN.md `dashboard-summary-card` -- ink 배경 + on-ink 텍스트 +
           heading-lg급 숫자(card-ink 컴포넌트의 명시 타이포그래피). 이전에는
           페이지마다 `rounded-none bg-black`을 직접 반복했는데, 이제
-          Card(variant="ink")로 대체해 다른 화면도 같은 요약카드를 재사용할
+          Card(variant="brand")로 대체해 다른 화면도 같은 요약카드를 재사용할
           수 있다. rounded-card가 적용되어 완전 각진 처리 대신 14px 라운드를
           쓴다. */}
       <div className="flex flex-col gap-4 sm:flex-row" aria-live="polite">
@@ -63,13 +63,19 @@ export default function AdminDashboardPage() {
           </>
         ) : (
           <>
-            <Card variant="ink" className="flex-1">
-              <p className="text-caption text-on-ink/70">오늘 수업</p>
+            {/* Only the first stat gets the brand fill. Two filled blocks
+                side by side spend the screen's whole voltage budget on a
+                pair of numbers and leave neither looking primary --
+                DESIGN.md's "전압은 희소해야 신호가 된다". Today's class
+                count is what an owner opens this page for; the waitlist
+                count is context. */}
+            <Card variant="brand" className="flex-1">
+              <p className="text-caption text-on-brand/70">오늘 수업</p>
               <p className="text-heading-lg">{summary.todaySessionCount}건</p>
             </Card>
-            <Card variant="ink" className="flex-1">
-              <p className="text-caption text-on-ink/70">대기중인 예약</p>
-              <p className="text-heading-lg">{summary.waitlistedCount}건</p>
+            <Card className="flex-1">
+              <p className="text-caption text-muted">대기중인 예약</p>
+              <p className="text-heading-lg text-ink">{summary.waitlistedCount}건</p>
             </Card>
           </>
         )}

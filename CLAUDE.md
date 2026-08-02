@@ -67,6 +67,27 @@ Each of these caused a real bug that shipped and had to be fixed. They are not s
 - **`dev`/`build` must keep the `--webpack` flag in `package.json`.** `@serwist/next` (PWA service worker) works only by injecting a webpack plugin into `next.config.ts`'s `webpack` hook. Next 16 defaults to Turbopack and `process.exit(1)`s the moment it sees a `webpack` config with no matching `turbopack` config — the failure is an opaque `Error: Call retries were exceeded { type: 'WorkerError' }` that mentions neither Serwist nor webpack. `turbopack: {}` / `--turbopack` silence the crash but skip service-worker generation entirely (`/sw.js` 404s, `tests/e2e/pwa-installability.spec.ts` fails). Serwist's `disable` option doesn't help either — the `webpack` key is attached to the Next config unconditionally, before `disable` is ever checked.
 - **Serwist's `defaultCache` (`app/sw.ts`) is safe only because every read currently goes through POST Server Actions.** Its routes are GET-only `NetworkFirst`/cross-origin caching into Cache Storage, which survives sign-out. Fine today (no `/api/*` routes, no client-side Supabase GET reads, dashboards are static shells). The moment a future task adds a GET `/api/*` route or a client-side Supabase read, tenant-scoped data can land in that shared cache — re-check `app/sw.ts`'s caching rules at that point.
 
+## Design system
+
+`DESIGN.md` is the source of truth and `app/globals.css`'s `@theme` block is its 1:1 implementation — change the doc first, then the tokens. Read it before building UI.
+
+Current state (third pass, "sage"): warm canvas `#fbfaf7`, moss-undertoned ink `#1e221c`, and sage green as the single brand accent. `brand-deep` (`#4f6d55`) is the one to reach for — it carries the primary CTA fill, links, active nav, and focus rings, and it is the only sage value with enough contrast for text. Plain `brand` (`#6b8f71`) is decorative fills and icons only.
+
+Two traps in that palette:
+
+- **`success` and `success-tint` resolve to the brand values on purpose.** A confirmed booking *is* the brand moment, and a second, differently-hued green beside sage only reads as a mistake. Keep using the `success` names where the meaning is "this worked" — don't collapse them into `brand`.
+- **`info` is legacy.** It lost the accent job to brand and survives only for genuinely informational messaging (`Toast`'s `info` tone). Never reach for it when styling a new screen.
+
+Structural rules that predate the palette and still hold: hairline borders instead of shadows (there are zero shadows in the system), no font weight above 500, `rounded-full` reserved for badges/chips/avatars rather than CTAs, and at most one or two "voltage" surfaces (`Card variant="brand"`, primary buttons) per screen.
+
+## Environment
+
+`lib/supabase/env.ts` is the only place that reads the public Supabase variables. It prefers `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (Supabase's current `sb_publishable_...` format) and falls back to the legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and it throws a message naming the missing variable rather than passing `undefined` into supabase-js. Add new reads there, not inline `process.env.X!`.
+
 ## Working documents
 
-`docs/superpowers/specs/` holds the approved design spec; `docs/superpowers/plans/` holds the task-by-task implementation plan being executed. `DESIGN.md` is the visual design system (Nike-derived structure adapted for this app — black/white/single-gray, pill CTAs, flat cards, 8px grid, Bebas Neue + Inter). Read `DESIGN.md` before building UI.
+`docs/superpowers/specs/` holds the approved design spec; `docs/superpowers/plans/` holds the task-by-task implementation plan that was executed.
+
+`.worktrees/` holds a second checkout of this same project, left from the implementation phase and now fully merged into `main`. It is excluded from `vitest.config.ts` and `eslint.config.mjs` explicitly: both configs' other ignore patterns are root-anchored, so without those entries Vitest collects its Playwright specs (18 failures reading "Playwright Test did not expect test() to be called here") and ESLint lints its build output (thousands of errors in files nobody wrote). Add the same exclusion to any new tool config.
+
+An alternative Expo/React Native client lives on the `expo-native-app` branch, verified end-to-end against this same backend. It exists in case store distribution is ever needed; nothing on `main` depends on it.

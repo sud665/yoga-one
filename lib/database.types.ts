@@ -417,6 +417,7 @@ export type Database = {
           id: string
           instructor_name: string
           my_status: string
+          start_time: string
           title: string
         }[]
       }

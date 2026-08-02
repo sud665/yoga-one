@@ -44,25 +44,54 @@
 }
 
 @theme {
-  /* ---- Color -- DESIGN.md `colors` ---------------------------------- */
-  --color-ink: #181d26;
-  --color-ink-active: #0d1218;
+  /* ---- Color -- DESIGN.md `colors` ----------------------------------
+     Sage pass (this file's third rewrite). The Airtable-editorial values
+     above were pure white canvas + near-black ink + a blue interactive
+     accent, which read as an admin tool rather than something a member
+     would open daily -- the reason DESIGN.md was revised. Three changes,
+     and only these three: the canvas warms, ink picks up a moss undertone
+     so it sits in the same temperature as the rest, and the single
+     interactive accent moves from blue to sage. Every structural rule
+     (hairline borders, zero shadows, no weight above 500, one or two
+     "voltage" surfaces per screen) is unchanged.
+
+     brand vs brand-deep is a contrast split, not a preference: #6B8F71 on
+     canvas is ~2.6:1, too low for text or for white-on-sage, so it is
+     restricted to decorative fills and icons. Anything carrying text --
+     the primary CTA's background, links, active nav -- uses brand-deep
+     (~5.4:1 on canvas, ~4.9:1 under white text). */
+  --color-brand: #6b8f71;
+  --color-brand-deep: #4f6d55;
+  --color-brand-pressed: #405c46;
+  --color-brand-tint: #e8f0e9;
+  --color-on-brand: #ffffff;
+
+  --color-ink: #1e221c;
   --color-on-ink: #ffffff;
-  --color-canvas: #ffffff;
-  --color-surface-soft: #f8fafc;
-  --color-surface-strong: #e0e2e6;
-  --color-body: #333840;
-  --color-muted: #71757c;
-  --color-hairline: #dddddd;
-  --color-hairline-soft: #eeeeee;
+  --color-canvas: #fbfaf7;
+  --color-surface-soft: #f6f3ec;
+  --color-surface-strong: #e3e1d8;
+  --color-body: #3a4038;
+  --color-muted: #6f746a;
+  --color-hairline: #e1ded4;
+  --color-hairline-soft: #edeae1;
   --color-danger: #aa2d00;
   --color-danger-deep: #7a2000;
   --color-danger-tint: #f6e8e3;
-  --color-success: #0b6b1f;
-  --color-success-deep: #084f17;
-  --color-success-tint: #e7f3e8;
+  /* success resolves to the brand values on purpose (DESIGN.md Semantic):
+     a confirmed booking or a present student IS the brand moment, and a
+     second, differently-hued green next to sage only reads as a mismatch.
+     Kept as its own token name so `bg-success-tint text-success` call
+     sites still say what they mean. --color-success-deep is gone: it had
+     no consumers, and a darker shade of an already-dark green has no role
+     in a system whose only pressed state is the CTA's. */
+  --color-success: #4f6d55;
+  --color-success-tint: #e8f0e9;
+  /* info is now legacy: it lost the focus-ring/link/active-state job to
+     brand and survives only for genuinely informational messaging (Toast's
+     `info` tone). Do not reach for it when styling a new screen.
+     --color-info-deep dropped alongside success-deep, same reason. */
   --color-info: #1b61c9;
-  --color-info-deep: #1a3866;
   --color-info-tint: #e8f0fc;
   --color-tag-peach: #fcab79;
   --color-tag-mint: #a8d8c4;
@@ -184,12 +213,10 @@
 }
 
 :root {
-  --background: #ffffff;
-  /* Realigned to the new DESIGN.md ink (#181d26, was #111111). Only affects
-     app/page.tsx's bg-foreground/text-background utilities (an unreachable
-     scaffold page, out of this pass's real scope) -- kept in sync anyway
-     since it's a pure token-value fix with no structural change. */
-  --foreground: #181d26;
+  /* Kept in step with --color-canvas/--color-ink above. These two drive
+     <body> and app/page.tsx's bg-foreground/text-background utilities. */
+  --background: #fbfaf7;
+  --foreground: #1e221c;
 }
 
 @theme inline {
@@ -224,18 +251,17 @@ body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* info (#1b61c9) as the system's one interactive accent -- focus rings,
-   links, active nav state -- never a filled CTA background (DESIGN.md's own
-   "Do" list: "정보 색은 포커스 링·링크·활성 상태에만"). A global
-   :focus-visible rule is the clearest expression of that: every interactive
-   element gets a consistent keyboard-focus indicator independent of which
-   component it's built from. This adds an outline on top of whatever a
-   given element already does on focus -- it does not remove or fight any
-   existing focus treatment (e.g. text-input's own `focus:border-info`,
-   which changes the border color rather than the outline). */
+/* brand-deep is the system's one interactive accent -- focus rings, links,
+   active nav state -- and now also the primary CTA's fill, which is where
+   this system departs from the blue-accent version it replaces (blue was
+   explicitly barred from filled backgrounds; sage is the brand, so it
+   isn't). A global :focus-visible rule keeps the keyboard indicator
+   identical no matter which component an element came from. It layers an
+   outline on top of whatever a control already does on focus rather than
+   replacing it -- TextInput, for instance, also swaps its border color. */
 @layer base {
   :focus-visible {
-    outline: 2px solid var(--color-info);
+    outline: 2px solid var(--color-brand-deep);
     outline-offset: 2px;
     border-radius: 2px;
   }

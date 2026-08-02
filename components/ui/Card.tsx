@@ -3,7 +3,7 @@ import { cx } from './utils'
 // DESIGN.md `card`/`card-ink`: hairline border + rounded-card (14px) is the
 // system's primary structural device now ("헤어라인이 먼저, 그림자는 없음")
 // -- there is no drop-shadow variant anywhere in this system, by design.
-export type CardVariant = 'default' | 'soft' | 'ink'
+export type CardVariant = 'default' | 'soft' | 'brand'
 export type CardPadding = 'sm' | 'md' | 'lg'
 
 export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'className'> {
@@ -19,10 +19,12 @@ const VARIANT_CLASSES: Record<CardVariant, string> = {
   // Recessed panel, no border needed -- surface-soft already reads as a
   // step back from canvas.
   soft: 'bg-surface-soft text-ink',
-  // DESIGN.md `card-ink`: ink background, on-ink text -- the system's one
-  // "voltage" surface (DESIGN.md: "화면당 최대 1-2개 -- 전압은 희소해야
-  // 신호가 된다"), used sparingly for e.g. the dashboard's summary stats.
-  ink: 'bg-ink text-on-ink',
+  // DESIGN.md `card-brand`: the system's one "voltage" surface (DESIGN.md:
+  // "화면당 최대 1-2개 -- 전압은 희소해야 신호가 된다"), used sparingly for
+  // e.g. the dashboard's summary stats. Sage pass renamed this from `ink`
+  // along with the fill it names -- the heaviest surface on a screen is now
+  // the brand rather than near-black.
+  brand: 'bg-brand-deep text-on-brand',
 }
 
 const PADDING_CLASSES: Record<CardPadding, string> = {
