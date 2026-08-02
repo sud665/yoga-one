@@ -15,5 +15,7 @@ test('owner can issue an instructor invite link', async ({ page }) => {
   await page.getByRole('button', { name: '강사 초대 링크 발급' }).click()
 
   await expect(page.getByText(/발급된 링크/)).toBeVisible()
-  await expect(page.getByRole('listitem').first()).toContainText('instructor')
+  // The row leads with the Korean role label now; the raw enum no longer
+  // renders anywhere on this screen.
+  await expect(page.getByRole('listitem').first()).toContainText('강사 초대')
 })

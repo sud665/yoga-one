@@ -35,10 +35,24 @@ export default function SchedulePage() {
       ) : data.templates.length === 0 ? (
         <EmptyState title="등록된 시간표가 없습니다" description="위 양식으로 반복 시간표를 추가해보세요." />
       ) : (
+        // Row anatomy: the class name leads (it is what an owner recognizes),
+        // the recurrence rule sits under it as metadata, capacity keeps the
+        // right edge. The dot-separated sentence this replaces made the six
+        // e2e specs read it verbatim; they now assert the name and the rule
+        // separately, which is also closer to what they actually verify.
         <ul className="flex flex-col">
           {data.templates.map((t) => (
-            <li key={t.id} className="border-t border-hairline py-4 text-body-md text-ink first:border-t-0">
-              {t.dayLabel}요일 {t.start_time} · {t.title} · {t.instructor?.full_name} · 정원 {t.capacity}
+            <li
+              key={t.id}
+              className="flex flex-wrap items-center justify-between gap-2 border-t border-hairline py-4 first:border-t-0"
+            >
+              <div>
+                <p className="text-body-strong text-ink">{t.title}</p>
+                <p className="mt-0.5 text-caption text-muted">
+                  매주 {t.dayLabel}요일 {t.start_time} · {t.instructor?.full_name}
+                </p>
+              </div>
+              <span className="text-caption text-muted">정원 {t.capacity}명</span>
             </li>
           ))}
         </ul>

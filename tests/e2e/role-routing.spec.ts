@@ -52,7 +52,11 @@ test('an owner assigned as a session instructor can reach /instructor and mark a
   await page.locator('input[name="startTime"]').fill('09:00')
   await page.getByPlaceholder('정원').fill('10')
   await page.getByRole('button', { name: '시간표 추가' }).click()
-  await expect(page.getByText('월요일 09:00 · Owner Taught Class')).toBeVisible()
+  // The template row now leads with the class name and keeps the
+  // recurrence rule as metadata beneath it, so the two are asserted
+  // separately -- which is what this check always meant.
+  await expect(page.getByText('Owner Taught Class', { exact: true })).toBeVisible()
+  await expect(page.getByText(/매주 월요일 09:00/).first()).toBeVisible()
 
   // The routing gap under test: previously any owner-role profile was
   // confined to /admin regardless of instructor_id assignment.
@@ -83,9 +87,13 @@ test('an owner assigned as a session instructor can reach /instructor and mark a
   // instructor/member page in this codebase) to see the now-booked session
   // and marks attendance -- as the owner, via the instructor UI.
   await page.goto('/instructor')
-  await expect(page.getByText('원장강사 회원 · booked')).toBeVisible()
+  // Raw enum removed from the roster row -- the name plus the marking
+  // button is what "booked" looks like now.
+  await expect(page.getByText('원장강사 회원', { exact: true })).toBeVisible()
   await page.getByRole('button', { name: '출석' }).click()
-  await expect(page.getByText('원장강사 회원 · attended')).toBeVisible()
+  await expect(
+    page.getByText('원장강사 회원', { exact: true }).locator('..').getByText('출석', { exact: true })
+  ).toBeVisible()
 })
 
 // Sign-out shipped late: the app had none at all, while accept_invite's

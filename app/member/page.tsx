@@ -4,10 +4,12 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { listUpcomingSessionsWithBookingState, bookSession } from '@/lib/actions/bookings'
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/Badge'
+import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { PeriodFilter } from '@/components/ui/PeriodFilter'
 import { usePeriodFilter } from '@/lib/use-period-filter'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { SignOutFooter } from '@/components/ui/SignOutButton'
 
 export default function MemberSchedulePage() {
   const [sessions, setSessions] = useState<Awaited<ReturnType<typeof listUpcomingSessionsWithBookingState>> | null>(
@@ -87,34 +89,48 @@ export default function MemberSchedulePage() {
       ) : visible.length === 0 ? (
         <EmptyState title="이 기간에는 수업이 없습니다" description="기간을 넓히거나 다른 기간을 확인해보세요." />
       ) : (
-        <ul className="flex flex-col">
+        // One card per session, split by what a member decides with: the top
+        // row is identity (name of the class, and my status if I have one),
+        // the middle is logistics in reading order (when, who, how full), and
+        // the action sits on its own row at full tap width. The previous
+        // single line buried "언제" inside a dot-separated sentence and left
+        // the button competing with text for the same row.
+        <ul className="flex flex-col gap-3">
           {visible.map((s) => (
-            <li
-              key={s.id}
-              className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline py-4 first:border-t-0"
-            >
-              <div className="text-body-md text-ink">
-                <span className="text-body-strong">
-                  {s.date} {s.startTime} · {s.title}
-                </span>
-                <span className="text-muted">
-                  {' '}
-                  · {s.instructorName} · {s.bookedCount}/{s.capacity}
-                </span>
-                {s.isFull && !s.myStatus && (
-                  <StatusBadge tone="danger" className="ml-2">
-                    마감
-                  </StatusBadge>
-                )}
-              </div>
+            <li key={s.id}>
+              <Card className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-heading-md text-ink">{s.title}</span>
+                  {s.myStatus === 'booked' && <StatusBadge tone="success">예약완료</StatusBadge>}
+                  {s.myStatus === 'waitlisted' && <StatusBadge tone="waitlisted">대기중</StatusBadge>}
+                  {!s.myStatus && s.isFull && <StatusBadge tone="danger">마감</StatusBadge>}
+                </div>
 
-              {s.myStatus === 'booked' && <StatusBadge tone="success">예약완료</StatusBadge>}
-              {s.myStatus === 'waitlisted' && <StatusBadge tone="waitlisted">대기중</StatusBadge>}
-              {!s.myStatus && <Button onClick={() => handleBook(s.id)}>{s.isFull ? '대기 등록' : '예약하기'}</Button>}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-muted">
+                  <span className="text-body-strong text-ink">
+                    {s.date} {s.startTime}
+                  </span>
+                  <span>{s.instructorName}</span>
+                  <span>
+                    {s.bookedCount}/{s.capacity}명
+                  </span>
+                </div>
+
+                {!s.myStatus && (
+                  <Button
+                    variant={s.isFull ? 'secondary' : 'primary'}
+                    className="mt-1 w-full"
+                    onClick={() => handleBook(s.id)}
+                  >
+                    {s.isFull ? '대기 등록' : '예약하기'}
+                  </Button>
+                )}
+              </Card>
             </li>
           ))}
         </ul>
       )}
+      <SignOutFooter />
     </div>
   )
 }

@@ -75,7 +75,11 @@ test('instructor can view booked members for their own session and mark attendan
   await page.locator('input[name="startTime"]').fill('09:00')
   await page.getByPlaceholder('정원').fill('10')
   await page.getByRole('button', { name: '시간표 추가' }).click()
-  await expect(page.getByText('월요일 09:00 · Attendance Class')).toBeVisible()
+  // The template row now leads with the class name and keeps the
+  // recurrence rule as metadata beneath it, so the two are asserted
+  // separately -- which is what this check always meant.
+  await expect(page.getByText('Attendance Class', { exact: true })).toBeVisible()
+  await expect(page.getByText(/매주 월요일 09:00/).first()).toBeVisible()
 
   // Member books the generated session.
   await page.goto('/admin/invites')
@@ -108,7 +112,11 @@ test('instructor can view booked members for their own session and mark attendan
   // which is only possible because the RLS policy scopes visibility by session ownership
   // (s.instructor_id = auth.uid()), not by the row's own member_id.
   await instructorPage.goto('/instructor')
-  await expect(instructorPage.getByText('출석 회원 · booked')).toBeVisible()
+  // Raw enum removed from the roster row -- presence of the name plus the
+  // marking button is what "booked" looks like now.
+  await expect(instructorPage.getByText('출석 회원', { exact: true })).toBeVisible()
   await instructorPage.getByRole('button', { name: '출석' }).click()
-  await expect(instructorPage.getByText('출석 회원 · attended')).toBeVisible()
+  await expect(
+    instructorPage.getByText('출석 회원', { exact: true }).locator('..').getByText('출석', { exact: true })
+  ).toBeVisible()
 })

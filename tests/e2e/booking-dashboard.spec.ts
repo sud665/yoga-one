@@ -24,7 +24,11 @@ test('owner sees booked and waitlisted members grouped per session', async ({ pa
   // Wait for the template list to actually render before moving on -- confirms
   // createClassTemplate's generate_sessions_for_template RPC has committed, so the
   // session the member books further down is guaranteed to already exist.
-  await expect(page.getByText('월요일 09:00 · Dashboard Class')).toBeVisible()
+  // The template row now leads with the class name and keeps the
+  // recurrence rule as metadata beneath it, so the two are asserted
+  // separately -- which is what this check always meant.
+  await expect(page.getByText('Dashboard Class', { exact: true })).toBeVisible()
+  await expect(page.getByText(/매주 월요일 09:00/).first()).toBeVisible()
 
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '회원 초대 링크 발급' }).click()
@@ -60,5 +64,7 @@ test('owner sees booked and waitlisted members grouped per session', async ({ pa
   await expect(member.getByText('예약이 확정되었습니다.')).toBeVisible()
 
   await page.goto('/admin/bookings')
-  await expect(page.getByText(/예약: 대시보드 회원/)).toBeVisible()
+  await expect(
+    page.locator('[data-roster="booked"]').filter({ hasText: '대시보드 회원' })
+  ).toBeVisible()
 })

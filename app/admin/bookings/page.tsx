@@ -4,6 +4,8 @@ import { useState, useEffect, useMemo } from 'react'
 import { listSessionsWithRoster } from '@/lib/actions/dashboard'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { Card } from '@/components/ui/Card'
+import { StatusBadge } from '@/components/ui/Badge'
 import { PeriodFilter } from '@/components/ui/PeriodFilter'
 import { usePeriodFilter } from '@/lib/use-period-filter'
 
@@ -58,16 +60,67 @@ export default function BookingsDashboardPage() {
         // widening the filter rather than creating a schedule.
         <EmptyState title="이 기간에는 세션이 없습니다" description="기간을 넓히거나 다른 기간을 확인해보세요." />
       ) : (
-        visible.map((s) => (
-          <section key={s.id} className="mb-10">
-            <h2 className="mb-2 text-heading-md text-ink">
-              {s.date} · {s.title} · {s.instructorName} · {s.booked.length}/{s.capacity}
-            </h2>
-            <p className="text-body-md text-ink">예약: {s.booked.map((b) => b.member?.full_name).join(', ') || '없음'}</p>
-            <p className="text-body-md text-muted">
-              대기: {s.waitlisted.map((b) => b.member?.full_name).join(', ') || '없음'}
-            </p>
-          </section>
+        // One card per session, structured by what an owner actually scans
+        // for: the title line answers "which class", the capacity badge
+        // answers "is it filling" without reading a number sentence, and the
+        // rosters render as name chips -- countable at a glance, where a
+        // comma-joined sentence made four names and one name look alike.
+        <div className="flex flex-col gap-4">
+          {visible.map((s) => {
+            const isFull = s.booked.length >= s.capacity
+            return (
+              <Card key={s.id} className="flex flex-col gap-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <h2 className="text-heading-md text-ink">{s.title}</h2>
+                  <StatusBadge tone={isFull ? 'danger' : 'success'}>
+                    {s.booked.length}/{s.capacity}
+                  </StatusBadge>
+                </div>
+                <p className="text-caption text-muted">
+                  {s.date}
+                  {s.startTime ? ` ${s.startTime}` : ''} · {s.instructorName}
+                </p>
+
+                <div className="flex flex-col gap-2 border-t border-hairline-soft pt-3">
+                  <RosterRow label="예약" names={s.booked.map((b) => b.member?.full_name)} />
+                  {/* The waitlist row only exists when someone is on it: an
+                      always-present "대기: 없음" is noise on every card to
+                      cover the rare card where it isn't. */}
+                  {s.waitlisted.length > 0 && (
+                    <RosterRow label="대기" names={s.waitlisted.map((b) => b.member?.full_name)} waitlisted />
+                  )}
+                </div>
+              </Card>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Label + name chips. Chips over a comma-joined sentence because a roster is
+// a set you count and scan for a name, not prose you read -- and an empty
+// set says so explicitly instead of rendering an empty sentence.
+function RosterRow({ label, names, waitlisted = false }: { label: string; names: (string | null | undefined)[]; waitlisted?: boolean }) {
+  return (
+    // data-roster: a structural hook for the e2e specs. They used to read the
+    // whole roster as one sentence; with chips, "find the booked row that
+    // contains this name" needs an anchor that isn't display text.
+    <div data-roster={waitlisted ? 'waitlisted' : 'booked'} className="flex flex-wrap items-center gap-1.5">
+      <span className="text-caption text-muted">{label}</span>
+      {names.length === 0 ? (
+        <span className="text-caption text-muted">없음</span>
+      ) : (
+        names.map((name, i) => (
+          <span
+            key={i}
+            className={`rounded-full px-2.5 py-0.5 text-caption ${
+              waitlisted ? 'bg-warning-tint text-warning' : 'bg-surface-soft text-ink'
+            }`}
+          >
+            {name ?? '?'}
+          </span>
         ))
       )}
     </div>

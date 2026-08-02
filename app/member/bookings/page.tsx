@@ -4,11 +4,13 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { listMyBookings, cancelBooking } from '@/lib/actions/bookings'
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/Badge'
+import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PeriodFilter } from '@/components/ui/PeriodFilter'
 import { usePeriodFilter } from '@/lib/use-period-filter'
 import { X } from 'lucide-react'
+import { SignOutFooter } from '@/components/ui/SignOutButton'
 
 export default function MyBookingsPage() {
   // `any[]`가 아니라 listMyBookings()의 실제 반환 타입을 그대로 사용한다 -- 이미
@@ -92,25 +94,31 @@ export default function MyBookingsPage() {
       ) : visible.length === 0 ? (
         <EmptyState title="이 기간에는 예약이 없습니다" description="기간을 넓히거나 다른 기간을 확인해보세요." />
       ) : (
-        <ul className="flex flex-col">
+        // Card per booking: name + my status on the identity row, date below,
+        // and cancel pushed to the right edge of its own row -- away from the
+        // title so a scroll-scan can't graze it.
+        <ul className="flex flex-col gap-3">
           {visible.map((b) => (
-            <li
-              key={b.id}
-              className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline py-4 text-body-md text-ink first:border-t-0"
-            >
-              <span className="inline-flex flex-wrap items-center gap-2">
-                {b.session?.date} · {b.session?.template?.title}
-                <StatusBadge tone={b.status === 'booked' ? 'success' : 'waitlisted'}>
-                  {b.status === 'booked' ? '예약완료' : '대기중'}
-                </StatusBadge>
-              </span>
-              <Button variant="secondary" icon={X} onClick={() => handleCancel(b.id)}>
-                취소
-              </Button>
+            <li key={b.id}>
+              <Card className="flex flex-col gap-2">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-heading-md text-ink">{b.session?.template?.title}</span>
+                  <StatusBadge tone={b.status === 'booked' ? 'success' : 'waitlisted'}>
+                    {b.status === 'booked' ? '예약완료' : '대기중'}
+                  </StatusBadge>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-body-strong text-ink">{b.session?.date}</span>
+                  <Button variant="secondary" icon={X} onClick={() => handleCancel(b.id)}>
+                    취소
+                  </Button>
+                </div>
+              </Card>
             </li>
           ))}
         </ul>
       )}
+      <SignOutFooter />
     </div>
   )
 }

@@ -91,7 +91,11 @@ test('full journey: onboarding through attendance', async ({ page, browser }) =>
   await page.locator('input[name="startTime"]').fill('09:00')
   await page.getByPlaceholder('정원').fill('1')
   await page.getByRole('button', { name: '시간표 추가' }).click()
-  await expect(page.getByText('월요일 09:00 · Full Flow Class')).toBeVisible()
+  // The template row now leads with the class name and keeps the
+  // recurrence rule as metadata beneath it, so the two are asserted
+  // separately -- which is what this check always meant.
+  await expect(page.getByText('Full Flow Class', { exact: true })).toBeVisible()
+  await expect(page.getByText(/매주 월요일 09:00/).first()).toBeVisible()
 
   // 4. 회원1 초대 발급 및 가입 -> 예약 (정원 1이므로 이 예약으로 세션이 마감된다).
   await page.goto('/admin/invites')
@@ -140,8 +144,14 @@ test('full journey: onboarding through attendance', async ({ page, browser }) =>
 
   // 6. 원장 대시보드에서 예약/대기 확인
   await page.goto('/admin/bookings')
-  await expect(page.getByText(/예약: 풀플로우 회원1/)).toBeVisible()
-  await expect(page.getByText(/대기: 풀플로우 회원2/)).toBeVisible()
+  // The roster renders as labeled chip rows now; data-roster scopes the
+  // lookup so multiple session cards can't make the label ambiguous.
+  await expect(
+    page.locator('[data-roster="booked"]').filter({ hasText: '풀플로우 회원1' })
+  ).toBeVisible()
+  await expect(
+    page.locator('[data-roster="waitlisted"]').filter({ hasText: '풀플로우 회원2' })
+  ).toBeVisible()
 
   // 7. member1 취소 -> member2 자동 승격
   await member1.goto('/member/bookings')
@@ -160,7 +170,11 @@ test('full journey: onboarding through attendance', async ({ page, browser }) =>
   // 인스트럭터 페이지도 마운트 시 한 번만 불러오므로, 승격 이후 상태를 보려면 다시 goto한다
   // (instructor-attendance.spec.ts와 동일한 이유).
   await instructorPage.goto('/instructor')
-  await expect(instructorPage.getByText('풀플로우 회원2 · booked')).toBeVisible()
+  // The raw enum no longer renders beside the name; a booked student shows
+  // the name with the attendance buttons still available.
+  await expect(instructorPage.getByText('풀플로우 회원2')).toBeVisible()
   await instructorPage.getByRole('button', { name: '출석' }).click()
-  await expect(instructorPage.getByText('풀플로우 회원2 · attended')).toBeVisible()
+  await expect(
+    instructorPage.getByText('풀플로우 회원2').locator('..').getByText('출석', { exact: true })
+  ).toBeVisible()
 })

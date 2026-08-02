@@ -4,22 +4,13 @@ import { useState, useEffect, useCallback, useMemo } from 'react'
 import { listMySessionsWithBookings, markAttendance } from '@/lib/actions/attendance'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { Card } from '@/components/ui/Card'
+import { StatusBadge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PeriodFilter } from '@/components/ui/PeriodFilter'
 import { usePeriodFilter } from '@/lib/use-period-filter'
 import { Check, X } from 'lucide-react'
-
-// b.status ('booked'/'attended'/'no_show') is rendered verbatim as the raw
-// enum value -- existing behavior, unchanged by this retoken pass (several
-// Playwright specs assert on e.g. getByText('출석 회원 · booked') literally).
-// One bundled typography class per branch (never two layered on the same
-// element -- text-body-strong/text-body-md each already bundle size + line
-// height + weight, so stacking both on one element would leave the cascade
-// order between them undefined).
-const STATUS_TEXT_CLASSES: Record<string, string> = {
-  attended: 'text-body-strong text-success',
-  no_show: 'text-body-strong text-muted',
-}
+import { SignOutFooter } from '@/components/ui/SignOutButton'
 
 export default function InstructorHomePage() {
   // `any[]`가 아니라 listMySessionsWithBookings()의 실제 반환 타입을 그대로 쓴다 --
@@ -79,20 +70,32 @@ export default function InstructorHomePage() {
         <EmptyState title="이 기간에는 수업이 없습니다" description="기간을 넓히거나 다른 기간을 확인해보세요." />
       ) : (
         visible.map((s) => (
-          <section key={s.id} className="mb-10">
-            <h2 className="mb-2 text-heading-md text-ink">
-              {s.date} · {s.template?.title}
-            </h2>
+          // Card per session: class name first (what an instructor looks
+          // for), date/time as metadata under it, then one row per student
+          // with the name on the left and either the attendance verdict or
+          // the two marking buttons on the right. The raw enum ('booked')
+          // that used to render beside each name is gone -- it was developer
+          // vocabulary in a teacher's roster; StatusBadge says it in words.
+          <Card key={s.id} className="mb-4 flex flex-col gap-3">
+            <div>
+              <h2 className="text-heading-md text-ink">{s.template?.title}</h2>
+              <p className="mt-0.5 text-caption text-muted">
+                {s.date}
+                {s.template?.start_time ? ` ${s.template.start_time.slice(0, 5)}` : ''}
+              </p>
+            </div>
             <ul className="flex flex-col">
               {s.bookings
                 .filter((b) => b.status === 'booked' || b.status === 'attended' || b.status === 'no_show')
                 .map((b) => (
                   <li
                     key={b.id}
-                    className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline py-4 first:border-t-0"
+                    className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline-soft py-3 first:border-t-0"
                   >
-                    <span className={STATUS_TEXT_CLASSES[b.status] ?? 'text-body-md text-ink'}>
-                      {b.member?.full_name} · {b.status}
+                    <span className="inline-flex items-center gap-2">
+                      <span className="text-body-strong text-ink">{b.member?.full_name}</span>
+                      {b.status === 'attended' && <StatusBadge tone="success">출석</StatusBadge>}
+                      {b.status === 'no_show' && <StatusBadge tone="danger">결석</StatusBadge>}
                     </span>
                     {b.status === 'booked' && (
                       <div className="flex gap-2">
@@ -105,9 +108,10 @@ export default function InstructorHomePage() {
                   </li>
                 ))}
             </ul>
-          </section>
+          </Card>
         ))
       )}
+      <SignOutFooter />
     </div>
   )
 }

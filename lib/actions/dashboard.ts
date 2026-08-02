@@ -24,7 +24,7 @@ export async function listSessionsWithRoster() {
   const { data } = await supabase
     .from('class_sessions')
     .select(
-      '*, template:class_templates(title), instructor:profiles!class_sessions_instructor_id_fkey(full_name), bookings(id, status, member:profiles!bookings_member_id_fkey(full_name))'
+      '*, template:class_templates(title, start_time), instructor:profiles!class_sessions_instructor_id_fkey(full_name), bookings(id, status, member:profiles!bookings_member_id_fkey(full_name))'
     )
     .gte('date', kstToday())
     .order('date')
@@ -32,6 +32,9 @@ export async function listSessionsWithRoster() {
   return (data ?? []).map((s) => ({
     id: s.id,
     date: s.date,
+    // start_time lives on the template, not class_sessions. 'HH:MM:SS' -> 'HH:MM'
+    // once here, same as every other action that returns a time.
+    startTime: s.template?.start_time?.slice(0, 5) ?? null,
     title: s.template?.title,
     instructorName: s.instructor?.full_name,
     capacity: s.capacity,

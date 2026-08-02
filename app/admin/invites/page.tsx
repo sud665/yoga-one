@@ -69,23 +69,29 @@ export default function InvitesPage() {
       ) : invites.length === 0 ? (
         <EmptyState className="mt-10" title="발급된 초대가 없습니다" description="위 버튼으로 초대 링크를 발급해보세요." />
       ) : (
+        // Row anatomy: who it invites + whether it still works on the top
+        // line, the code and expiry as metadata below. The dot-separated
+        // sentence this replaces also leaked the raw enum ('instructor') as
+        // the row's lead word.
         <ul className="mt-10 flex flex-col">
           {invites.map((invite) => (
             <li
               key={invite.id}
-              className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-hairline py-4 text-body-md text-ink first:border-t-0"
+              className="flex flex-wrap items-center justify-between gap-2 border-t border-hairline py-4 first:border-t-0"
             >
-              <span className="text-body-strong">{invite.role}</span>
-              <span className="text-muted">·</span>
-              <span className="font-mono text-muted">{invite.code}</span>
-              <span className="text-muted">·</span>
+              <div>
+                <p className="text-body-strong text-ink">
+                  {invite.role === 'instructor' ? '강사 초대' : '회원 초대'}
+                </p>
+                <p className="mt-0.5 text-caption text-muted">
+                  <span className="font-mono">{invite.code}</span> · {invite.expires_at}까지
+                </p>
+              </div>
               {/* A consumed invite is spent, not queued -- `waitlisted` put a
                   clock on it, which read as "still waiting to be used". */}
               <StatusBadge tone={invite.used_at ? 'neutral' : 'success'}>
                 {invite.used_at ? '사용됨' : '미사용'}
               </StatusBadge>
-              <span className="text-muted">·</span>
-              <span className="text-muted">만료 {invite.expires_at}</span>
             </li>
           ))}
         </ul>

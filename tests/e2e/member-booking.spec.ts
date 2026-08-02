@@ -20,7 +20,11 @@ async function signUpOwnerAndCreateSchedule(page: import('@playwright/test').Pag
   await page.locator('input[name="startTime"]').fill('09:00')
   await page.getByPlaceholder('정원').fill('1')
   await page.getByRole('button', { name: '시간표 추가' }).click()
-  await expect(page.getByText('월요일 09:00 · Small Class')).toBeVisible()
+  // The template row now leads with the class name and keeps the
+  // recurrence rule as metadata beneath it, so the two are asserted
+  // separately -- which is what this check always meant.
+  await expect(page.getByText('Small Class', { exact: true })).toBeVisible()
+  await expect(page.getByText(/매주 월요일 09:00/).first()).toBeVisible()
 }
 
 // Deviation from the brief: issues one fresh invite link per call instead of the brief

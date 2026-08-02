@@ -26,7 +26,11 @@ test('owner can create a recurring class template and see generated sessions', a
   await page.getByPlaceholder('정원').fill('10')
   await page.getByRole('button', { name: '시간표 추가' }).click()
 
-  await expect(page.getByText('월요일 09:00 · Hatha Yoga')).toBeVisible()
+  // The template row now leads with the class name and keeps the
+  // recurrence rule as metadata beneath it, so the two are asserted
+  // separately -- which is what this check always meant.
+  await expect(page.getByText('Hatha Yoga', { exact: true })).toBeVisible()
+  await expect(page.getByText(/매주 월요일 09:00/).first()).toBeVisible()
   const sessionItems = page.locator('ul').last().locator('li')
   await expect(sessionItems).toHaveCount(8)
 })

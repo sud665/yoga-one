@@ -31,7 +31,7 @@ export async function listMySessionsWithBookings() {
   const { data } = await supabase
     .from('class_sessions')
     .select(
-      '*, template:class_templates(title), bookings(id, status, member:profiles!bookings_member_id_fkey(full_name))'
+      '*, template:class_templates(title, start_time), bookings(id, status, member:profiles!bookings_member_id_fkey(full_name))'
     )
     .eq('instructor_id', user.id)
     .order('date')
