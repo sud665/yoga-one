@@ -38,11 +38,40 @@ is gitignored; never commit real secrets.
 | Variable | Description |
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (local: `http://127.0.0.1:54321`; hosted: `https://<project-ref>.supabase.co`). |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon (public) API key -- safe for the browser, RLS enforces access control. |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Publishable API key (`sb_publishable_...`) -- safe for the browser, RLS enforces access control. The legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` still works as a fallback (see `lib/supabase/env.ts`). |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service_role key -- bypasses RLS. Server-only; never expose to the browser. |
 | `KAKAO_CLIENT_ID` | Kakao OAuth app client ID (Kakao Developers console), used for Kakao login/signup. |
 | `KAKAO_CLIENT_SECRET` | Kakao OAuth app client secret. |
 | `NEXT_PUBLIC_SITE_URL` | This app's own base URL (local: `http://localhost:3000`), used to build absolute links -- invite URLs, OAuth/email-confirmation redirect targets. Must match `supabase/config.toml`'s `[auth] site_url` / `additional_redirect_urls`, or redirects silently break. |
+
+## Pointing at a hosted Supabase project
+
+The schema lives entirely in `supabase/migrations/`, so a fresh hosted project
+needs those applied before the app can talk to it -- otherwise every query fails
+with `Could not find the table 'public.studios' in the schema cache`.
+
+```bash
+npx supabase login                                    # opens a browser
+npx supabase link --project-ref <project-ref>         # prompts for the DB password
+npx supabase db push                                  # applies every migration
+```
+
+Then swap `.env.local` to the hosted URL and publishable key (Project Settings ->
+API in the dashboard), and set `NEXT_PUBLIC_SITE_URL` to the deployed origin.
+
+Two hosted-only differences to expect:
+
+- **Email confirmation is on by default** (local disables it in
+  `supabase/config.toml`). `signUp()` returns no session until the user clicks
+  the emailed link. The signup and invite flows already handle this -- they show
+  a "check your email" state and resume the pending `create_studio_and_owner_profile`
+  / `accept_invite` call on the next sign-in, using the values stashed in
+  `user_metadata`. Turn it off under Authentication -> Sign In / Providers if you
+  want local's behaviour.
+- **Redirect URLs are configured in the dashboard**, not `config.toml`. Set Site
+  URL and the allowed redirect list under Authentication -> URL Configuration to
+  match `NEXT_PUBLIC_SITE_URL`, or confirmation and OAuth redirects land on the
+  wrong origin and fail silently.
 
 ## Commands
 
