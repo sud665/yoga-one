@@ -1,5 +1,15 @@
 import { test, expect } from '@playwright/test'
 
+// getComputedStyle returns a background as `rgb(...)` but a custom property as
+// whatever literal the stylesheet wrote, which here is a hex string. Converting
+// lets the assertion below compare the two directly.
+function hexToRgb(hex: string): string {
+  const value = hex.replace('#', '')
+  const full = value.length === 3 ? value.split('').map((c) => c + c).join('') : value
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16))
+  return `rgb(${r}, ${g}, ${b})`
+}
+
 test('home page loads', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveTitle(/./)
@@ -18,7 +28,7 @@ test('home page loads', async ({ page }) => {
 test.describe('dark mode regression (DESIGN.md has no dark variant)', () => {
   test.use({ colorScheme: 'dark' })
 
-  test('an authenticated screen still renders a white background in a dark-scheme browser', async ({ page }) => {
+  test('an authenticated screen still renders the light canvas in a dark-scheme browser', async ({ page }) => {
     const uniqueEmail = `dark-mode-${Date.now()}@test.local`
 
     await page.goto('/signup')
@@ -29,7 +39,18 @@ test.describe('dark mode regression (DESIGN.md has no dark variant)', () => {
     await page.getByRole('button', { name: '가입하기' }).click()
     await expect(page).toHaveURL(/\/admin/)
 
-    const backgroundColor = await page.evaluate(() => getComputedStyle(document.body).backgroundColor)
-    expect(backgroundColor).toBe('rgb(255, 255, 255)')
+    // Read the expected value from the token rather than hardcoding a literal.
+    // This assertion used to be `rgb(255, 255, 255)` and broke the moment
+    // DESIGN.md's sage pass warmed the canvas to #fbfaf7 -- a false failure,
+    // since what this test actually guards is that no dark variant takes over,
+    // not any one shade. Comparing against --color-canvas keeps it pinned to
+    // whatever the design system currently says light mode is.
+    const { body, canvas } = await page.evaluate(() => ({
+      body: getComputedStyle(document.body).backgroundColor,
+      canvas: getComputedStyle(document.documentElement).getPropertyValue('--color-canvas').trim(),
+    }))
+
+    expect(canvas).not.toBe('')
+    expect(body).toBe(hexToRgb(canvas))
   })
 })
