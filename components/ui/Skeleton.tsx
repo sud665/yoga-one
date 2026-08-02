@@ -7,11 +7,11 @@ import { cx } from './utils'
 // before real data arrives. Skeleton exists to give that in-flight moment
 // its own honest visual state instead.
 //
-// `bg-hairline-soft` rather than `bg-soft-cloud`: soft-cloud (#f5f5f5) is
-// nearly indistinguishable from canvas white at a glance, which is exactly
-// why it works as a resting surface elsewhere -- but it reads as barely
-// "there" for something that specifically needs to signal "content is
-// coming, not blank by design." hairline-soft (#e5e5e5) is still fully
+// `bg-hairline-soft` rather than `bg-surface-soft`: surface-soft (#f8fafc)
+// is nearly indistinguishable from canvas white at a glance, which is
+// exactly why it works as a resting surface elsewhere -- but it reads as
+// barely "there" for something that specifically needs to signal "content
+// is coming, not blank by design." hairline-soft (#eeeeee) is still fully
 // within the neutral palette, just visible enough to register as a shape.
 export type SkeletonVariant = 'text' | 'block' | 'circle'
 

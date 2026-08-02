@@ -1,9 +1,8 @@
 import { cx } from './utils'
 
-// Adjustment #1: cards read as distinct panels via rounded-card (16px) +
-// a hairline border (DESIGN.md's Elevation Level 1) instead of a literal
-// drop shadow, keeping the flat commerce identity intact while giving data
-// containers enough definition to separate from the page background.
+// DESIGN.md `card`/`card-ink`: hairline border + rounded-card (14px) is the
+// system's primary structural device now ("헤어라인이 먼저, 그림자는 없음")
+// -- there is no drop-shadow variant anywhere in this system, by design.
 export type CardVariant = 'default' | 'soft' | 'ink'
 export type CardPadding = 'sm' | 'md' | 'lg'
 
@@ -17,13 +16,13 @@ export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'c
 const VARIANT_CLASSES: Record<CardVariant, string> = {
   // Standard panel: canvas + hairline border (Elevation Level 1).
   default: 'border border-hairline bg-canvas text-ink',
-  // Recessed panel, no border needed -- soft-cloud already reads as a step
-  // back from canvas (DESIGN.md's most-used non-white surface).
-  soft: 'bg-soft-cloud text-ink',
-  // DESIGN.md `dashboard-summary-card`: ink background, on-primary text.
-  // Previously hardcoded per-page as `rounded-none bg-black` -- now a Card
-  // variant so any screen can reach for the same summary-stat treatment.
-  ink: 'bg-ink text-on-primary',
+  // Recessed panel, no border needed -- surface-soft already reads as a
+  // step back from canvas.
+  soft: 'bg-surface-soft text-ink',
+  // DESIGN.md `card-ink`: ink background, on-ink text -- the system's one
+  // "voltage" surface (DESIGN.md: "화면당 최대 1-2개 -- 전압은 희소해야
+  // 신호가 된다"), used sparingly for e.g. the dashboard's summary stats.
+  ink: 'bg-ink text-on-ink',
 }
 
 const PADDING_CLASSES: Record<CardPadding, string> = {

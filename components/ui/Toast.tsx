@@ -39,7 +39,7 @@ const DEFAULT_DURATION = 5000
 
 const TONE_ACCENT_CLASSES: Record<ToastTone, string> = {
   success: 'bg-success',
-  error: 'bg-full',
+  error: 'bg-danger',
   info: 'bg-info',
   neutral: 'bg-ink',
 }
@@ -83,13 +83,13 @@ function ToastItemView({ item, onDismiss }: { item: ToastItem; onDismiss: (id: n
       <span aria-hidden="true" className={cx('mt-1 h-2 w-2 shrink-0 rounded-full', TONE_ACCENT_CLASSES[item.tone])} />
       <div className="min-w-0 flex-1">
         <p className="text-body-strong text-ink">{item.title}</p>
-        {item.description && <p className="mt-0.5 text-caption-md text-mute">{item.description}</p>}
+        {item.description && <p className="mt-0.5 text-caption text-muted">{item.description}</p>}
       </div>
       <button
         type="button"
         onClick={() => onDismiss(item.id)}
         aria-label="알림 닫기"
-        className="shrink-0 rounded-full p-1 text-mute transition-colors hover:bg-soft-cloud hover:text-ink"
+        className="shrink-0 rounded-full p-1 text-muted transition-colors hover:bg-surface-soft hover:text-ink"
       >
         <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none">
           <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

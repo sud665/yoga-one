@@ -1,10 +1,16 @@
 import { cx } from './utils'
 
-// DESIGN.md `badge-tag`: a filled pill for class-type/category labels.
-// Tag colors are intentionally restrained (DESIGN.md: "본문 텍스트나 주요
-// CTA 색으로는 절대 쓰지 않는다 -- 필터 칩, 태그점 전용") -- this component
-// is the one place tag-a/b/c are allowed to appear as a background.
-export type BadgeTone = 'neutral' | 'tag-a' | 'tag-b' | 'tag-c'
+// DESIGN.md `tag-chip`: a filled pastel pill for class-type/category labels.
+// Retoken pass: the old 3-tag palette (tag-a/b/c, each with its own soft/
+// deep text-color pairing) is replaced by DESIGN.md's 4 flat pastel tags
+// (peach/mint/mustard/cream) borrowed from the Airtable demo-grid cards --
+// every tag now uses the SAME text color (ink) regardless of background,
+// since DESIGN.md states plainly "텍스트는 전부 ink(파스텔이라 대비 문제
+// 없음)". Simpler than the old per-tag text-color table, and there are
+// still zero call sites for this component anywhere in the app (grepped
+// `<Badge` across app/ -- no matches), so this is a free redesign, not a
+// breaking one.
+export type BadgeTone = 'neutral' | 'tag-peach' | 'tag-mint' | 'tag-mustard' | 'tag-cream'
 
 export interface BadgeProps {
   tone?: BadgeTone
@@ -14,16 +20,17 @@ export interface BadgeProps {
 
 const BADGE_TONE_CLASSES: Record<BadgeTone, string> = {
   neutral: 'border border-hairline bg-canvas text-ink',
-  'tag-a': 'bg-tag-a-soft text-tag-a-deep',
-  'tag-b': 'bg-tag-b-soft text-ink',
-  'tag-c': 'border border-tag-c bg-canvas text-tag-c',
+  'tag-peach': 'bg-tag-peach text-ink',
+  'tag-mint': 'bg-tag-mint text-ink',
+  'tag-mustard': 'bg-tag-mustard text-ink',
+  'tag-cream': 'bg-tag-cream text-ink',
 }
 
 export function Badge({ tone = 'neutral', className, children }: BadgeProps) {
   return (
     <span
       className={cx(
-        'inline-flex items-center rounded-full px-3 py-1 text-caption-sm',
+        'inline-flex items-center rounded-full px-3 py-1 text-caption',
         BADGE_TONE_CLASSES[tone],
         className
       )}
@@ -33,14 +40,13 @@ export function Badge({ tone = 'neutral', className, children }: BadgeProps) {
   )
 }
 
-// DESIGN.md `badge-status-text`: booking/roster state shown as colored
-// text (capacity-full / confirmed / waitlisted), not a button and not
-// necessarily a filled pill -- e.g. "정원 마감 시 ... {colors.full}로 '마감'
-// 표시", "예약 완료 시 ... success '예약완료' 상태 텍스트만 표시(버튼
-// 아님)". A small semantic dot is added ahead of the text purely as a
-// second (non-color) cue for the same state, so meaning doesn't rely on
-// color alone.
-export type StatusTone = 'success' | 'full' | 'waitlisted' | 'neutral'
+// DESIGN.md `status-badge`: booking/roster state as tone-tinted text
+// (confirmed/full/waitlisted), a small semantic dot ahead of the text as a
+// second, non-color cue for the same state. Retoken pass: the old 'full'
+// tone is renamed 'danger' to match the new color token name it maps to
+// (there being zero call sites yet -- see Badge above -- makes this a free
+// rename, not a breaking one).
+export type StatusTone = 'success' | 'danger' | 'waitlisted' | 'neutral'
 
 export interface StatusBadgeProps {
   tone: StatusTone
@@ -50,21 +56,21 @@ export interface StatusBadgeProps {
 
 const STATUS_TEXT_CLASSES: Record<StatusTone, string> = {
   success: 'text-success',
-  full: 'text-full',
-  waitlisted: 'text-mute',
-  neutral: 'text-mute',
+  danger: 'text-danger',
+  waitlisted: 'text-muted',
+  neutral: 'text-muted',
 }
 
 const STATUS_DOT_CLASSES: Record<StatusTone, string> = {
   success: 'bg-success',
-  full: 'bg-full',
-  waitlisted: 'bg-mute',
-  neutral: 'bg-stone',
+  danger: 'bg-danger',
+  waitlisted: 'bg-muted',
+  neutral: 'bg-muted',
 }
 
 export function StatusBadge({ tone, className, children }: StatusBadgeProps) {
   return (
-    <span className={cx('inline-flex items-center gap-1.5 text-caption-md', STATUS_TEXT_CLASSES[tone], className)}>
+    <span className={cx('inline-flex items-center gap-1.5 text-caption', STATUS_TEXT_CLASSES[tone], className)}>
       <span aria-hidden="true" className={cx('h-1.5 w-1.5 shrink-0 rounded-full', STATUS_DOT_CLASSES[tone])} />
       {children}
     </span>
