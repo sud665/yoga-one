@@ -214,7 +214,17 @@ function MobileTabBar({ pathname }: { pathname: string }) {
                 )}
               >
                 <Icon />
-                <span>{item.label}</span>
+                <span className="inline-flex items-center gap-0.5">
+                  {item.label}
+                  {/* Self-critique fix: without this, 인력관리 looked
+                      identical to the other 4 tabs before the first tap --
+                      nothing signaled it opens a sheet instead of
+                      navigating directly. A static up-chevron (the sheet
+                      rises from the bottom) reuses the same glyph the
+                      desktop accordion already uses for "expandable",
+                      instead of inventing a second affordance language. */}
+                  <ChevronIcon className="h-2.5 w-2.5 -rotate-90" />
+                </span>
               </button>
             )
           }
