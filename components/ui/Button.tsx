@@ -1,6 +1,8 @@
 'use client'
 
 import Link from 'next/link'
+import type { LucideIcon } from 'lucide-react'
+
 import { cx } from './utils'
 
 // DESIGN.md `button-primary`/`button-secondary`/`button-danger`. Retoken
@@ -15,6 +17,14 @@ type CommonProps = {
   variant?: ButtonVariant
   className?: string
   children: React.ReactNode
+  /**
+   * Optional leading icon. Pass the lucide component itself, not an element:
+   * `icon={Plus}`. Reserve it for actions with a conventional glyph -- add,
+   * copy, share, cancel, sign out -- where the icon is a second reading of
+   * the label. An invented icon for a domain action ("대기 등록") is a second
+   * thing to decode instead, so those stay text-only.
+   */
+  icon?: LucideIcon
 }
 
 // href present -> renders a Next.js <Link> styled identically to a
@@ -63,14 +73,23 @@ const BASE_CLASSES =
 // :focus-visible ring comes from the global base-layer rule in
 // app/globals.css -- not repeated per-component here.
 export function Button(props: ButtonProps) {
-  const { variant = 'primary', className, children, ...rest } = props
+  const { variant = 'primary', className, children, icon: Icon, ...rest } = props
   const classes = cx(BASE_CLASSES, VARIANT_CLASSES[variant], className)
+
+  // aria-hidden: the label is the accessible name, and announcing the glyph
+  // too would just repeat it.
+  const content = (
+    <>
+      {Icon && <Icon aria-hidden="true" className="h-4 w-4 shrink-0" strokeWidth={1.75} />}
+      {children}
+    </>
+  )
 
   if (rest.href !== undefined) {
     const { href, ...linkProps } = rest as Omit<ButtonAsLinkProps, keyof CommonProps>
     return (
       <Link href={href} className={classes} {...linkProps}>
-        {children}
+        {content}
       </Link>
     )
   }
@@ -78,7 +97,7 @@ export function Button(props: ButtonProps) {
   const buttonProps = rest as Omit<ButtonAsButtonProps, keyof CommonProps>
   return (
     <button type="button" className={classes} {...buttonProps}>
-      {children}
+      {content}
     </button>
   )
 }

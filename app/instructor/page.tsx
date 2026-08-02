@@ -5,6 +5,7 @@ import { listMySessionsWithBookings, markAttendance } from '@/lib/actions/attend
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { Check, X } from 'lucide-react'
 
 // b.status ('booked'/'attended'/'no_show') is rendered verbatim as the raw
 // enum value -- existing behavior, unchanged by this retoken pass (several
@@ -67,8 +68,8 @@ export default function InstructorHomePage() {
                     </span>
                     {b.status === 'booked' && (
                       <div className="flex gap-2">
-                        <Button onClick={() => handleMark(b.id, 'attended')}>출석</Button>
-                        <Button variant="secondary" onClick={() => handleMark(b.id, 'no_show')}>
+                        <Button icon={Check} onClick={() => handleMark(b.id, 'attended')}>출석</Button>
+                        <Button variant="secondary" icon={X} onClick={() => handleMark(b.id, 'no_show')}>
                           결석
                         </Button>
                       </div>

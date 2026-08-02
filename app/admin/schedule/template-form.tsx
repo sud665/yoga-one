@@ -4,6 +4,7 @@ import { useState, useTransition, useEffect } from 'react'
 import { createClassTemplate, listInstructors, type InstructorOption } from '@/lib/actions/schedule'
 import { Button } from '@/components/ui/Button'
 import { TextInput, Select } from '@/components/ui/TextInput'
+import { Plus } from 'lucide-react'
 
 const DAY_OPTIONS = [
   { value: '0', label: '일' },
@@ -67,7 +68,7 @@ export function TemplateForm({ onCreated }: { onCreated: () => void }) {
           {error}
         </p>
       )}
-      <Button type="submit" disabled={isPending} className="mt-2 w-full">
+      <Button type="submit" icon={Plus} disabled={isPending} className="mt-2 w-full">
         시간표 추가
       </Button>
     </form>

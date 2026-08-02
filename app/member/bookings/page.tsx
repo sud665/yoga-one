@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { X } from 'lucide-react'
 
 export default function MyBookingsPage() {
   // `any[]`가 아니라 listMyBookings()의 실제 반환 타입을 그대로 사용한다 -- 이미
@@ -75,7 +76,7 @@ export default function MyBookingsPage() {
                   {b.status === 'booked' ? '예약완료' : '대기중'}
                 </StatusBadge>
               </span>
-              <Button variant="secondary" onClick={() => handleCancel(b.id)}>
+              <Button variant="secondary" icon={X} onClick={() => handleCancel(b.id)}>
                 취소
               </Button>
             </li>

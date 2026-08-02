@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useToast } from '@/components/ui/Toast'
+import { Plus } from 'lucide-react'
 
 // One shared component for both the instructor and member roster screens --
 // the two screens are structurally identical (list + invite-issuance
@@ -41,7 +42,7 @@ export function RosterTable({ role, label }: { role: 'instructor' | 'member'; la
     <div className="mx-auto w-full max-w-2xl px-6 py-12">
       <h1 className="mb-8 text-heading-lg text-ink">{label} 관리</h1>
 
-      <Button onClick={handleInvite}>{label} 초대 링크 발급</Button>
+      <Button icon={Plus} onClick={handleInvite}>{label} 초대 링크 발급</Button>
 
       {generatedUrl && (
         <p className="mt-6 break-all rounded-card bg-surface-soft px-4 py-3 text-body-md text-ink">

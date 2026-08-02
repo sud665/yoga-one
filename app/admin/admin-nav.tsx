@@ -3,6 +3,20 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import {
+  CalendarDays,
+  ChevronRight,
+  ClipboardCheck,
+  ClipboardList,
+  LayoutDashboard,
+  Mail,
+  UserRound,
+  Users,
+  UsersRound,
+  X,
+  type LucideIcon,
+} from 'lucide-react'
+
 import { cx } from '@/components/ui/utils'
 import { SignOutButton } from '@/components/ui/SignOutButton'
 
@@ -17,8 +31,7 @@ import { SignOutButton } from '@/components/ui/SignOutButton'
 // suite is that these routes keep resolving and no page's own text/ul/li
 // structure changes -- not click-path compatibility through the new
 // accordion/sheet.
-export type IconProps = { className?: string }
-type IconComponent = (props: IconProps) => React.ReactElement
+type IconComponent = LucideIcon
 
 type NavLeaf = { href: string; label: string; icon: IconComponent }
 type NavParent = { label: string; icon: IconComponent; children: NavLeaf[] }
@@ -32,17 +45,17 @@ function isParent(item: NavItem): item is NavParent {
 // screen) -- its first child is the sensible landing spot if anything ever
 // needs to link to the section as a whole, but nothing does today.
 const ROSTER_CHILDREN: NavLeaf[] = [
-  { href: '/admin/roster/instructors', label: '강사관리', icon: InstructorIcon },
-  { href: '/admin/roster/members', label: '회원관리', icon: MembersIcon },
-  { href: '/admin/invites', label: '초대관리', icon: InviteIcon },
+  { href: '/admin/roster/instructors', label: '강사관리', icon: UserRound },
+  { href: '/admin/roster/members', label: '회원관리', icon: UsersRound },
+  { href: '/admin/invites', label: '초대관리', icon: Mail },
 ]
 
 const NAV_ITEMS: NavItem[] = [
-  { href: '/admin', label: '대시보드', icon: DashboardIcon },
-  { href: '/admin/schedule', label: '시간표관리', icon: ScheduleIcon },
-  { label: '인력관리', icon: RosterIcon, children: ROSTER_CHILDREN },
-  { href: '/admin/bookings', label: '예약현황', icon: BookingsIcon },
-  { href: '/instructor', label: '내 수업', icon: MyClassIcon },
+  { href: '/admin', label: '대시보드', icon: LayoutDashboard },
+  { href: '/admin/schedule', label: '시간표관리', icon: CalendarDays },
+  { label: '인력관리', icon: Users, children: ROSTER_CHILDREN },
+  { href: '/admin/bookings', label: '예약현황', icon: ClipboardList },
+  { href: '/instructor', label: '내 수업', icon: ClipboardCheck },
 ]
 
 function isActiveHref(pathname: string, href: string) {
@@ -106,7 +119,7 @@ function SidebarLeaf({ item, active, indent = false }: { item: NavLeaf; active: 
         active ? 'border-brand-deep bg-brand-tint text-brand-deep' : 'border-transparent text-ink hover:bg-surface-soft'
       )}
     >
-      <Icon />
+      <Icon aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.75} />
       {item.label}
     </Link>
   )
@@ -154,9 +167,9 @@ function SidebarParent({ item, pathname }: { item: NavParent; pathname: string }
           isChildActive ? 'border-brand-deep bg-brand-tint text-brand-deep' : 'border-transparent text-ink hover:bg-surface-soft'
         )}
       >
-        <Icon />
+        <Icon aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.75} />
         <span className="flex-1 text-left">{item.label}</span>
-        <ChevronIcon className={cx('motion-safe:transition-transform motion-safe:duration-150', isOpen && 'rotate-90')} />
+        <ChevronRight aria-hidden="true" strokeWidth={1.75} className={cx('h-4 w-4 shrink-0 motion-safe:transition-transform motion-safe:duration-150', isOpen && 'rotate-90')} />
       </button>
       {isOpen && (
         <div id={panelId} className="mt-1 flex flex-col gap-1">
@@ -217,7 +230,7 @@ function MobileTabBar({ pathname }: { pathname: string }) {
                   isRosterActive ? 'border-brand-deep text-brand-deep' : 'border-transparent text-muted'
                 )}
               >
-                <Icon />
+                <Icon aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.75} />
                 <span className="inline-flex items-center gap-0.5">
                   {item.label}
                   {/* Self-critique fix: without this, 인력관리 looked
@@ -227,7 +240,7 @@ function MobileTabBar({ pathname }: { pathname: string }) {
                       rises from the bottom) reuses the same glyph the
                       desktop accordion already uses for "expandable",
                       instead of inventing a second affordance language. */}
-                  <ChevronIcon className="h-2.5 w-2.5 -rotate-90" />
+                  <ChevronRight aria-hidden="true" strokeWidth={2} className="h-2.5 w-2.5 -rotate-90" />
                 </span>
               </button>
             )
@@ -244,7 +257,7 @@ function MobileTabBar({ pathname }: { pathname: string }) {
                 active ? 'border-brand-deep text-brand-deep' : 'border-transparent text-muted'
               )}
             >
-              <Icon />
+              <Icon aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.75} />
               <span>{item.label}</span>
             </Link>
           )
@@ -281,7 +294,7 @@ function RosterSheet({ item, pathname, onClose }: { item: NavParent; pathname: s
           <p className="text-label text-muted">{item.label}</p>
           <button type="button" onClick={onClose} className="rounded-full p-1 text-muted hover:bg-surface-soft hover:text-ink">
             <span className="sr-only">닫기</span>
-            <CloseIcon />
+            <X aria-hidden="true" className="h-5 w-5" strokeWidth={1.75} />
           </button>
         </div>
         <div className="flex flex-col gap-1">
@@ -299,7 +312,7 @@ function RosterSheet({ item, pathname, onClose }: { item: NavParent; pathname: s
                   active ? 'bg-brand-tint text-brand-deep' : 'text-ink hover:bg-surface-soft'
                 )}
               >
-                <Icon />
+                <Icon aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.75} />
                 {child.label}
               </Link>
             )
@@ -311,135 +324,23 @@ function RosterSheet({ item, pathname, onClose }: { item: NavParent; pathname: s
 }
 
 // ---- Icons -------------------------------------------------------------
-// Hand-rolled inline SVGs: minimal line style, 20px, stroke=currentColor so
-// active/inactive color state flows through automatically. aria-hidden on
-// every icon -- the Link/button's own text label carries the accessible
-// name, exactly once.
-// ScheduleIcon/InstructorIcon/MembersIcon/InviteIcon stay exported: reused
-// verbatim by app/admin/page.tsx's quick-action cards so the sidebar and
+// lucide-react, re-exported under this file's own names. The previous set
+// was hand-rolled inline SVG -- fine at four icons, but it had grown to ten,
+// each one a small drawing to review and keep visually consistent with the
+// others. A library gives one hand for free, and lucide's thin geometric
+// stroke is already what those hand-rolled glyphs were imitating.
+//
+// The aliases exist so call sites keep naming what an icon *means* here
+// (BookingsIcon) rather than what it depicts (ClipboardList): swapping the
+// underlying glyph later is then a one-line change in this block instead of
+// a rename across every consumer.
+//
+// ScheduleIcon/InstructorIcon/MembersIcon/InviteIcon stay exported because
+// app/admin/page.tsx's quick-action cards reuse them, so the sidebar and the
 // dashboard keep reading as one system.
-
-function iconProps(className?: string) {
-  return {
-    'aria-hidden': true as const,
-    focusable: false as const,
-    width: 20,
-    height: 20,
-    viewBox: '0 0 24 24',
-    fill: 'none' as const,
-    stroke: 'currentColor',
-    strokeWidth: 1.75,
-    strokeLinecap: 'round' as const,
-    strokeLinejoin: 'round' as const,
-    className,
-  }
-}
-
-function DashboardIcon({ className }: IconProps) {
-  return (
-    <svg {...iconProps(className)}>
-      <rect x="3" y="3" width="7.5" height="7.5" rx="1.5" />
-      <rect x="13.5" y="3" width="7" height="7.5" rx="1.5" />
-      <rect x="3" y="13.5" width="7.5" height="7" rx="1.5" />
-      <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
-    </svg>
-  )
-}
-
-export function ScheduleIcon({ className }: IconProps) {
-  return (
-    <svg {...iconProps(className)}>
-      <rect x="3" y="5" width="18" height="15.5" rx="2" />
-      <path d="M3 10h18" />
-      <path d="M8 3v4" />
-      <path d="M16 3v4" />
-    </svg>
-  )
-}
-
-// 인력관리's own parent icon -- a briefcase, distinct from its children's
-// people-silhouette glyphs (InstructorIcon/MembersIcon below) so the parent
-// row doesn't read as a redundant copy of one of its own children.
-function RosterIcon({ className }: IconProps) {
-  return (
-    <svg {...iconProps(className)}>
-      <rect x="3" y="8" width="18" height="11.5" rx="2" />
-      <path d="M8.5 8V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2" />
-      <path d="M3 13.5h18" />
-      <path d="M10.5 13.5v1.5h3v-1.5" />
-    </svg>
-  )
-}
-
-export function InstructorIcon({ className }: IconProps) {
-  return (
-    <svg {...iconProps(className)}>
-      <circle cx="12" cy="8" r="3.5" />
-      <path d="M5 20c0-3.87 3.13-7 7-7s7 3.13 7 7" />
-    </svg>
-  )
-}
-
-export function MembersIcon({ className }: IconProps) {
-  return (
-    <svg {...iconProps(className)}>
-      <circle cx="8.5" cy="7.5" r="3" />
-      <path d="M2.5 20c0-3.31 2.69-6 6-6s6 2.69 6 6" />
-      <circle cx="17" cy="8" r="2.3" />
-      <path d="M13.8 20c.35-2.9 2.15-5 4.8-5 .6 0 1.16.09 1.7.26" />
-    </svg>
-  )
-}
-
-export function InviteIcon({ className }: IconProps) {
-  return (
-    <svg {...iconProps(className)}>
-      <rect x="3" y="5.5" width="18" height="13" rx="2" />
-      <path d="M3.5 7l8.5 6 8.5-6" />
-    </svg>
-  )
-}
-
-function BookingsIcon({ className }: IconProps) {
-  return (
-    <svg {...iconProps(className)}>
-      <rect x="5" y="4" width="14" height="17" rx="2" />
-      <path d="M9 3.25h6a1 1 0 011 1V6H8V4.25a1 1 0 011-1z" />
-      <path d="M8.5 11h7" />
-      <path d="M8.5 14.5h7" />
-      <path d="M8.5 18h4.5" />
-    </svg>
-  )
-}
-
-// A simple seated/cross-legged figure -- the one deliberately yoga-specific
-// glyph in this set, standing in for the owner's own "내 수업" entry.
-function MyClassIcon({ className }: IconProps) {
-  return (
-    <svg {...iconProps(className)}>
-      <circle cx="12" cy="4.5" r="2" />
-      <path d="M12 6.5v3.5" />
-      <path d="M6.5 18c0-2.7 1.3-4.9 3.3-6" />
-      <path d="M17.5 18c0-2.7-1.3-4.9-3.3-6" />
-      <path d="M6.5 18h11" />
-      <path d="M9.3 10l-2.3 2.7" />
-      <path d="M14.7 10l2.3 2.7" />
-    </svg>
-  )
-}
-
-function ChevronIcon({ className }: IconProps) {
-  return (
-    <svg {...iconProps(className)}>
-      <path d="M9 5l7 7-7 7" />
-    </svg>
-  )
-}
-
-function CloseIcon({ className }: IconProps) {
-  return (
-    <svg {...iconProps(className)}>
-      <path d="M6 6l12 12M18 6L6 18" />
-    </svg>
-  )
-}
+export {
+  CalendarDays as ScheduleIcon,
+  UserRound as InstructorIcon,
+  UsersRound as MembersIcon,
+  Mail as InviteIcon,
+} from 'lucide-react'

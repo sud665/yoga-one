@@ -75,22 +75,34 @@
   --color-muted: #6f746a;
   --color-hairline: #e1ded4;
   --color-hairline-soft: #edeae1;
+  /* ---- Semantic states ------------------------------------------------
+     Three states, each a text/icon color plus the pale tint it sits on.
+     Every pairing is verified against WCAG AA (4.5:1) in both directions
+     that actually occur -- on the canvas, and on its own tint:
+
+       success  5.84 on canvas   5.30 on tint   6.10 under white
+       warning  5.68 on canvas   5.20 on tint   5.93 under white
+       danger   6.52 on canvas   5.70 on tint   6.81 under white
+
+     success no longer resolves to the brand values. Merging them read well
+     as theory -- a confirmed booking is the brand moment -- but not on
+     screen: a sage "예약완료" badge sitting beside a sage "예약하기" button
+     made status and action the same color, so the badge looked tappable.
+     #1b7043 is a deeper, more saturated green, far enough from the muted
+     brand sage (#4f6d55) to read as information rather than an affordance.
+
+     warning is new. Waiting-list state had been rendering in `muted` grey,
+     which says "inactive" when it means "you are in line" -- an actual
+     state the member needs to notice. */
+  --color-success: #1b7043;
+  --color-success-tint: #e6f2ea;
+  --color-warning: #8a5a00;
+  --color-warning-tint: #faefd9;
   --color-danger: #aa2d00;
-  --color-danger-deep: #7a2000;
   --color-danger-tint: #f6e8e3;
-  /* success resolves to the brand values on purpose (DESIGN.md Semantic):
-     a confirmed booking or a present student IS the brand moment, and a
-     second, differently-hued green next to sage only reads as a mismatch.
-     Kept as its own token name so `bg-success-tint text-success` call
-     sites still say what they mean. --color-success-deep is gone: it had
-     no consumers, and a darker shade of an already-dark green has no role
-     in a system whose only pressed state is the CTA's. */
-  --color-success: #4f6d55;
-  --color-success-tint: #e8f0e9;
-  /* info is now legacy: it lost the focus-ring/link/active-state job to
-     brand and survives only for genuinely informational messaging (Toast's
-     `info` tone). Do not reach for it when styling a new screen.
-     --color-info-deep dropped alongside success-deep, same reason. */
+  /* info is legacy: it lost the focus-ring/link/active-state job to brand
+     and survives only for genuinely informational messaging (Toast's `info`
+     tone). Do not reach for it when styling a new screen. */
   --color-info: #1b61c9;
   --color-info-tint: #e8f0fc;
   --color-tag-peach: #fcab79;

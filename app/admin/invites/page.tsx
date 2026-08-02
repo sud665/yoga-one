@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { Plus } from 'lucide-react'
 
 export default function InvitesPage() {
   const [invites, setInvites] = useState<Invite[] | null>(null)
@@ -37,10 +38,10 @@ export default function InvitesPage() {
       <h1 className="mb-8 text-heading-lg text-ink">초대 관리</h1>
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        <Button onClick={() => handleCreate('instructor')} disabled={isPending}>
+        <Button icon={Plus} onClick={() => handleCreate('instructor')} disabled={isPending}>
           강사 초대 링크 발급
         </Button>
-        <Button variant="secondary" onClick={() => handleCreate('member')} disabled={isPending}>
+        <Button variant="secondary" icon={Plus} onClick={() => handleCreate('member')} disabled={isPending}>
           회원 초대 링크 발급
         </Button>
       </div>
@@ -78,7 +79,9 @@ export default function InvitesPage() {
               <span className="text-muted">·</span>
               <span className="font-mono text-muted">{invite.code}</span>
               <span className="text-muted">·</span>
-              <StatusBadge tone={invite.used_at ? 'waitlisted' : 'success'}>
+              {/* A consumed invite is spent, not queued -- `waitlisted` put a
+                  clock on it, which read as "still waiting to be used". */}
+              <StatusBadge tone={invite.used_at ? 'neutral' : 'success'}>
                 {invite.used_at ? '사용됨' : '미사용'}
               </StatusBadge>
               <span className="text-muted">·</span>

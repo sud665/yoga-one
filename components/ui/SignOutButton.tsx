@@ -1,3 +1,5 @@
+import { LogOut } from 'lucide-react'
+
 import { signOut } from '@/lib/actions/auth'
 
 // A form rather than an onClick handler so this stays a server component and
@@ -13,8 +15,10 @@ export function SignOutButton({ className = '' }: { className?: string }) {
     <form action={signOut} className={className}>
       <button
         type="submit"
-        className="text-body-strong text-muted transition-colors hover:text-ink"
+        className="inline-flex items-center gap-1.5 text-body-strong text-muted transition-colors hover:text-ink"
       >
+        {/* aria-hidden: "로그아웃" beside it is already the accessible name. */}
+        <LogOut aria-hidden="true" className="h-4 w-4 shrink-0" strokeWidth={1.75} />
         로그아웃
       </button>
     </form>

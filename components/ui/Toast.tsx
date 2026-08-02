@@ -1,6 +1,8 @@
 'use client'
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { AlertCircle, CheckCircle2, Info, X, type LucideIcon } from 'lucide-react'
+
 import { cx } from './utils'
 
 // Adjustment #3: the toast/inline-feedback pattern DESIGN.md never
@@ -37,11 +39,18 @@ const ToastContext = createContext<ToastContextValue | null>(null)
 
 const DEFAULT_DURATION = 5000
 
-const TONE_ACCENT_CLASSES: Record<ToastTone, string> = {
-  success: 'bg-success',
-  error: 'bg-danger',
-  info: 'bg-info',
-  neutral: 'bg-ink',
+const TONE_ICON_CLASSES: Record<ToastTone, string> = {
+  success: 'text-success',
+  error: 'text-danger',
+  info: 'text-info',
+  neutral: 'text-muted',
+}
+
+const TONE_ICONS: Record<ToastTone, LucideIcon> = {
+  success: CheckCircle2,
+  error: AlertCircle,
+  info: Info,
+  neutral: Info,
 }
 
 // error -> role="alert" (assertive), everything else -> role="status"
@@ -63,6 +72,7 @@ function ToastItemView({ item, onDismiss }: { item: ToastItem; onDismiss: (id: n
   // very first paint, no transition, no flash (on top of the blanket
   // kill-switch in app/globals.css).
   const [visible, setVisible] = useState(false)
+  const ToneIcon = TONE_ICONS[item.tone]
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setVisible(true))
@@ -80,7 +90,9 @@ function ToastItemView({ item, onDismiss }: { item: ToastItem; onDismiss: (id: n
           : 'motion-safe:-translate-y-2 motion-safe:opacity-0'
       )}
     >
-      <span aria-hidden="true" className={cx('mt-1 h-2 w-2 shrink-0 rounded-full', TONE_ACCENT_CLASSES[item.tone])} />
+      {/* Same reasoning as StatusBadge: an icon survives greyscale and
+          colorblindness where a colored dot only repeats the color. */}
+      <ToneIcon aria-hidden="true" className={cx('mt-0.5 h-4 w-4 shrink-0', TONE_ICON_CLASSES[item.tone])} strokeWidth={2.25} />
       <div className="min-w-0 flex-1">
         <p className="text-body-strong text-ink">{item.title}</p>
         {item.description && <p className="mt-0.5 text-caption text-muted">{item.description}</p>}
@@ -91,9 +103,7 @@ function ToastItemView({ item, onDismiss }: { item: ToastItem; onDismiss: (id: n
         aria-label="알림 닫기"
         className="shrink-0 rounded-full p-1 text-muted transition-colors hover:bg-surface-soft hover:text-ink"
       >
-        <svg aria-hidden="true" viewBox="0 0 16 16" width="14" height="14" fill="none">
-          <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
+        <X aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={2} />
       </button>
     </div>
   )

@@ -90,7 +90,7 @@ export default function AdminDashboardPage() {
               href={action.href}
               className="flex flex-col items-center gap-2 rounded-card border border-hairline bg-canvas px-4 py-6 text-center text-caption text-ink transition-colors hover:bg-surface-soft"
             >
-              <Icon className="text-muted" />
+              <Icon aria-hidden="true" className="h-5 w-5 text-muted" strokeWidth={1.75} />
               {action.label}
             </Link>
           )
