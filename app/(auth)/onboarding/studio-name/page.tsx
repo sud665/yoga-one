@@ -3,6 +3,8 @@
 import { useState, useTransition } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/Button'
+import { TextInput } from '@/components/ui/TextInput'
 
 export default function StudioNameOnboardingPage() {
   const [studioName, setStudioName] = useState('')
@@ -29,38 +31,25 @@ export default function StudioNameOnboardingPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-6 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-canvas px-6 py-12">
       <form onSubmit={handleSubmit} className="w-full max-w-sm">
-        <h1 className="mb-8 text-3xl font-bold uppercase tracking-tight text-black">
-          요가원 정보를 입력해주세요
-        </h1>
+        <h1 className="mb-8 text-display-lg text-ink">요가원 정보를 입력해주세요</h1>
         <div className="flex flex-col gap-4">
-          <input
+          <TextInput
             value={studioName}
             onChange={(e) => setStudioName(e.target.value)}
             placeholder="요가원 이름"
             required
-            className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-base text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black"
           />
-          <input
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            placeholder="이름"
-            required
-            className="w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-base text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black"
-          />
+          <TextInput value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="이름" required />
           {error && (
-            <p role="alert" className="text-sm text-[#d30005]">
+            <p role="alert" className="text-body-md text-danger">
               {error}
             </p>
           )}
-          <button
-            type="submit"
-            disabled={isPending}
-            className="mt-2 w-full rounded-full bg-black px-8 py-3 text-base font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
-          >
+          <Button type="submit" disabled={isPending} className="mt-2 w-full">
             시작하기
-          </button>
+          </Button>
         </div>
       </form>
     </div>

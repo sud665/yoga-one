@@ -30,12 +30,10 @@ export default async function InvitePage({
 
   if (!preview || !preview.valid) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white px-6 py-12">
-        <div className="w-full max-w-sm text-center">
-          <h1 className="mb-4 text-3xl font-bold uppercase tracking-tight text-black">
-            유효하지 않은 초대 링크
-          </h1>
-          <p className="text-base text-zinc-600">
+      <div className="flex min-h-screen items-center justify-center bg-canvas px-6 py-12 text-center">
+        <div className="w-full max-w-sm">
+          <h1 className="mb-4 text-display-lg text-ink">유효하지 않은 초대 링크</h1>
+          <p className="text-body-md text-body">
             {describeInviteError(errorParam) ??
               '이 링크는 만료되었거나 이미 사용되었습니다. 원장님께 재발급을 요청해주세요.'}
           </p>
@@ -47,13 +45,13 @@ export default async function InvitePage({
   const role = preview.role === 'instructor' ? 'instructor' : 'member'
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-6 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-canvas px-6 py-12">
       <div className="w-full max-w-sm">
-        <h1 className="mb-8 text-3xl font-bold uppercase tracking-tight text-black">
+        <h1 className="mb-8 text-display-lg text-ink">
           {preview.studio_name} — {role === 'instructor' ? '강사' : '회원'} 초대
         </h1>
         {errorParam && (
-          <p role="alert" className="mb-4 text-sm text-[#d30005]">
+          <p role="alert" className="mb-4 text-body-md text-danger">
             {describeInviteError(errorParam)}
           </p>
         )}
