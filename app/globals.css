@@ -1,0 +1,257 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   Design tokens -- DESIGN.md (Yoga-Studio-Design)
+
+   Tailwind v4 CSS-first config: this repo has no tailwind.config.js, so every
+   token below lives in `@theme` and is compiled into both a CSS custom
+   property (--color-ink etc.) and a matching utility class (bg-ink, text-ink,
+   border-ink, ...).
+
+   This block is purely additive: it does not reset Tailwind's default
+   palette/scale (`--color-*: initial` etc.).
+
+   ---- Retoken pass (this file's second rewrite) -----------------------------
+   DESIGN.md was rewritten wholesale: the previous Nike-commerce-derived
+   system (pure #111111 ink, pill/rounded-full CTAs, Bebas Neue display type)
+   is replaced by an Airtable-editorial-derived system (#181d26 ink, 12px
+   "squared-rounded" button corners, Inter-only type, hairline borders as the
+   primary structural device, zero shadows anywhere). This is a token VALUE
+   and NAME swap, not a re-architecture -- the @theme/@utility/@layer
+   mechanism, the admin sidebar structure, and the components/ui/* primitive
+   approach are all kept from the previous pass (DESIGN.md itself says so
+   explicitly). Every old-system color/radius/typography name that has no
+   equivalent in the new spec is removed outright (danger/success/info tint
+   colors, tag-peach/mint/mustard/cream, the display-hero utility, the
+   sm/md/lg 18/24/30px radius overrides, the inset-line shadow token) --
+   grepped every one of them across app/ and components/ first (see commit
+   message) to confirm zero remaining consumers before deleting.
+   ============================================================================ */
+
+@theme inline {
+  /* Runtime font variable set by next/font on <html> in app/layout.tsx.
+     `@theme inline` is required here because this references a custom
+     property that only exists at runtime, not a literal value known at
+     build time. Bebas Neue's --font-bebas-neue/--font-display are gone:
+     DESIGN.md's new type system is Inter-only (no display-hero face is
+     specified anymore -- display-lg is just a larger/bolder Inter size),
+     confirmed via `grep -rl "Bebas\|display-hero\|font-display"` finding
+     only app/layout.tsx itself, so removing both the font load and this
+     alias has zero other call sites to fix. */
+  --font-sans: var(--font-inter);
+  /* --font-mono intentionally left undefined -- unchanged from the previous
+     pass; Tailwind's own default monospace stack applies automatically. */
+}
+
+@theme {
+  /* ---- Color -- DESIGN.md `colors` ---------------------------------- */
+  --color-ink: #181d26;
+  --color-ink-active: #0d1218;
+  --color-on-ink: #ffffff;
+  --color-canvas: #ffffff;
+  --color-surface-soft: #f8fafc;
+  --color-surface-strong: #e0e2e6;
+  --color-body: #333840;
+  --color-muted: #71757c;
+  --color-hairline: #dddddd;
+  --color-hairline-soft: #eeeeee;
+  --color-danger: #aa2d00;
+  --color-danger-deep: #7a2000;
+  --color-danger-tint: #f6e8e3;
+  --color-success: #0b6b1f;
+  --color-success-deep: #084f17;
+  --color-success-tint: #e7f3e8;
+  --color-info: #1b61c9;
+  --color-info-deep: #1a3866;
+  --color-info-tint: #e8f0fc;
+  --color-tag-peach: #fcab79;
+  --color-tag-mint: #a8d8c4;
+  --color-tag-mustard: #d9a441;
+  --color-tag-cream: #f5e9d4;
+
+  /* ---- Radius -- DESIGN.md `rounded` ----------------------------------
+     rounded-none (0px) and rounded-full (9999px) already match DESIGN.md
+     exactly via Tailwind's own built-ins, so they're not redefined here.
+     The previous pass's --radius-sm/md/lg (18/24/30px, serving the old
+     pill-button/badge scale) are removed outright -- confirmed unused via
+     grep (`rounded-sm`/`rounded-md`/`rounded-lg` appear nowhere in app/ or
+     components/), and DESIGN.md's new shape scale has no sm/md/lg concept
+     at all: every container-sized radius is now named for what it's FOR
+     (input/button/card), not a generic T-shirt size. */
+  --radius-input: 8px;
+  --radius-button: 12px;
+  --radius-card: 14px;
+
+  /* ---- Spacing -- DESIGN.md `spacing` (4px grid) ----------------------
+     Only xxs/xxl/section are defined as named tokens, matching the previous
+     pass's approach and for the exact same reason documented there:
+     Tailwind v4's `--spacing-*` namespace isn't padding/margin/gap-only --
+     it's the single shared scale behind every length utility, INCLUDING
+     max-w-sm/md/lg/xl, min-w-*, w-*, h-*. Defining `--spacing-xs` etc. to
+     match DESIGN.md's own names would silently collide with and override
+     those. DESIGN.md's new values (xxs=4/xs=8/sm=12/md=16/lg=24/xl=32/
+     xxl=40/section=48) happen to land exactly on Tailwind's stock 4px-based
+     numeric scale for the five colliding names, so they're reachable
+     without any alias at all: xs=8px is `p-2`, sm=12px is `p-3`, md=16px is
+     `p-4`, lg=24px is `p-6`, xl=32px is `p-8` (same for m-/gap-/etc). Only
+     xxs/xxl/section are kept as real named aliases since those spellings
+     don't collide with any reserved Tailwind scale key. */
+  --spacing-xxs: 4px;
+  --spacing-xxl: 40px;
+  --spacing-section: 48px;
+
+  /* ---- Breakpoints ------------------------------------------------------
+     Unchanged from the previous pass -- DESIGN.md's Responsive Behavior
+     section explicitly keeps the previous breakpoints/touch-target rules,
+     this retoken pass is palette/type/shape only. */
+  --breakpoint-desktop: 1200px;
+
+  /* ---- Typography -- DESIGN.md `typography` ---------------------------
+     Each entry pairs a font-size with its DESIGN.md line-height/weight via
+     Tailwind v4's `--text-*--line-height` / `--text-*--font-weight`
+     companion variables, so e.g. `text-heading-lg` alone applies size +
+     line-height + weight together. Nine tokens now (was thirteen): the old
+     scale's heading-xl/button-lg/button-sm/link-md/caption-sm are gone,
+     folded into a smaller, denser scale (DESIGN.md is explicit that this
+     system runs "a step denser" than the previous one -- body 16px->14px
+     etc.) -- and display-hero (Bebas-only, uppercase-transform) is replaced
+     by display-lg, a plain large/medium-weight Inter size with no special
+     utility needed since it has no font-family or text-transform of its
+     own anymore, just size/line-height/weight like every other entry. */
+  --text-display-lg: 32px;
+  --text-display-lg--line-height: 1.2;
+  --text-display-lg--font-weight: 500;
+
+  --text-heading-lg: 24px;
+  --text-heading-lg--line-height: 1.3;
+  --text-heading-lg--font-weight: 500;
+
+  --text-heading-md: 16px;
+  --text-heading-md--line-height: 1.4;
+  --text-heading-md--font-weight: 500;
+
+  --text-body-md: 14px;
+  --text-body-md--line-height: 1.5;
+  --text-body-md--font-weight: 400;
+
+  --text-body-strong: 14px;
+  --text-body-strong--line-height: 1.5;
+  --text-body-strong--font-weight: 500;
+
+  --text-button: 14px;
+  --text-button--line-height: 1.4;
+  --text-button--font-weight: 500;
+
+  --text-label: 13px;
+  --text-label--line-height: 1.4;
+  --text-label--font-weight: 500;
+
+  --text-caption: 12px;
+  --text-caption--line-height: 1.4;
+  --text-caption--font-weight: 500;
+
+  --text-utility-xs: 11px;
+  --text-utility-xs--line-height: 1.4;
+  --text-utility-xs--font-weight: 500;
+
+  /* ---- Elevation -- DESIGN.md `Elevation & Depth` --------------------
+     DESIGN.md states plainly there is not a single shadow anywhere in this
+     system ("그림자는 시스템 전체에 단 하나도 없다") -- stronger than the
+     previous version, which still had one inset-line box-shadow token
+     (confirmed unused by any component even then; removed outright now,
+     no replacement). Level 1 (hairline) is a plain 1px border and needs no
+     token of its own -- `border border-hairline` expresses it directly.
+     Level 2 (ink block) is a background color, not a shadow -- Card's
+     `ink` variant already expresses it via `bg-ink`. */
+}
+
+/* Admin mobile bottom-tab bar: previously scrolled horizontally to fit 7
+   items under the 44px WCAG AAA touch-target floor on a 375px viewport.
+   The nav restructure (7 flat items -> 5 top-level items, 3 of the old
+   items folded into an "인력관리" submenu) means 5 items now fit a 375px
+   bar without shrinking below that floor, so the scroll-strip treatment is
+   gone from admin-nav.tsx and this utility is no longer used there --
+   still defined in case a future dense-tab-bar screen needs it, but grepped
+   at the end of this pass to confirm nothing currently depends on it. */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+:root {
+  --background: #ffffff;
+  /* Realigned to the new DESIGN.md ink (#181d26, was #111111). Only affects
+     app/page.tsx's bg-foreground/text-background utilities (an unreachable
+     scaffold page, out of this pass's real scope) -- kept in sync anyway
+     since it's a pure token-value fix with no structural change. */
+  --foreground: #181d26;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+/* Mobile admin nav's "인력관리" sub-sheet (app/admin/admin-nav.tsx):
+   a small slide-up-and-fade entrance for the bottom sheet, the one bit of
+   authored motion this nav restructure introduces. motion-safe: gated at
+   the call site, and the blanket prefers-reduced-motion rule further down
+   this file collapses its duration to ~0 regardless, so this is always a
+   no-op for a reduced-motion visitor even if the class were ever applied
+   without the variant. */
+@keyframes roster-sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* DESIGN.md is an explicitly light-only design system -- no dark variant.
+   (Dark-mode CSS variables were removed from this file entirely in an
+   earlier commit, not reintroduced here.) */
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* info (#1b61c9) as the system's one interactive accent -- focus rings,
+   links, active nav state -- never a filled CTA background (DESIGN.md's own
+   "Do" list: "정보 색은 포커스 링·링크·활성 상태에만"). A global
+   :focus-visible rule is the clearest expression of that: every interactive
+   element gets a consistent keyboard-focus indicator independent of which
+   component it's built from. This adds an outline on top of whatever a
+   given element already does on focus -- it does not remove or fight any
+   existing focus treatment (e.g. text-input's own `focus:border-info`,
+   which changes the border color rather than the outline). */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-info);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+}
+
+/* Respect prefers-reduced-motion app-wide -- unchanged from the previous
+   pass. Collapses every animation/transition's duration to effectively zero
+   for users who've asked the OS for reduced motion, regardless of whether a
+   given component remembered its own motion-reduce: variant. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
