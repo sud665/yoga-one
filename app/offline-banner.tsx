@@ -33,7 +33,7 @@ export function OfflineBanner() {
     <div
       role="alert"
       data-testid="offline-banner"
-      className="w-full bg-black px-4 py-3 text-center text-sm font-medium text-white"
+      className="w-full bg-ink px-4 py-3 text-center text-body-strong text-on-ink"
     >
       인터넷 연결이 끊겼습니다. 예약 등 일부 기능이 동작하지 않을 수 있습니다.
     </div>
