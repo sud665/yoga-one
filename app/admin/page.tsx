@@ -47,13 +47,14 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="mx-auto w-full max-w-3xl px-6 py-8 md:py-12">
-      <h1 className="mb-6 text-heading-xl text-ink md:mb-8">원장 대시보드</h1>
+      <h1 className="mb-6 text-heading-lg text-ink md:mb-8">원장 대시보드</h1>
 
-      {/* DESIGN.md `dashboard-summary-card` -- ink 배경 + on-primary 텍스트
-          + heading-lg급 숫자. 이전에는 페이지마다 `rounded-none bg-black`을
-          직접 반복했는데, 이제 Card(variant="ink")로 대체해 다른 화면도
-          같은 요약카드를 재사용할 수 있다. rounded-card(Adjustment #1)가
-          적용되어 예전의 완전 각진 처리 대신 부드러운 16px 라운드를 쓴다. */}
+      {/* DESIGN.md `dashboard-summary-card` -- ink 배경 + on-ink 텍스트 +
+          heading-lg급 숫자(card-ink 컴포넌트의 명시 타이포그래피). 이전에는
+          페이지마다 `rounded-none bg-black`을 직접 반복했는데, 이제
+          Card(variant="ink")로 대체해 다른 화면도 같은 요약카드를 재사용할
+          수 있다. rounded-card가 적용되어 완전 각진 처리 대신 14px 라운드를
+          쓴다. */}
       <div className="flex flex-col gap-4 sm:flex-row" aria-live="polite">
         {summary === null ? (
           <>
@@ -63,12 +64,12 @@ export default function AdminDashboardPage() {
         ) : (
           <>
             <Card variant="ink" className="flex-1">
-              <p className="text-caption-md text-on-primary/70">오늘 수업</p>
-              <p className="text-heading-xl">{summary.todaySessionCount}건</p>
+              <p className="text-caption text-on-ink/70">오늘 수업</p>
+              <p className="text-heading-lg">{summary.todaySessionCount}건</p>
             </Card>
             <Card variant="ink" className="flex-1">
-              <p className="text-caption-md text-on-primary/70">대기중인 예약</p>
-              <p className="text-heading-xl">{summary.waitlistedCount}건</p>
+              <p className="text-caption text-on-ink/70">대기중인 예약</p>
+              <p className="text-heading-lg">{summary.waitlistedCount}건</p>
             </Card>
           </>
         )}
@@ -81,9 +82,9 @@ export default function AdminDashboardPage() {
             <Link
               key={action.href}
               href={action.href}
-              className="flex flex-col items-center gap-2 rounded-card border border-hairline bg-canvas px-4 py-6 text-center text-caption-md text-ink transition-colors hover:bg-soft-cloud"
+              className="flex flex-col items-center gap-2 rounded-card border border-hairline bg-canvas px-4 py-6 text-center text-caption text-ink transition-colors hover:bg-surface-soft"
             >
-              <Icon className="text-mute" />
+              <Icon className="text-muted" />
               {action.label}
             </Link>
           )
