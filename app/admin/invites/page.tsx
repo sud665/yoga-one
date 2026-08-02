@@ -3,9 +3,13 @@
 import { useState, useTransition, useEffect } from 'react'
 import { createInvite, listInvites } from '@/lib/actions/invites'
 import type { Invite } from '@/lib/types'
+import { Button } from '@/components/ui/Button'
+import { StatusBadge } from '@/components/ui/Badge'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 export default function InvitesPage() {
-  const [invites, setInvites] = useState<Invite[]>([])
+  const [invites, setInvites] = useState<Invite[] | null>(null)
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -30,58 +34,59 @@ export default function InvitesPage() {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-12">
-      <h1 className="mb-8 text-3xl font-medium text-black">초대 관리</h1>
+      <h1 className="mb-8 text-heading-lg text-ink">초대 관리</h1>
 
       <div className="flex flex-col gap-3 sm:flex-row">
-        <button
-          onClick={() => handleCreate('instructor')}
-          disabled={isPending}
-          className="rounded-full bg-black px-8 py-3 text-base font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
-        >
+        <Button onClick={() => handleCreate('instructor')} disabled={isPending}>
           강사 초대 링크 발급
-        </button>
-        <button
-          onClick={() => handleCreate('member')}
-          disabled={isPending}
-          className="rounded-full bg-zinc-100 px-8 py-3 text-base font-medium text-black transition hover:bg-zinc-200 disabled:cursor-not-allowed disabled:opacity-50"
-        >
+        </Button>
+        <Button variant="secondary" onClick={() => handleCreate('member')} disabled={isPending}>
           회원 초대 링크 발급
-        </button>
+        </Button>
       </div>
 
       {error && (
-        <p role="alert" className="mt-4 text-sm text-[#d30005]">
+        <p role="alert" className="mt-4 text-body-md text-danger">
           {error}
         </p>
       )}
 
       {generatedUrl && (
-        <p className="mt-6 break-all rounded-2xl bg-zinc-100 px-4 py-3 text-sm text-black">
+        <p className="mt-6 break-all rounded-card bg-surface-soft px-4 py-3 text-body-md text-ink">
           발급된 링크:{' '}
-          <a href={generatedUrl} className="font-medium underline">
+          <a href={generatedUrl} className="text-body-strong text-info underline">
             {generatedUrl}
           </a>
         </p>
       )}
 
-      <ul className="mt-10 flex flex-col">
-        {invites.map((invite) => (
-          <li
-            key={invite.id}
-            className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-zinc-200 py-4 text-sm text-black first:border-t-0"
-          >
-            <span className="font-medium">{invite.role}</span>
-            <span className="text-zinc-400">·</span>
-            <span className="font-mono text-zinc-600">{invite.code}</span>
-            <span className="text-zinc-400">·</span>
-            <span className={invite.used_at ? 'text-zinc-500' : 'text-[#007d48]'}>
-              {invite.used_at ? '사용됨' : '미사용'}
-            </span>
-            <span className="text-zinc-400">·</span>
-            <span className="text-zinc-500">만료 {invite.expires_at}</span>
-          </li>
-        ))}
-      </ul>
+      {invites === null ? (
+        <div className="mt-10 flex flex-col gap-3">
+          <Skeleton variant="block" className="h-14" />
+          <Skeleton variant="block" className="h-14" />
+        </div>
+      ) : invites.length === 0 ? (
+        <EmptyState className="mt-10" title="발급된 초대가 없습니다" description="위 버튼으로 초대 링크를 발급해보세요." />
+      ) : (
+        <ul className="mt-10 flex flex-col">
+          {invites.map((invite) => (
+            <li
+              key={invite.id}
+              className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-hairline py-4 text-body-md text-ink first:border-t-0"
+            >
+              <span className="text-body-strong">{invite.role}</span>
+              <span className="text-muted">·</span>
+              <span className="font-mono text-muted">{invite.code}</span>
+              <span className="text-muted">·</span>
+              <StatusBadge tone={invite.used_at ? 'waitlisted' : 'success'}>
+                {invite.used_at ? '사용됨' : '미사용'}
+              </StatusBadge>
+              <span className="text-muted">·</span>
+              <span className="text-muted">만료 {invite.expires_at}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

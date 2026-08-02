@@ -4,6 +4,10 @@ import { useState, useEffect } from 'react'
 import { listProfilesByRole } from '@/lib/actions/roster'
 import { createInvite } from '@/lib/actions/invites'
 import type { Profile } from '@/lib/types'
+import { Button } from '@/components/ui/Button'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { useToast } from '@/components/ui/Toast'
 
 // One shared component for both the instructor and member roster screens --
 // the two screens are structurally identical (list + invite-issuance
@@ -11,8 +15,9 @@ import type { Profile } from '@/lib/types'
 // only things that vary between app/admin/roster/instructors/page.tsx and
 // app/admin/roster/members/page.tsx.
 export function RosterTable({ role, label }: { role: 'instructor' | 'member'; label: string }) {
-  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [profiles, setProfiles] = useState<Profile[] | null>(null)
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
+  const { toast } = useToast()
 
   useEffect(() => {
     listProfilesByRole(role).then(setProfiles)
@@ -20,41 +25,58 @@ export function RosterTable({ role, label }: { role: 'instructor' | 'member'; la
 
   async function handleInvite() {
     const result = await createInvite(role)
-    if ('url' in result) setGeneratedUrl(result.url)
+    if ('url' in result) {
+      setGeneratedUrl(result.url)
+      return
+    }
+    // Previously silent: a failed createInvite() (e.g. not signed in as the
+    // owner) just did nothing, with zero feedback that the click had any
+    // effect at all. Not covered by any Playwright spec (every e2e
+    // invite-issuance flow goes through /admin/invites, not this roster
+    // shortcut), so wiring this to a toast carries no test risk.
+    toast({ title: `${label} 초대 링크를 발급하지 못했습니다`, description: result.error, tone: 'error' })
   }
 
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-12">
-      <h1 className="mb-8 text-3xl font-medium text-black">{label} 관리</h1>
+      <h1 className="mb-8 text-heading-lg text-ink">{label} 관리</h1>
 
-      <button
-        onClick={handleInvite}
-        className="rounded-full bg-black px-8 py-3 text-base font-medium text-white transition hover:bg-zinc-800"
-      >
-        {label} 초대 링크 발급
-      </button>
+      <Button onClick={handleInvite}>{label} 초대 링크 발급</Button>
 
       {generatedUrl && (
-        <p className="mt-6 break-all rounded-2xl bg-zinc-100 px-4 py-3 text-sm text-black">
+        <p className="mt-6 break-all rounded-card bg-surface-soft px-4 py-3 text-body-md text-ink">
           발급된 링크:{' '}
-          <a href={generatedUrl} className="font-medium underline">
+          <a href={generatedUrl} className="text-body-strong text-info underline">
             {generatedUrl}
           </a>
         </p>
       )}
 
-      <ul className="mt-10 flex flex-col">
-        {profiles.map((p) => (
-          <li
-            key={p.id}
-            className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-zinc-200 py-4 text-sm text-black first:border-t-0"
-          >
-            <span className="font-medium">{p.full_name}</span>
-            <span className="text-zinc-400">·</span>
-            <span className="text-zinc-500">{p.phone ?? '연락처 미등록'}</span>
-          </li>
-        ))}
-      </ul>
+      {profiles === null ? (
+        <div className="mt-10 flex flex-col gap-3">
+          <Skeleton variant="block" className="h-14" />
+          <Skeleton variant="block" className="h-14" />
+        </div>
+      ) : profiles.length === 0 ? (
+        <EmptyState
+          className="mt-10"
+          title={`등록된 ${label}이(가) 없습니다`}
+          description="위 버튼으로 초대 링크를 발급해보세요."
+        />
+      ) : (
+        <ul className="mt-10 flex flex-col">
+          {profiles.map((p) => (
+            <li
+              key={p.id}
+              className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-hairline py-4 text-body-md text-ink first:border-t-0"
+            >
+              <span className="text-body-strong">{p.full_name}</span>
+              <span className="text-muted">·</span>
+              <span className="text-muted">{p.phone ?? '연락처 미등록'}</span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }

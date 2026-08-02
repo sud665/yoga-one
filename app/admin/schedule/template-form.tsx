@@ -2,6 +2,8 @@
 
 import { useState, useTransition, useEffect } from 'react'
 import { createClassTemplate, listInstructors, type InstructorOption } from '@/lib/actions/schedule'
+import { Button } from '@/components/ui/Button'
+import { TextInput, Select } from '@/components/ui/TextInput'
 
 const DAY_OPTIONS = [
   { value: '0', label: '일' },
@@ -12,9 +14,6 @@ const DAY_OPTIONS = [
   { value: '5', label: '금' },
   { value: '6', label: '토' },
 ]
-
-const inputClassName =
-  'w-full rounded-2xl border border-zinc-300 bg-white px-4 py-3 text-base text-black placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-black'
 
 export function TemplateForm({ onCreated }: { onCreated: () => void }) {
   const [instructors, setInstructors] = useState<InstructorOption[]>([])
@@ -44,44 +43,33 @@ export function TemplateForm({ onCreated }: { onCreated: () => void }) {
 
   return (
     <form action={handleSubmit} className="flex flex-col gap-4">
-      <input name="title" placeholder="클래스명" required className={inputClassName} />
-      <select name="instructorId" required className={inputClassName}>
+      <TextInput name="title" placeholder="클래스명" required />
+      <Select name="instructorId" required>
         <option value="">강사 선택</option>
         {instructors.map((i) => (
           <option key={i.id} value={i.id}>
             {i.full_name}
           </option>
         ))}
-      </select>
-      <select name="dayOfWeek" required className={inputClassName}>
+      </Select>
+      <Select name="dayOfWeek" required>
         {DAY_OPTIONS.map((d) => (
           <option key={d.value} value={d.value}>
             {d.label}
           </option>
         ))}
-      </select>
-      <input name="startTime" type="time" required className={inputClassName} />
-      <input
-        name="durationMin"
-        type="number"
-        placeholder="시간(분)"
-        defaultValue={60}
-        required
-        className={inputClassName}
-      />
-      <input name="capacity" type="number" placeholder="정원" required className={inputClassName} />
+      </Select>
+      <TextInput name="startTime" type="time" required />
+      <TextInput name="durationMin" type="number" placeholder="시간(분)" defaultValue={60} required />
+      <TextInput name="capacity" type="number" placeholder="정원" required />
       {error && (
-        <p role="alert" className="text-sm text-[#d30005]">
+        <p role="alert" className="text-body-md text-danger">
           {error}
         </p>
       )}
-      <button
-        type="submit"
-        disabled={isPending}
-        className="mt-2 w-full rounded-full bg-black px-8 py-3 text-base font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
-      >
+      <Button type="submit" disabled={isPending} className="mt-2 w-full">
         시간표 추가
-      </button>
+      </Button>
     </form>
   )
 }
