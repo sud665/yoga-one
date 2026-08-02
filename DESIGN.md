@@ -113,6 +113,7 @@ typography:
 
 rounded:
   none: 0px
+  card: 16px
   sm: 18px
   md: 24px
   lg: 30px
@@ -200,11 +201,11 @@ components:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
     typography: "{typography.body-strong}"
-    rounded: "{rounded.none}"
+    rounded: "{rounded.card}"
     padding: 0px
   session-card-media:
     backgroundColor: "{colors.soft-cloud}"
-    rounded: "{rounded.none}"
+    rounded: "{rounded.card}"
   hero-tile:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.on-primary}"
@@ -214,12 +215,12 @@ components:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
     typography: "{typography.caption-md}"
-    rounded: "{rounded.none}"
+    rounded: "{rounded.card}"
   dashboard-summary-card:
     backgroundColor: "{colors.ink}"
     textColor: "{colors.on-primary}"
     typography: "{typography.heading-lg}"
-    rounded: "{rounded.none}"
+    rounded: "{rounded.card}"
   faq-row:
     backgroundColor: "{colors.canvas}"
     textColor: "{colors.ink}"
@@ -243,6 +244,35 @@ components:
     textColor: "{colors.ink}"
     typography: "{typography.body-strong}"
     rounded: "{rounded.none}"
+  admin-sidebar:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body-strong}"
+    rounded: "{rounded.none}"
+    width: 240px
+  admin-sidebar-item-active:
+    backgroundColor: "{colors.info}"
+    textColor: "{colors.info}"
+    rounded: "{rounded.card}"
+  toast:
+    backgroundColor: "{colors.canvas}"
+    textColor: "{colors.ink}"
+    typography: "{typography.body-strong}"
+    rounded: "{rounded.card}"
+    border: "1px solid {colors.hairline}"
+  skeleton:
+    backgroundColor: "{colors.hairline-soft}"
+    rounded: "{rounded.card}"
+  empty-state:
+    backgroundColor: "{colors.soft-cloud}"
+    textColor: "{colors.ink}"
+    typography: "{typography.heading-md}"
+    rounded: "{rounded.card}"
+    border: "1px solid {colors.hairline}"
+  focus-ring:
+    color: "{colors.info}"
+    width: 2px
+    offset: 2px
 ---
 
 ## Overview
@@ -251,16 +281,17 @@ components:
 
 밀도는 높지만 산만하지 않다 — 세 가지 장치 덕분이다: `{colors.soft-cloud}` 위에 올라간 세션 카드, 모든 실행 가능한 표면을 고정하는 알약형 검정 CTA(`{rounded.full}`), 그리고 카드와 필터를 수학적으로 정렬시키는 8px 기반 촘촘한 스페이싱 스케일.
 
-원장/강사/회원 세 역할 화면(`/admin`, `/instructor`, `/member`) 전부 동일한 크롬을 공유한다 — 역할에 따라 데이터와 내비게이션 구성만 달라질 뿐, 버튼·카드·배지·타이포 시스템은 하나다.
+원장/강사/회원 세 역할 화면(`/admin`, `/instructor`, `/member`) 전부 동일한 크롬을 공유한다 — 역할에 따라 데이터와 내비게이션 구성만 달라질 뿐, 버튼·카드·배지·타이포 시스템은 하나다. (`/admin`은 항목이 7개로 다른 두 역할보다 훨씬 많아, nav의 *구조*(사이드바 vs 상단 바)도 역할별로 달라진 첫 사례다 — Navigation 섹션의 `admin-sidebar` 참고. 색상/타이포/버튼/카드 시스템 자체는 여전히 셋이 공유한다.)
 
 **핵심 특징**
 - 로그인/온보딩 화면에만 `{typography.display-hero}`(Bebas Neue, 64px, line-height 0.95, uppercase)를 사용한 임팩트 있는 헤드라인 — 앱 내부 화면에는 절대 쓰지 않는다
-- 순흑/순백/단일 그레이 팔레트: `{colors.ink}`, `{colors.canvas}`, `{colors.soft-cloud}`가 전체 크롬의 ~95%를 차지
+- 순흑/순백/단일 그레이 팔레트: `{colors.ink}`, `{colors.canvas}`, `{colors.soft-cloud}`가 전체 크롬의 ~85-90%를 차지 (기존 ~95% 프레이밍에서 완화 — `{colors.info}`가 배지 전용에서 벗어나 포커스 링·인터랙티브 액센트로 쓰이는 만큼 소폭 늘었지만, 여전히 ink/canvas/soft-cloud가 압도적으로 지배적이어야 한다. "리페인트"가 아니라 "절제된 액센트 추가")
+- 데이터 컨테이너(카드·패널·테이블 행)는 `{rounded.card}`(16px)로 살짝 둥글다 — nav·필터 사이드바·시간표 그리드 등 구조적 크롬은 여전히 `{rounded.none}`(각진 커머스룩 유지)
 - 모든 CTA·검색창·필터칩·배지는 `{rounded.full}`(9999px) 또는 `{rounded.md}`(24px) — 각진 버튼 없음
-- 세션 카드는 radius 0, 그림자 0, `{colors.canvas}` 위에 그대로 얹힘
+- 세션 카드는 `{rounded.card}`, 그림자 0(리터럴 드롭섀도우 없음) — `{colors.canvas}` 위에 얹히되 hairline 보더로 패널 경계를 표현
 - 2단 CTA 위계: `{component.button-primary}`(예약하기·저장 등 1순위 액션) vs `{component.button-secondary}`(취소·더보기 등 보조 액션) — 같은 화면에 검정 CTA는 하나만
 - 8px 스페이싱, 섹션 리듬은 `{spacing.section}`(48px)
-- 채도 있는 색은 정원마감(`{colors.full}`)과 예약확정(`{colors.success}`) 같은 상태 신호, 그리고 클래스 타입 태그(`{colors.tag-a}`, `{colors.tag-c}` 등)에만 등장
+- 채도 있는 색은 정원마감(`{colors.full}`)과 예약확정(`{colors.success}`) 같은 상태 신호, 클래스 타입 태그(`{colors.tag-a}`, `{colors.tag-c}` 등), 그리고 `{colors.info}`의 인터랙티브 액센트(포커스 링, 링크, 활성 nav 항목)에만 등장
 
 ## Colors
 
@@ -281,7 +312,7 @@ components:
 - **Full Deep** (`{colors.full-deep}`): 눌림/호버 상태.
 - **Success** (`{colors.success}` — `#007d48`): 예약확정·출석 신호.
 - **Success Bright**: 어두운 배경 위 반전 success.
-- **Info** (`{colors.info}` — `#1151ff`): 공지·안내 배지.
+- **Info** (`{colors.info}` — `#1151ff`): 공지·안내 배지 + 인터랙티브 액센트. 원래는 배지 전용이었지만, `:focus-visible` 키보드 포커스 링, 링크/인터랙티브 요소 액센트, 활성 상태 표시(예: 사이드바 활성 항목)까지 역할이 넓어졌다 — "숨쉬는" 액센트 컬러로, 배경을 채우는 주요 CTA 색으로는 여전히 쓰지 않는다(그 자리는 `{colors.ink}` 고유 영역). 캔버스(`#ffffff`) 위 대비비 ≈5.76:1로 텍스트/아이콘 액센트로도 안전.
 - **Info Deep**: 눌림 상태.
 
 ### Tag (클래스 타입 라벨)
@@ -295,7 +326,7 @@ components:
 ## Typography
 
 ### Font Family
-- **Bebas Neue** — `{typography.display-hero}` 전용. 로그인/온보딩 화면 임팩트 헤드라인. Google Fonts 무료 폰트, Nike Futura ND 대체.
+- **Bebas Neue** — `{typography.display-hero}` 전용. 로그인/온보딩 화면 임팩트 헤드라인. Google Fonts 무료 폰트, Nike Futura ND 대체. 실제로는 단일 정적 weight(400)만 제공하는 폰트라, `display-hero`의 문서상 weight 500은 실제 렌더링에서 400으로 적용된다(합성 볼드를 피하기 위한 의도적 선택 — 존재하지 않는 weight를 브라우저가 가짜로 굵게 만드는 것보다 실제 weight 그대로 쓰는 쪽이 더 낫다).
 - **Inter** — 그 외 전체(heading/body/button/caption). Nike의 Helvetica Now Text/Display 대체로 시스템 자체가 권장하는 조합이며, 무료·오픈소스(OFL)라 라이선스 문제 없음.
 
 ### Hierarchy
@@ -339,17 +370,20 @@ components:
 | 1 — Hairline | 1px solid `{colors.hairline}` | 필터 행 구분선, 상세정보 아코디언 구분선 |
 | 2 — Inset bottom-line | `inset 0 -1px 0 {colors.hairline-soft}` | 스티키 상단바 하단 |
 
-카드는 페이지 위에서 들뜨지 않는다. 깊이감은 색 대비(`{colors.ink}` 요약카드 vs `{colors.canvas}` 배경)로만 표현한다.
+카드는 페이지 위에서 들뜨지 않는다 — 리터럴 드롭섀도우는 여전히 없다. 다만 관리형(admin) 화면처럼 데이터 밀도가 높은 컨텍스트에서는 `{rounded.card}` + Level 1(hairline 보더)을 함께 써서 카드가 배경과 구분되는 패널로 읽히게 한다(Adjustment #1). 깊이감의 1차 표현은 여전히 색 대비(`{colors.ink}` 요약카드 vs `{colors.canvas}` 배경)이고, 라운드+hairline은 그 위에 얹는 절제된 보조 장치다.
 
 ## Shapes
 
 | Token | Value | Use |
 |---|---|---|
-| `{rounded.none}` | 0px | 카드, 요약카드, nav, 시간표 그리드 — 컨테이너 전부 |
+| `{rounded.none}` | 0px | nav, 필터 사이드바, 시간표 그리드, 히어로 타일 — 구조적 크롬(각진 커머스룩 유지) |
+| `{rounded.card}` | 16px | **Adjustment #1(신규).** 데이터 컨테이너 — session-card, dashboard-summary-card, quick-action-card, toast, skeleton, empty-state, 그리고 향후 테이블 행-as-카드 패턴 |
 | `{rounded.sm}` | 18px | 아바타/아이콘 컨테이너 |
 | `{rounded.md}` | 24px | 검색창, 필터 입력창 |
 | `{rounded.lg}` | 30px | (레거시 참고용 — 현재 CTA는 `{rounded.full}` 사용) |
 | `{rounded.full}` | 9999px | 모든 CTA 알약, 태그점, 원형 아이콘 버튼 |
+
+`{rounded.card}`는 `{rounded.none}`을 대체하지 않는다 — 두 토큰 다 유효하며, 어떤 걸 쓸지는 "이게 카드/패널인가, 구조적 크롬인가"로 결정한다. 카드형 인터랙티브 요소(예: 사이드바 활성 항목의 좌측 액센트 보더)는 바깥쪽 모서리만 둥글리고 보더가 닿는 안쪽 모서리는 각지게 둬서(`{rounded.card}`를 한쪽 방향에만 적용) 액센트 보더가 깔끔한 직선으로 읽히게 한다.
 
 ## Components
 
@@ -376,8 +410,30 @@ components:
 - **`detail-disclosure-row`** — 클래스 상세정보(강사 소개, 준비물, 환불 안내 등) 아코디언 행.
 
 ### Navigation
-- **`app-nav`** — 역할별 상단/하단 내비게이션. 원장: 대시보드·강사·회원·시간표. 강사: 내 수업. 회원: 시간표·내 예약. `{colors.canvas}` 배경, 활성 항목은 `{colors.ink}` 2px 하단 밑줄.
+- **`app-nav`** — 강사·회원 역할의 상단 내비게이션(현재 구현: 항상 상단 고정, 반응형 축소 없음 — 아래 admin-sidebar 도입 이전의 원래 패턴). 강사: 내 수업. 회원: 시간표·내 예약. `{colors.canvas}` 배경, 활성 항목은 `{colors.info}` 2px 하단 밑줄(Adjustment #2 — 기존 `{colors.ink}`에서 변경. 코드는 아직 `/instructor`·`/member`에 미반영, 다음 스윕에서 적용 예정).
+- **`admin-sidebar`** (신규, Adjustment #2 + 별도 승인된 nav 개편) — `/admin`만 적용되는 좌측 사이드바. 데스크톱/태블릿(768px+, `{breakpoint.desktop}`(1200px)에서도 동일 패턴 유지)에서 폭 240px 고정 좌측 사이드바로 상시 노출(토글/collapse 없음). `{colors.canvas}` 배경, `{colors.hairline}` 우측 보더. 활성 항목은 `admin-sidebar-item-active` — `{colors.info}` 4px 좌측 보더 + `{colors.info}` 6% 틴트 배경 + `{colors.info}` 텍스트/아이콘, 나머지 세 모서리만 `{rounded.card}`(보더가 닿는 좌측은 각지게 둬서 액센트가 곧은 직선으로 읽히도록). 모바일(767px 이하)에서는 화면 하단 고정 탭 바로 전환 — DESIGN.md가 원래부터 명시했던 모바일 내비게이션 패턴(app-nav의 "하단 탭 내비게이션")을 실제로 구현한 첫 사례다(이전에는 어떤 역할도 반응형 축소를 구현하지 않았다 — 상단 nav가 모든 화면 폭에서 그대로 유지됨). 항목이 7개라 375px 화면엔 한 번에 다 들어가지 않으므로 가로 스크롤 스트립으로 처리(스크롤바는 숨기되 터치/트랙패드/키보드로 계속 도달 가능), 각 탭은 세로로 쌓인 아이콘+라벨, 활성 항목은 상단 2px `{colors.info}` 보더 + 텍스트/아이콘 `{colors.info}`. `/instructor`·`/member`는 이번 스코프에서 제외 — 여전히 위 app-nav(상단, 반응형 축소 없음) 패턴을 쓴다.
 - **`filter-sidebar`** — 시간표 화면 좌측 요일/강사 필터 레일.
+
+## Feedback & States
+
+Adjustment #3(신규) — DESIGN.md가 지금까지 명시하지 않았던 "앱 표준" 인터랙션 패턴. 예약 성공/실패 같은 액션 결과가 화면마다 제각각 구현된 `role="status"`/`role="alert"` 텍스트로만 존재했던 것(예: 기존 `app/member/bookings/page.tsx`)에서, 재사용 가능한 컴포넌트 어휘로 승격한다.
+
+### Toast
+- **`toast`** — 액션 결과 피드백(예약 성공/실패, 저장 완료 등)을 위한 일시적 배너. `{colors.canvas}` 배경, `{rounded.card}`, `{colors.hairline}` 1px 보더(Elevation Level 1) — 리터럴 드롭섀도우 없음. 톤별 좌측 액센트 점: 성공 `{colors.success}`, 실패 `{colors.full}`, 안내 `{colors.info}`, 중립 `{colors.ink}`. 화면 상단 중앙 고정, 여러 개면 아래로 쌓임. 실패(error) 톤은 `role="alert"`(assertive), 그 외는 `role="status"`(polite) — 이 코드베이스가 이미 페이지별로 써온 관용구(성공은 status, 에러는 alert)를 그대로 따른다.
+- 기존 페이지별 인라인 `role="status"`/`role="alert"` 텍스트 패턴을 이 컴포넌트가 즉시 대체하는 것은 아니다 — 새 화면 또는 다음 스윕에서 마이그레이션할 때 쓰는 표준 패턴으로 우선 정의해 둔다.
+
+### Skeleton (로딩)
+- **`skeleton`** — 비동기 데이터 fetch 중 표시하는 자리표시자. `{colors.hairline-soft}` 배경(soft-cloud보다 한 단계 더 보이는 회색 — "로딩 중"이라는 신호가 명확히 읽혀야 하므로), variant별 형태: text(짧은 줄, 작은 radius), block(카드 자리표시자, `{rounded.card}` — 대체될 카드와 같은 모양을 미리 보여준다), circle(아바타 자리표시자, `{rounded.full}`). "0건"처럼 실제 값처럼 보이는 placeholder를 잠깐 보여주고 실제 값으로 갈아치우는 기존 패턴(예: 원장 대시보드가 겪었던 깜빡임)을 대체한다.
+
+### Empty State
+- **`empty-state`** — 목록이 정당하게 비어있을 수 있는 화면(시간표, 회원/강사 로스터, 예약 목록)을 위한 패턴. `{colors.soft-cloud}` 배경 + `{colors.hairline}` 보더 + `{rounded.card}`, 중앙 정렬: 제목(`{typography.heading-md}`) + 선택적 설명(`{typography.body-md}`, `{colors.mute}`) + 선택적 액션 버튼. "없음"이라는 사실만 알리는 게 아니라 다음에 뭘 할 수 있는지 안내한다("빈 화면은 행동을 위한 초대").
+
+### Focus Visible
+- **`focus-ring`** — 모든 인터랙티브 요소의 키보드 포커스 표시. `{colors.info}` 2px 아웃라인, 2px 오프셋. Adjustment #2에 따라 info를 액센트로 쓰는 가장 시스템적인 자리 — 컴포넌트 단위가 아니라 앱 전역 base 규칙으로 적용해, 아직 새 토큰으로 마이그레이션되지 않은 화면에도 최소한의 일관된 키보드 접근성을 보장한다.
+
+### Reduced Motion
+- 이 시스템에서 애니메이션은 절제 원칙("장식적 그라디언트나 소프트 섀도우는 없다")의 연장선이다 — 있더라도 짧고(~150-200ms) 목적이 분명한(투명도/위치 이동 정도) 전환만 쓴다.
+- `prefers-reduced-motion: reduce`가 감지되면 모든 애니메이션/전환 duration이 사실상 0으로 수렴한다(앱 전역 기본값). Toast의 진입 전환처럼 의도적으로 움직임을 쓰는 컴포넌트는 추가로 `motion-safe:`/`motion-reduce:` 조건부 처리를 더해, reduced-motion 사용자에게는 전환 없이 즉시 나타나는 대안을 준다.
 
 ## Do's and Don'ts
 
@@ -387,9 +443,11 @@ components:
 - 세션 카드 썸네일은 `{colors.soft-cloud}` 위에 얹는다(썸네일 없어도 동일 배경 유지로 그리드 정렬 흔들리지 않게).
 - CTA는 전부 `{rounded.full}` 알약형으로 통일.
 - `{colors.full}`은 정원마감·취소 신호에만 — 배경이나 장식色으로 쓰지 않는다.
+- 데이터 컨테이너(카드/패널)는 `{rounded.card}` + hairline 보더로 구분한다(Adjustment #1) — nav·필터 사이드바 같은 구조적 크롬은 `{rounded.none}` 그대로.
+- `{colors.info}`는 포커스 링·링크·활성 상태처럼 실제 인터랙션 신호가 필요한 자리에만 — 화면을 파랗게 물들이는 장식色으로 쓰지 않는다(Adjustment #2, ink/canvas/soft-cloud가 여전히 ~85-90% 지배).
 
 ### Don't
-- 그림자/카드 elevation 넣지 않는다.
+- 리터럴 드롭섀도우는 넣지 않는다 — 카드 구분은 `{rounded.card}` + hairline 보더로, 색이 있는 `box-shadow` 블러로 하지 않는다.
 - 태그 컬러(`{colors.tag-a}`, `{colors.tag-c}` 등)를 주요 CTA나 본문 텍스트 색으로 쓰지 않는다 — 태그점·필터칩 전용.
 - `{colors.ink}`를 `{colors.charcoal}` 같은 미묘한 회색으로 대체하지 않는다 — 기본 CTA는 순정 `#111111`.
 - 세션 카드 내부에 여백을 넣지 않는다 — 메타데이터는 미디어 영역 바로 아래 `{spacing.sm}` 간격으로.
@@ -403,7 +461,9 @@ components:
 | tablet | 768–1199px | 시간표 2일씩 묶어보기, 필터는 토글형 |
 | mobile | ~767px 이하 | 시간표 일자별 세로 리스트 1열, 하단 탭 내비게이션(app-nav) |
 
-- 터치 타겟은 WCAG AAA(44×44px) 기준 충족 — CTA 48px, 아이콘 버튼 40px(히트 영역 48px+로 확장).
+`admin-sidebar`는 desktop/tablet 두 티어에서 동일하게 동작(둘 다 상시 고정 사이드바 — 티어 간 시각적 차이 없음)하므로, 768px 경계 하나만 필요하다. `{breakpoint.desktop}`(1200px)는 이번 페이즈에서 토큰으로만 등록되었고(Tailwind `--breakpoint-desktop`), 실제로 이 값을 구분해 쓰는 반응형 규칙은 아직 시간표 그리드 쪽(미착수)뿐이다.
+
+- 터치 타겟은 WCAG AAA(44×44px) 기준 충족 — CTA 48px, 아이콘 버튼 40px(히트 영역 48px+로 확장). `admin-sidebar`의 모바일 하단 탭은 각 항목 최소 72×64px로 이 기준을 여유 있게 충족.
 - 섹션 간격은 데스크톱 48px → 태블릿 32px → 모바일 24px로 축소.
 
 ## Iteration Guide
@@ -415,6 +475,9 @@ components:
 
 ## Known Gaps
 
-- 회원가입/로그인 폼 필드 스타일은 검색창(search-pill) 패턴을 참고해 추후 정의 필요.
+- 회원가입/로그인 폼 필드 스타일은 검색창(search-pill) 패턴을 참고해 추후 정의 필요. (이번 파운데이션 페이즈에서도 손대지 않음 — `/admin` 셸 + 공용 프리미티브가 스코프였고 auth 화면은 별도 페이즈.)
 - 채팅/단체채팅 화면 컴포넌트는 해당 기능이 별도 스펙으로 진행될 때 이 문서에 추가한다.
 - 수강료관리(결제, 영수증) 화면 컴포넌트도 해당 스펙 진행 시 추가한다.
+- **(신규)** `/instructor`·`/member`는 이번 페이즈에서 nav 구조도, 새 색상/라운드/포커스 링 토큰도 적용되지 않았다 — 여전히 기존 `app-nav`(반응형 축소 없는 상단 바) + 원본 ad hoc Tailwind 클래스 그대로다. 다음 스윕에서 토큰 적용, 그 다음에 nav 패턴 통일 여부를 별도 검토.
+- **(신규)** `/admin`의 하위 페이지(schedule, roster/*, invites, bookings)는 공용 레이아웃 변경(사이드바)의 영향만 받았을 뿐, 페이지 자체 콘텐츠는 여전히 이전 ad hoc Tailwind 클래스 그대로다 — `components/ui/*` 프리미티브로 재작성되지 않았다.
+- **(신규)** `toast`/`empty-state`는 컴포넌트로 정의되고 `ToastProvider`가 앱 루트에 마운트되었지만, 기존 페이지의 인라인 `role="status"`/`role="alert"` 피드백이나 "없음" 텍스트를 이 패턴으로 교체하는 마이그레이션은 아직 이뤄지지 않았다(원장 대시보드의 fetch-에러 토스트 1건만 실제 사용 사례) — 다음 스윕에서 예약/로스터/시간표 페이지들이 순차 전환 대상.
