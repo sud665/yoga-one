@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { listMySessionsWithBookings, markAttendance } from '@/lib/actions/attendance'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -42,6 +42,13 @@ export default function InstructorHomePage() {
   }
 
   const visible = sessions === null ? null : period.filter(sessions, (s) => s.date)
+  // Dots go on every day that has something, not just the days that
+  // survive the current filter -- otherwise selecting a day would erase
+  // the marks that show where the other days are.
+  const datesWithItems = useMemo(
+    () => Array.from(new Set((sessions ?? []).map((s) => s.date).filter((d): d is string => Boolean(d)))),
+    [sessions]
+  )
 
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-12">
@@ -55,6 +62,9 @@ export default function InstructorHomePage() {
           onGranularityChange={period.setGranularity}
           onAnchorChange={period.setAnchor}
           matchCount={visible?.length}
+          view={period.view}
+          onViewChange={period.setView}
+          datesWithItems={datesWithItems}
         />
       )}
 

@@ -1,8 +1,10 @@
 'use client'
 
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarDays, ChevronLeft, ChevronRight, List } from 'lucide-react'
 
 import { periodLabel, shiftPeriod, type Granularity } from '@/lib/period'
+import type { PeriodView } from '@/lib/use-period-filter'
+import { SessionCalendar } from './SessionCalendar'
 import { cx } from './utils'
 
 const OPTIONS: { value: Granularity; label: string }[] = [
@@ -20,6 +22,11 @@ export interface PeriodFilterProps {
   /** Count of rows currently passing the filter, shown beside the period. */
   matchCount?: number
   className?: string
+  /** Omit both to render the list controls only, with no calendar toggle. */
+  view?: PeriodView
+  onViewChange?: (view: PeriodView) => void
+  /** Days with at least one row, 'YYYY-MM-DD'. Dotted in the calendar. */
+  datesWithItems?: string[]
 }
 
 // 일/주/월 filter for the dated list screens, paired with usePeriodFilter.
@@ -37,15 +44,52 @@ export function PeriodFilter({
   onAnchorChange,
   matchCount,
   className,
+  view = 'list',
+  onViewChange,
+  datesWithItems = [],
 }: PeriodFilterProps) {
-  const showNav = granularity !== 'all'
+  const isCalendar = view === 'calendar'
+  // In calendar mode the grid already shows which period you're in and steps
+  // through months itself, so the segmented control and arrows would be a
+  // second set of controls for the same thing.
+  const showNav = !isCalendar && granularity !== 'all'
 
   return (
     <div className={cx('flex flex-col gap-3', className)}>
+      {onViewChange && (
+        <div role="group" aria-label="보기 방식" className="flex gap-1">
+          {([
+            { value: 'list' as const, label: '목록', icon: List },
+            { value: 'calendar' as const, label: '캘린더', icon: CalendarDays },
+          ]).map(({ value, label, icon: Icon }) => {
+            const active = view === value
+            return (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={active}
+                onClick={() => onViewChange(value)}
+                className={cx(
+                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-caption transition-colors',
+                  active ? 'bg-brand-tint text-brand-deep' : 'text-muted hover:text-ink'
+                )}
+              >
+                <Icon aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+                {label}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {isCalendar && (
+        <SessionCalendar selected={anchor} onSelect={onAnchorChange} datesWithSessions={datesWithItems} />
+      )}
+
       <div
         role="group"
         aria-label="기간 단위"
-        className="flex overflow-hidden rounded-button border border-hairline"
+        className={cx('flex overflow-hidden rounded-button border border-hairline', isCalendar && 'hidden')}
       >
         {OPTIONS.map((option) => {
           const selected = option.value === granularity

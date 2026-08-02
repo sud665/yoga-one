@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { listMyBookings, cancelBooking } from '@/lib/actions/bookings'
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/Badge'
@@ -45,6 +45,13 @@ export default function MyBookingsPage() {
   }
 
   const visible = bookings === null ? null : period.filter(bookings, (b) => b.session?.date)
+  // Dots go on every day that has something, not just the days that
+  // survive the current filter -- otherwise selecting a day would erase
+  // the marks that show where the other days are.
+  const datesWithItems = useMemo(
+    () => Array.from(new Set((bookings ?? []).map((b) => b.session?.date).filter((d): d is string => Boolean(d)))),
+    [bookings]
+  )
 
   return (
     <div className="mx-auto w-full max-w-2xl px-6 py-12">
@@ -58,6 +65,9 @@ export default function MyBookingsPage() {
           onGranularityChange={period.setGranularity}
           onAnchorChange={period.setAnchor}
           matchCount={visible?.length}
+          view={period.view}
+          onViewChange={period.setView}
+          datesWithItems={datesWithItems}
         />
       )}
 

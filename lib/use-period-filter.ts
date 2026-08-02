@@ -15,9 +15,31 @@ import { isWithin, periodRange, type Granularity } from './period'
  * for the nine hours a day the two calendars disagree -- and the day filter
  * would open on the wrong day with no clue why.
  */
+export type PeriodView = 'list' | 'calendar'
+
 export function usePeriodFilter(initial: Granularity = 'all') {
+  const [view, setViewState] = useState<PeriodView>('list')
   const [granularity, setGranularity] = useState<Granularity>(initial)
   const [anchor, setAnchor] = useState<string>(() => kstToday())
+
+  // The calendar is not a separate filter, it is a visual way to set the
+  // anchor at day granularity -- so switching to it forces 'day' and the same
+  // filter() below keeps working untouched. Switching back restores whatever
+  // the list was showing, so a detour through the calendar doesn't silently
+  // leave the list narrowed to one day.
+  const [listGranularity, setListGranularity] = useState<Granularity>(initial)
+  const setView = useCallback(
+    (next: PeriodView) => {
+      setViewState(next)
+      if (next === 'calendar') {
+        setListGranularity(granularity)
+        setGranularity('day')
+      } else {
+        setGranularity(listGranularity)
+      }
+    },
+    [granularity, listGranularity]
+  )
 
   const range = useMemo(() => periodRange(anchor, granularity), [anchor, granularity])
 
@@ -35,5 +57,5 @@ export function usePeriodFilter(initial: Granularity = 'all') {
     [granularity, range]
   )
 
-  return { granularity, setGranularity, anchor, setAnchor, range, filter }
+  return { view, setView, granularity, setGranularity, anchor, setAnchor, range, filter }
 }
