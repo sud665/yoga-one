@@ -353,6 +353,9 @@ tag-peach/mint/mustard/cream 파스텔 4색 유지 — 시간표 필터 칩, 클
 
 ### Inputs
 - **text-input / text-input-focus** — 44px, hairline 보더, 포커스 시 `{colors.brand-deep}` 보더.
+- **field-label** — `{typography.label}` + `{colors.muted}`, 인풋 위 6px. 값이 미리 채워진 채
+  열리는 폼(프로필)에만 쓴다. 그 외 폼은 placeholder만으로 식별한다 — 라벨과 placeholder를
+  둘 다 두면 같은 말을 두 번 하는 셈이고, 기존 스펙들도 placeholder로 필드를 찾는다.
 
 ### Cards & Signals
 - **card** — 범용 컨테이너. 캔버스 + hairline + 14px.
@@ -363,8 +366,34 @@ tag-peach/mint/mustard/cream 파스텔 4색 유지 — 시간표 필터 칩, 클
 - **tag-chip** — 파스텔 tag 배경 + 잉크 텍스트.
 
 ### Navigation
-- **app-tabs** — 하단 탭 바(원장 5탭, 회원 2탭). 캔버스 배경 + 상단 hairline, 활성 탭은
-  `{colors.brand-deep}` 아이콘/라벨. 웹 시절 admin-sidebar 어휘는 폐기.
+
+세 역할이 같은 어휘를 쓰되 화면 수만큼만 쓴다. 768px 미만은 하단 탭 바, 이상은
+원장만 사이드바이고 나머지 둘은 상단 바다.
+
+| 역할 | 탭 | 데스크톱 |
+|---|---|---|
+| 원장 | 대시보드 · 시간표관리 · **인력관리▴** · 예약현황 · **내 정보▴** | 240px 사이드바 |
+| 회원 | 대시보드 · 일정 · 내 예약 · 프로필 | 상단 바 |
+| 강사 | 내 수업 · 프로필 | 상단 바 |
+
+- **app-tabs** — 하단 탭 바 64px. 캔버스 배경 + 상단 hairline, 활성 탭은 상단 2px
+  `{colors.brand-deep}` 바 + 같은 색 아이콘/라벨. `env(safe-area-inset-bottom)`로
+  홈 인디케이터를 피한다.
+- **app-tabs-sheet (▴)** — 자식이 있는 탭. 탭 자체는 이동하지 않고 하단 시트를 연다.
+  라벨 옆 위쪽 셰브론이 유일한 예고 신호이며, 사이드바 아코디언과 같은 글리프를 쓴다.
+  탭 하나당 최소 폭은 375px ÷ 탭 수 ≥ 62px이어야 하고, "시간표관리"가 그 하한을
+  정한다 — 6개부터는 평면으로 못 들어가므로 묶는다.
+- **app-nav-top** — 56px, 하단 hairline, 활성 항목은 하단 2px `{colors.brand-deep}` 보더.
+  탭 바와 같은 아이콘·라벨을 쓴다.
+- 아이콘은 역할이 아니라 **의미**로 고른다. 같은 종류의 화면은 누가 보든 같은 글리프다
+  (대시보드=LayoutDashboard, 일정=CalendarDays, 예약=ClipboardList, 내 수업=ClipboardCheck,
+  프로필=CircleUser).
+
+### Sign-out
+- **sign-out** — 라벨 + LogOut 글리프, `{colors.muted}`, 버튼 얼굴 없음.
+  **자리는 프로필 화면 하단 하나뿐이다**(원장 데스크톱 사이드바 최하단은 예외).
+  상단 바 → 페이지 하단 푸터를 거쳐 여기로 왔다. 앞의 둘은 어쩌다 한 번 쓰는 출구에
+  모든 화면의 고정 공간을 내주고 있었다.
 
 ## Feedback & States
 

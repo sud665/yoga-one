@@ -73,6 +73,11 @@ async function acceptMemberInvite(browser: import('@playwright/test').Browser, i
   await p.getByPlaceholder('비밀번호').fill('test-password-123')
   await p.getByRole('button', { name: '회원으로 가입하기' }).click()
   await expect(p).toHaveURL(/\/member/)
+  // Signup lands on /member, which is the member dashboard now that 회원 has
+  // four tabs -- the bookable session list moved down to /member/schedule.
+  // Every caller of this helper books straight afterwards, so the helper does
+  // the hop rather than each of them repeating it.
+  await p.goto('/member/schedule')
   return p
 }
 
@@ -112,6 +117,8 @@ test('member booking fills capacity, next member is waitlisted, and cancel promo
   // gates the next step. Same fix as tests/e2e/full-flow.spec.ts.
   await expect(member1.getByRole('button', { name: '취소' })).toHaveCount(0)
 
-  await member2.goto('/member')
+  // /member/schedule, not /member: the badge being asserted is the one on the
+  // session row in the schedule list.
+  await member2.goto('/member/schedule')
   await expect(member2.getByText('예약완료')).toBeVisible()
 })

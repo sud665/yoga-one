@@ -10,7 +10,6 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { PeriodFilter } from '@/components/ui/PeriodFilter'
 import { usePeriodFilter } from '@/lib/use-period-filter'
 import { Check, X } from 'lucide-react'
-import { SignOutFooter } from '@/components/ui/SignOutButton'
 
 export default function InstructorHomePage() {
   // `any[]`가 아니라 listMySessionsWithBookings()의 실제 반환 타입을 그대로 쓴다 --
@@ -111,7 +110,6 @@ export default function InstructorHomePage() {
           </Card>
         ))
       )}
-      <SignOutFooter />
     </div>
   )
 }

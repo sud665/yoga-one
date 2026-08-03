@@ -53,6 +53,13 @@ import { test, expect } from '@playwright/test'
 //    up and books, *then* member2's invite is issued and member2 signs up) sidesteps this by
 //    construction; this spec mirrors it.
 test('full journey: onboarding through attendance', async ({ page, browser }) => {
+  // Longer still than playwright.config.ts's already-raised 60s. This is the
+  // longest journey in the suite by a wide margin -- three signed-in actors
+  // across nine steps -- and the 회원 tab split added three more full page
+  // loads to it (signup lands on the dashboard, so each member navigates on
+  // to /member/schedule before booking).
+  test.setTimeout(90_000)
+
   const stamp = Date.now()
 
   // 1. 원장 온보딩
@@ -111,6 +118,9 @@ test('full journey: onboarding through attendance', async ({ page, browser }) =>
   await member1.getByPlaceholder('비밀번호').fill('test-password-123')
   await member1.getByRole('button', { name: '회원으로 가입하기' }).click()
   await expect(member1).toHaveURL(/\/member/)
+  // 가입 직후 도착지는 회원 대시보드(/member)다 -- 예약 가능한 세션 목록은
+  // 회원 탭이 4개로 늘어나면서 /member/schedule로 한 단계 내려갔다.
+  await member1.goto('/member/schedule')
 
   // .first(): generate_sessions_for_template materializes 8 weekly instances up front
   // (Task 4), so 8 identical "예약하기" buttons exist -- an unqualified getByRole(...).click()
@@ -138,6 +148,7 @@ test('full journey: onboarding through attendance', async ({ page, browser }) =>
   await member2.getByPlaceholder('비밀번호').fill('test-password-123')
   await member2.getByRole('button', { name: '회원으로 가입하기' }).click()
   await expect(member2).toHaveURL(/\/member/)
+  await member2.goto('/member/schedule')
 
   await member2.getByRole('button', { name: '대기 등록' }).click()
   await expect(member2.getByText('정원이 마감되어 대기명단에 등록되었습니다.')).toBeVisible()
@@ -163,7 +174,7 @@ test('full journey: onboarding through attendance', async ({ page, browser }) =>
   // 커밋됐음이 보장된다.
   await expect(member1.getByRole('button', { name: '취소' })).toHaveCount(0)
 
-  await member2.goto('/member')
+  await member2.goto('/member/schedule')
   await expect(member2.getByText('예약완료')).toBeVisible()
 
   // 8. 강사 출석 체크 (원장이 아니라 2단계에서 만든 실제 강사 계정 -- 파일 상단 이탈 4 참고).

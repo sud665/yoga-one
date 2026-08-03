@@ -55,6 +55,9 @@ test('owner sees booked and waitlisted members grouped per session', async ({ pa
   await member.getByPlaceholder('비밀번호').fill('test-password-123')
   await member.getByRole('button', { name: '회원으로 가입하기' }).click()
   await expect(member).toHaveURL(/\/member/)
+  // Signup lands on the member dashboard; the bookable session list is a tab
+  // over at /member/schedule.
+  await member.goto('/member/schedule')
   // .first(): generate_sessions_for_template materializes 8 weekly instances up front (Task 4),
   // so 8 identical "예약하기" buttons exist -- an unqualified getByRole(...).click() trips
   // Playwright's strict-mode "resolved to 8 elements" violation (same fix as

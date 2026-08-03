@@ -88,6 +88,20 @@ export function periodLabel(anchor: string, granularity: Granularity): string {
   return `${s.getUTCFullYear()}년 ${s.getUTCMonth() + 1}월`
 }
 
+/**
+ * Whole calendar days from `from` to `to`; negative when `to` is earlier.
+ *
+ * Lives here rather than at its one call site (the member dashboard's D-day
+ * countdown) because the parse-in-UTC discipline this file exists to enforce
+ * is exactly what a hand-rolled `new Date(a) - new Date(b)` gets wrong: both
+ * operands land on UTC midnight, so the difference is right by luck for
+ * whole days and wrong the moment anything reads a component back out in the
+ * host timezone.
+ */
+export function daysBetween(from: string, to: string): number {
+  return Math.round((toUTC(to) - toUTC(from)) / DAY_MS)
+}
+
 /** Whether a 'YYYY-MM-DD' falls inside the range. Unbounded ends always match. */
 export function isWithin(date: string, range: PeriodRange): boolean {
   if (range.start && date < range.start) return false

@@ -70,7 +70,11 @@ export async function bookSession(sessionId: string): Promise<{ error: string } 
   const supabase = await createClient()
   const { data, error } = await supabase.rpc('book_session', { p_session_id: sessionId })
   if (error || !data) return { error: error?.message ?? '예약에 실패했습니다.' }
-  revalidatePath('/member')
+  // 'layout', not the default 'page' scope: a booking changes the schedule
+  // (/member/schedule) *and* the dashboard's next-class card and counts
+  // (/member), and the dashboard is a server component with nothing else to
+  // refetch it. Same reason in cancelBooking below.
+  revalidatePath('/member', 'layout')
   return { status: data.status }
 }
 
@@ -88,6 +92,6 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
   const supabase = await createClient()
   const { error } = await supabase.rpc('cancel_booking', { p_booking_id: bookingId })
   if (error) return { error: error.message }
-  revalidatePath('/member/bookings')
+  revalidatePath('/member', 'layout')
   return { success: true }
 }

@@ -80,6 +80,9 @@ test('an owner assigned as a session instructor can reach /instructor and mark a
   await memberPage.getByPlaceholder('비밀번호').fill('test-password-123')
   await memberPage.getByRole('button', { name: '회원으로 가입하기' }).click()
   await expect(memberPage).toHaveURL(/\/member/)
+  // Signup lands on the member dashboard; the bookable session list is a tab
+  // over at /member/schedule.
+  await memberPage.goto('/member/schedule')
   await memberPage.getByRole('button', { name: '예약하기' }).first().click()
   await expect(memberPage.getByText('예약이 확정되었습니다.')).toBeVisible()
 

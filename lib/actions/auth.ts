@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { cookies } from 'next/headers'
+import { roleHomePath } from '@/lib/role-home'
 
 export async function signUpOwnerWithPassword(
   formData: FormData
@@ -69,12 +70,25 @@ export async function signInWithPassword(formData: FormData) {
   const password = String(formData.get('password') ?? '')
 
   const supabase = await createClient()
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password })
   if (error) {
     return { error: '이메일 또는 비밀번호가 올바르지 않습니다.' }
   }
 
-  redirect('/')
+  // Straight to the role's home, not to '/'. Bouncing through the root worked
+  // in the sense that the right screen rendered, but the address bar stayed on
+  // '/' the whole time: a server-action redirect is resolved inside the Next
+  // server, so the second redirect (app/page.tsx -> /admin) streams the target
+  // page without the browser ever performing the navigation that would update
+  // the URL. Deciding here removes the hop entirely. app/page.tsx keeps its
+  // own routing for anything else that lands on the root.
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', data.user.id)
+    .maybeSingle()
+
+  redirect(profile ? roleHomePath(profile.role) : '/')
 }
 
 // Clears the Supabase session cookies and drops the caller back at /login.

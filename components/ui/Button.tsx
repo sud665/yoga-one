@@ -23,6 +23,14 @@ type CommonProps = {
    * copy, share, cancel, sign out -- where the icon is a second reading of
    * the label. An invented icon for a domain action ("대기 등록") is a second
    * thing to decode instead, so those stay text-only.
+   *
+   * Only callable from a client component. A component is a function, and
+   * this file is `'use client'`, so passing one in from a *server* component
+   * crosses the RSC boundary with an unserializable prop and 500s the route
+   * ("Functions cannot be passed directly to Client Components"). From a
+   * server component, render the glyph as a child instead -- an element
+   * serializes fine and BASE_CLASSES' gap-2 spaces it identically. See
+   * app/member/page.tsx.
    */
   icon?: LucideIcon
 }

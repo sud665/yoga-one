@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { kstToday } from '@/lib/date'
+import { isWithin, periodRange } from '@/lib/period'
 
 // No `: any` annotations on the map callback (deviating from the brief's literal
 // `(s: any) => ...` / `(b: any) => ...`): supabase-js infers the select()'s row shape
@@ -65,5 +66,61 @@ export async function getDashboardSummary() {
   return {
     todaySessionCount: todaySessionCount ?? 0,
     waitlistedCount: waitlistedCount ?? 0,
+  }
+}
+
+export interface MemberDashboard {
+  nextSession: {
+    date: string
+    /** 'HH:MM' */
+    startTime: string
+    title: string
+    instructorName: string
+    status: 'booked' | 'waitlisted'
+  } | null
+  /** Confirmed bookings falling inside the current Sunday-start week. */
+  weekBookedCount: number
+  /** Upcoming sessions where this member is on the waitlist, not yet promoted. */
+  waitlistedCount: number
+}
+
+// Everything here comes out of the one RPC the member schedule already reads
+// through, rather than a second set of queries against bookings. Two reasons:
+// list_upcoming_sessions_for_member is the *only* permitted path to a
+// member's session view (the "bookings: member views own" RLS policy makes a
+// direct embed silently undercount -- see listUpcomingSessionsWithBookingState),
+// and it already carries date, start_time, title, instructor and my_status,
+// so the dashboard's three numbers are a reduce over data the app is
+// entitled to rather than new surface area.
+export async function getMemberDashboard(): Promise<MemberDashboard> {
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc('list_upcoming_sessions_for_member')
+  if (error || !data) {
+    return { nextSession: null, weekBookedCount: 0, waitlistedCount: 0 }
+  }
+
+  const mine = data.filter((s) => s.my_status === 'booked' || s.my_status === 'waitlisted')
+
+  // The RPC orders by date alone, so same-day sessions arrive in arbitrary
+  // time order -- "다음 수업" has to break that tie on start_time or a 07:00
+  // class can be announced as coming after the 19:00 one.
+  const soonest = [...mine].sort((a, b) =>
+    a.date === b.date ? a.start_time.localeCompare(b.start_time) : a.date.localeCompare(b.date)
+  )[0]
+
+  const thisWeek = periodRange(kstToday(), 'week')
+
+  return {
+    nextSession: soonest
+      ? {
+          date: soonest.date,
+          startTime: soonest.start_time.slice(0, 5),
+          title: soonest.title,
+          instructorName: soonest.instructor_name,
+          status: soonest.my_status === 'booked' ? 'booked' : 'waitlisted',
+        }
+      : null,
+    weekBookedCount: mine.filter((s) => s.my_status === 'booked' && isWithin(s.date, thisWeek)).length,
+    waitlistedCount: mine.filter((s) => s.my_status === 'waitlisted').length,
   }
 }

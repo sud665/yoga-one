@@ -1,11 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createMiddlewareClient } from '@/lib/supabase/middleware'
+// Shared with app/page.tsx, which has to make the same call for a request
+// that reaches '/' without passing through here (a server-action redirect).
+import { roleHomePath, type ProfileRole } from '@/lib/role-home'
 
 const PUBLIC_PREFIXES = ['/login', '/signup', '/invite', '/auth/callback', '/onboarding', '/error']
-
-function roleHomePath(role: 'owner' | 'instructor' | 'member') {
-  return role === 'owner' ? '/admin' : `/${role}`
-}
 
 // Only an owner gets a second allowed prefix. The design spec explicitly
 // supports an owner who teaches their own classes in a small studio
@@ -17,7 +16,7 @@ function roleHomePath(role: 'owner' | 'instructor' | 'member') {
 // owner assigned as instructor had no route to reach an attendance screen at
 // all: this was purely a routing gap, not a data/RLS one. Instructor/member
 // confinement is unchanged -- only owners gain the extra allowed prefix.
-function allowedPathPrefixes(role: 'owner' | 'instructor' | 'member') {
+function allowedPathPrefixes(role: ProfileRole) {
   const home = roleHomePath(role)
   return role === 'owner' ? [home, '/instructor'] : [home]
 }

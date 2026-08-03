@@ -10,14 +10,13 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { PeriodFilter } from '@/components/ui/PeriodFilter'
 import { usePeriodFilter } from '@/lib/use-period-filter'
 import { X } from 'lucide-react'
-import { SignOutFooter } from '@/components/ui/SignOutButton'
 
 export default function MyBookingsPage() {
   // `any[]`가 아니라 listMyBookings()의 실제 반환 타입을 그대로 사용한다 -- 이미
-  // app/member/page.tsx가 같은 방식(`Awaited<ReturnType<typeof ...>>`)을 쓰고 있어
-  // 새 타입을 export하지 않고도 동일한 관용구로 any를 피할 수 있다.
+  // app/member/schedule/page.tsx가 같은 방식(`Awaited<ReturnType<typeof ...>>`)을
+  // 쓰고 있어 새 타입을 export하지 않고도 동일한 관용구로 any를 피할 수 있다.
   const [bookings, setBookings] = useState<Awaited<ReturnType<typeof listMyBookings>> | null>(null)
-  // app/member/page.tsx의 handleBook과 동일한 관용구 -- cancelBooking()의 결과를
+  // app/member/schedule/page.tsx의 handleBook과 동일한 관용구 -- cancelBooking()의 결과를
   // 그냥 버리지 않고 성공/실패 모두 사용자에게 보여준다. 최종 리뷰 이전에는
   // cancel_booking이 실패해도(데드락으로 abort된 경우 등) 아무 피드백 없이 조용히
   // 아무 일도 일어나지 않은 것처럼 보였다.
@@ -118,7 +117,6 @@ export default function MyBookingsPage() {
           ))}
         </ul>
       )}
-      <SignOutFooter />
     </div>
   )
 }

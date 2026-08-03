@@ -24,15 +24,9 @@ export function SignOutButton({ className = '' }: { className?: string }) {
   )
 }
 
-// End-of-page placement, the app-standard home for sign-out. It rode in the
-// top bar of every screen at first, and that was withdrawn on feedback: an
-// exit used once in a blue moon was spending permanent header space on every
-// screen. Below the content, after a hairline, centered -- reachable by
-// scrolling, invisible until wanted.
-export function SignOutFooter({ className = '' }: { className?: string }) {
-  return (
-    <div className={`mt-12 flex justify-center border-t border-hairline-soft pt-8 pb-4 ${className}`}>
-      <SignOutButton />
-    </div>
-  )
-}
+// There is no SignOutFooter any more. Sign-out rode in the top bar of every
+// screen first, then at the bottom of every page as a SignOutFooter; both
+// spent recurring space on a control used once in a blue moon. Now that every
+// role has a 프로필 screen, it lives there and only there
+// (components/profile/ProfileScreen.tsx), plus the admin desktop sidebar,
+// which has vertical room to spare.

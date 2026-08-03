@@ -437,6 +437,24 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      update_my_profile: {
+        Args: { p_full_name: string; p_phone: string }
+        Returns: {
+          contract_status: string
+          created_at: string
+          full_name: string
+          id: string
+          phone: string | null
+          role: Database["public"]["Enums"]["profile_role"]
+          studio_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "profiles"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
     }
     Enums: {
       profile_role: "owner" | "instructor" | "member"

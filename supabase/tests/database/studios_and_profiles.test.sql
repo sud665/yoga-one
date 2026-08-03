@@ -88,9 +88,11 @@ select throws_ok(
 -- 5) member는 이제 본인의 비특권 필드(full_name)조차 수정할 수 없다 -- UPDATE grant
 --    자체를 제거했으므로 "자기 자신의 안전한 필드"라는 예외 없이 전체 UPDATE 표면이
 --    막힌다 (Task 19 최종 리뷰: 아무 코드도 profiles를 update하지 않으므로 이 표면은
---    쓰이지 않는 리스크였다). 프로필 자체 수정이 실제로 필요해지면 전용 RPC로 다시
---    열 것 -- 지금은 client SDK로 role/studio_id/contract_status를 직접 조작할 수
---    있는 통로가 아예 없어야 한다.
+--    쓰이지 않는 리스크였다). 그 주석이 예고한 "전용 RPC"는 20260803000000의
+--    update_my_profile로 실제로 열렸지만(프로필 화면), 이 단언은 그대로 유효하다 --
+--    새로 열린 건 full_name/phone만 건드리는 함수 하나지 테이블 UPDATE 표면이
+--    아니고, client SDK로 role/studio_id/contract_status를 직접 조작할 수 있는
+--    통로는 여전히 없어야 한다. RPC 쪽 검증은 update_my_profile.test.sql에 있다.
 select throws_ok(
   format('update public.profiles set full_name = %L where id = %L', 'Member B Updated', (select value from test_fixtures where key = 'member_b')),
   'permission denied for table profiles',

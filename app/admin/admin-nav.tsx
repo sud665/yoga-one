@@ -6,10 +6,12 @@ import { usePathname } from 'next/navigation'
 import {
   CalendarDays,
   ChevronRight,
+  CircleUser,
   ClipboardCheck,
   ClipboardList,
   LayoutDashboard,
   Mail,
+  UserCog,
   UserRound,
   Users,
   UsersRound,
@@ -34,28 +36,46 @@ import { SignOutButton } from '@/components/ui/SignOutButton'
 type IconComponent = LucideIcon
 
 type NavLeaf = { href: string; label: string; icon: IconComponent }
-type NavParent = { label: string; icon: IconComponent; children: NavLeaf[] }
+/** `id` is the ASCII handle for aria-controls -- the label is Korean. */
+type NavParent = { id: string; label: string; icon: IconComponent; children: NavLeaf[] }
 type NavItem = NavLeaf | NavParent
 
 function isParent(item: NavItem): item is NavParent {
   return 'children' in item
 }
 
-// 인력관리 has no route of its own (a pure grouping/toggle control, not a
-// screen) -- its first child is the sensible landing spot if anything ever
-// needs to link to the section as a whole, but nothing does today.
+// Neither parent has a route of its own (both are pure grouping/toggle
+// controls, not screens) -- the first child is the sensible landing spot if
+// anything ever needs to link to a section as a whole, but nothing does today.
 const ROSTER_CHILDREN: NavLeaf[] = [
   { href: '/admin/roster/instructors', label: '강사관리', icon: UserRound },
   { href: '/admin/roster/members', label: '회원관리', icon: UsersRound },
   { href: '/admin/invites', label: '초대관리', icon: Mail },
 ]
 
+// 프로필 could not simply become a sixth flat tab. The mobile bar splits its
+// width evenly, and at six tabs a 375px screen gives each 62.5px -- less than
+// "시간표관리" needs at text-utility-xs once px-2 is taken off, and worse on a
+// 360px Android. Grouping instead of shrinking keeps every tab above the 44px
+// touch-target floor.
+//
+// 내 정보 rather than a "더보기" junk drawer: both children are things about
+// the signed-in person -- the classes they personally teach, and their own
+// account -- which is a real category, not leftovers. 내 수업 sits one level
+// deeper than before as a result; it auto-expands whenever it is the active
+// route, and an owner who teaches is the minority case the route exists for
+// at all (middleware.ts's owner-only second prefix).
+const MY_ACCOUNT_CHILDREN: NavLeaf[] = [
+  { href: '/instructor', label: '내 수업', icon: ClipboardCheck },
+  { href: '/admin/profile', label: '프로필', icon: CircleUser },
+]
+
 const NAV_ITEMS: NavItem[] = [
   { href: '/admin', label: '대시보드', icon: LayoutDashboard },
   { href: '/admin/schedule', label: '시간표관리', icon: CalendarDays },
-  { label: '인력관리', icon: Users, children: ROSTER_CHILDREN },
+  { id: 'roster', label: '인력관리', icon: Users, children: ROSTER_CHILDREN },
   { href: '/admin/bookings', label: '예약현황', icon: ClipboardList },
-  { href: '/instructor', label: '내 수업', icon: ClipboardCheck },
+  { id: 'my-account', label: '내 정보', icon: UserCog, children: MY_ACCOUNT_CHILDREN },
 ]
 
 function isActiveHref(pathname: string, href: string) {
@@ -80,7 +100,7 @@ export function AdminNav() {
 
 // ---- Desktop/tablet (DESIGN.md: 768px+) --------------------------------
 // Persistent 240px left sidebar, never collapsed/toggled at the top level
-// (only the 인력관리 parent itself expands/collapses). DESIGN.md
+// (only the 인력관리 / 내 정보 parents expand/collapse). DESIGN.md
 // `admin-sidebar-item-active`: brand-tint background + 4px brand-deep left
 // border + brand-deep text -- adapted here as border-l-4 + rounded-r-card (rounding only
 // the right corners keeps the left accent reading as a flush vertical bar
@@ -93,7 +113,7 @@ function DesktopSidebar({ pathname }: { pathname: string }) {
     >
       {NAV_ITEMS.map((item) =>
         isParent(item) ? (
-          <SidebarParent key={item.label} item={item} pathname={pathname} />
+          <SidebarParent key={item.id} item={item} pathname={pathname} />
         ) : (
           <SidebarLeaf key={item.href} item={item} active={isActiveHref(pathname, item.href)} />
         )
@@ -150,7 +170,7 @@ function SidebarParent({ item, pathname }: { item: NavParent; pathname: string }
   }
 
   const Icon = item.icon
-  const panelId = 'admin-nav-roster-panel'
+  const panelId = `admin-nav-${item.id}-panel`
 
   return (
     <div>
@@ -188,12 +208,13 @@ function SidebarParent({ item, pathname }: { item: NavParent; pathname: string }
 // 375px screen at 75px/tab without shrinking under that floor, so the
 // scroll-strip workaround (scrollbar-hide, overflow-x-auto, min-w-[4.5rem]
 // shrink-0) is gone; every tab is an equal flex-1 share of the bar instead.
-// 인력관리 opens a sub-sheet listing its 3 children rather than trying to
-// cram a second nav level into the tab bar itself.
+// 인력관리 and 내 정보 each open a sub-sheet listing their children rather
+// than trying to cram a second nav level into the tab bar itself.
 function MobileTabBar({ pathname }: { pathname: string }) {
-  const [sheetOpen, setSheetOpen] = useState(false)
+  // The open parent's id, not a boolean: there are two sheet-backed tabs now,
+  // and only one sheet may be up at a time.
+  const [openSheetId, setOpenSheetId] = useState<string | null>(null)
   const [prevPathname, setPrevPathname] = useState(pathname)
-  const rosterItem = NAV_ITEMS.find(isParent)
 
   // Auto-close on any route change -- covers both "tapped a child link
   // inside the sheet" (which also closes explicitly via onClick, belt and
@@ -202,11 +223,10 @@ function MobileTabBar({ pathname }: { pathname: string }) {
   // Adjust-during-render (see SidebarParent above for why, not a useEffect).
   if (pathname !== prevPathname) {
     setPrevPathname(pathname)
-    setSheetOpen(false)
+    setOpenSheetId(null)
   }
 
-  if (!rosterItem) return null
-  const isRosterActive = rosterItem.children.some((child) => isActiveHref(pathname, child.href))
+  const openSheetItem = NAV_ITEMS.find((item) => isParent(item) && item.id === openSheetId)
 
   return (
     <>
@@ -218,16 +238,17 @@ function MobileTabBar({ pathname }: { pathname: string }) {
         {NAV_ITEMS.map((item) => {
           if (isParent(item)) {
             const Icon = item.icon
+            const isChildActive = item.children.some((child) => isActiveHref(pathname, child.href))
             return (
               <button
-                key={item.label}
+                key={item.id}
                 type="button"
-                onClick={() => setSheetOpen(true)}
+                onClick={() => setOpenSheetId(item.id)}
                 aria-haspopup="dialog"
-                aria-expanded={sheetOpen}
+                aria-expanded={openSheetId === item.id}
                 className={cx(
                   'flex flex-1 flex-col items-center justify-center gap-1 border-t-2 px-2 text-utility-xs',
-                  isRosterActive ? 'border-brand-deep text-brand-deep' : 'border-transparent text-muted'
+                  isChildActive ? 'border-brand-deep text-brand-deep' : 'border-transparent text-muted'
                 )}
               >
                 <Icon aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.75} />
@@ -264,14 +285,18 @@ function MobileTabBar({ pathname }: { pathname: string }) {
         })}
       </nav>
 
-      {sheetOpen && (
-        <RosterSheet item={rosterItem} pathname={pathname} onClose={() => setSheetOpen(false)} />
+      {openSheetItem && isParent(openSheetItem) && (
+        <NavSheet item={openSheetItem} pathname={pathname} onClose={() => setOpenSheetId(null)} />
       )}
     </>
   )
 }
 
-function RosterSheet({ item, pathname, onClose }: { item: NavParent; pathname: string; onClose: () => void }) {
+// Named RosterSheet while 인력관리 was the only parent; it renders whichever
+// parent is open now. The `roster-sheet-in` keyframe it animates with keeps
+// its original name in app/globals.css -- renaming a keyframe would touch the
+// stylesheet for nothing.
+function NavSheet({ item, pathname, onClose }: { item: NavParent; pathname: string; onClose: () => void }) {
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') onClose()

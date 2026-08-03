@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 
-import { isWithin, periodLabel, periodRange, shiftPeriod } from '@/lib/period'
+import { daysBetween, isWithin, periodLabel, periodRange, shiftPeriod } from '@/lib/period'
 
 // The cases here are the ones that actually break date code: week boundaries
 // either side of Sunday, month lengths, leap years, year rollover, and the
@@ -94,5 +94,23 @@ describe('isWithin', () => {
 
   it('matches everything when unbounded', () => {
     expect(isWithin('1999-01-01', { start: null, end: null })).toBe(true)
+  })
+})
+
+describe('daysBetween', () => {
+  it('counts zero for the same day and one for the next', () => {
+    expect(daysBetween('2026-08-02', '2026-08-02')).toBe(0)
+    expect(daysBetween('2026-08-02', '2026-08-03')).toBe(1)
+  })
+
+  it('goes negative when the target is in the past', () => {
+    expect(daysBetween('2026-08-02', '2026-07-31')).toBe(-2)
+  })
+
+  it('counts across month, leap-day and year boundaries', () => {
+    expect(daysBetween('2026-08-31', '2026-09-01')).toBe(1)
+    // 2028 is a leap year, so February has 29 days.
+    expect(daysBetween('2028-02-28', '2028-03-01')).toBe(2)
+    expect(daysBetween('2026-12-31', '2027-01-01')).toBe(1)
   })
 })

@@ -7,7 +7,6 @@ import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
 import { ScheduleIcon, InstructorIcon, MembersIcon, InviteIcon } from './admin-nav'
-import { SignOutFooter } from '@/components/ui/SignOutButton'
 
 // DESIGN.md `quick-action-card`: 원장 대시보드의 바로가기(강사관리·회원관리·
 // 시간표관리 진입 카드). DESIGN.md에 스펙만 있고 실제 구현은 없던 컴포넌트라
@@ -97,12 +96,6 @@ export default function AdminDashboardPage() {
           )
         })}
       </div>
-      {/* md:hidden: on desktop the sidebar already carries sign-out, and two
-          visible sign-outs on one screen is one too many (it also breaks the
-          e2e getByRole lookup with a strict-mode violation). This footer is
-          the mobile-only replacement for the header bar that used to sit on
-          every admin screen. */}
-      <SignOutFooter className="md:hidden" />
     </div>
   )
 }
