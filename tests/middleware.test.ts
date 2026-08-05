@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { NextResponse, NextRequest } from 'next/server'
-import { middleware } from '@/middleware'
+import { proxy } from '@/proxy'
 import { createMiddlewareClient } from '@/lib/supabase/middleware'
 
 // We only mock the Supabase boundary (lib/supabase/middleware.ts). The real
-// middleware() function, including its `redirect()` helper, runs for real.
+// proxy() function, including its `redirect()` helper, runs for real.
 vi.mock('@/lib/supabase/middleware', () => ({
   createMiddlewareClient: vi.fn(),
 }))
@@ -52,7 +52,7 @@ describe('middleware cookie forwarding (Finding 1)', () => {
   it('forwards a cookie set mid-request on the plain getResponse() path', async () => {
     mockClient({ user: null, profile: null })
 
-    const res = await middleware(new NextRequest('http://localhost:3000/login'))
+    const res = await proxy(new NextRequest('http://localhost:3000/login'))
 
     expect(res.cookies.get('sb-refreshed-token')?.value).toBe('refreshed-value')
   })
@@ -60,7 +60,7 @@ describe('middleware cookie forwarding (Finding 1)', () => {
   it('forwards a cookie set mid-request onto a NextResponse.redirect() response (unauthenticated -> /login)', async () => {
     mockClient({ user: null, profile: null })
 
-    const res = await middleware(new NextRequest('http://localhost:3000/admin'))
+    const res = await proxy(new NextRequest('http://localhost:3000/admin'))
 
     expect(res.status).toBe(307)
     expect(res.headers.get('location')).toContain('/login')
@@ -70,7 +70,7 @@ describe('middleware cookie forwarding (Finding 1)', () => {
   it('forwards a cookie set mid-request onto the onboarding redirect (authenticated, no profile)', async () => {
     mockClient({ user: { id: 'user-1' }, profile: null })
 
-    const res = await middleware(new NextRequest('http://localhost:3000/admin'))
+    const res = await proxy(new NextRequest('http://localhost:3000/admin'))
 
     expect(res.status).toBe(307)
     expect(res.headers.get('location')).toContain('/onboarding/studio-name')
@@ -80,7 +80,7 @@ describe('middleware cookie forwarding (Finding 1)', () => {
   it('forwards a cookie set mid-request onto the role-mismatch redirect', async () => {
     mockClient({ user: { id: 'user-1' }, profile: { role: 'member' } })
 
-    const res = await middleware(new NextRequest('http://localhost:3000/admin'))
+    const res = await proxy(new NextRequest('http://localhost:3000/admin'))
 
     expect(res.status).toBe(307)
     expect(res.headers.get('location')).toContain('/member')
@@ -96,7 +96,7 @@ describe('middleware invite-flow access (Finding 2)', () => {
   it('lets an authenticated, profile-less user reach /invite/[code] instead of bouncing to onboarding', async () => {
     mockClient({ user: { id: 'user-1' }, profile: null })
 
-    const res = await middleware(new NextRequest('http://localhost:3000/invite/abc123'))
+    const res = await proxy(new NextRequest('http://localhost:3000/invite/abc123'))
 
     expect(res.status).not.toBe(307)
     expect(res.headers.get('location')).toBeNull()
@@ -117,7 +117,7 @@ describe('middleware pending-invite routing before the owner-onboarding default 
   it('redirects a profile-less user with a pending invite cookie to their invite page instead of owner onboarding', async () => {
     mockClient({ user: { id: 'user-1' }, profile: null })
 
-    const res = await middleware(
+    const res = await proxy(
       new NextRequest('http://localhost:3000/admin', { headers: { cookie: 'pending_invite_code=SOMECODE' } })
     )
 
@@ -128,7 +128,7 @@ describe('middleware pending-invite routing before the owner-onboarding default 
   it('still redirects a profile-less user with no pending invite cookie to owner onboarding (unchanged behavior)', async () => {
     mockClient({ user: { id: 'user-1' }, profile: null })
 
-    const res = await middleware(new NextRequest('http://localhost:3000/admin'))
+    const res = await proxy(new NextRequest('http://localhost:3000/admin'))
 
     expect(res.status).toBe(307)
     expect(res.headers.get('location')).toContain('/onboarding/studio-name')
@@ -153,7 +153,7 @@ describe('middleware pending-invite user_metadata fallback when the cookie has e
       profile: null,
     })
 
-    const res = await middleware(new NextRequest('http://localhost:3000/admin'))
+    const res = await proxy(new NextRequest('http://localhost:3000/admin'))
 
     expect(res.status).toBe(307)
     expect(res.headers.get('location')).toContain('/invite/METACODE')
@@ -165,7 +165,7 @@ describe('middleware pending-invite user_metadata fallback when the cookie has e
       profile: null,
     })
 
-    const res = await middleware(
+    const res = await proxy(
       new NextRequest('http://localhost:3000/admin', { headers: { cookie: 'pending_invite_code=COOKIECODE' } })
     )
 
@@ -179,7 +179,7 @@ describe('middleware pending-invite user_metadata fallback when the cookie has e
       profile: null,
     })
 
-    const res = await middleware(new NextRequest('http://localhost:3000/admin'))
+    const res = await proxy(new NextRequest('http://localhost:3000/admin'))
 
     expect(res.status).toBe(307)
     expect(res.headers.get('location')).toContain('/onboarding/studio-name')
@@ -199,7 +199,7 @@ describe('middleware owner-as-instructor routing (Finding 4)', () => {
   it('lets an owner-role profile reach /instructor instead of bouncing to /admin', async () => {
     mockClient({ user: { id: 'user-1' }, profile: { role: 'owner' } })
 
-    const res = await middleware(new NextRequest('http://localhost:3000/instructor'))
+    const res = await proxy(new NextRequest('http://localhost:3000/instructor'))
 
     expect(res.status).not.toBe(307)
     expect(res.headers.get('location')).toBeNull()
@@ -208,7 +208,7 @@ describe('middleware owner-as-instructor routing (Finding 4)', () => {
   it('still confines an owner-role profile away from /member', async () => {
     mockClient({ user: { id: 'user-1' }, profile: { role: 'owner' } })
 
-    const res = await middleware(new NextRequest('http://localhost:3000/member'))
+    const res = await proxy(new NextRequest('http://localhost:3000/member'))
 
     expect(res.status).toBe(307)
     expect(res.headers.get('location')).toContain('/admin')
@@ -217,7 +217,7 @@ describe('middleware owner-as-instructor routing (Finding 4)', () => {
   it('still confines an instructor-role profile to /instructor (cannot reach /admin)', async () => {
     mockClient({ user: { id: 'user-1' }, profile: { role: 'instructor' } })
 
-    const res = await middleware(new NextRequest('http://localhost:3000/admin'))
+    const res = await proxy(new NextRequest('http://localhost:3000/admin'))
 
     expect(res.status).toBe(307)
     expect(res.headers.get('location')).toContain('/instructor')
@@ -232,7 +232,7 @@ describe('middleware /error page access (Task 16)', () => {
   it('lets an unauthenticated visitor reach /error/forbidden instead of bouncing to /login', async () => {
     mockClient({ user: null, profile: null })
 
-    const res = await middleware(new NextRequest('http://localhost:3000/error/forbidden'))
+    const res = await proxy(new NextRequest('http://localhost:3000/error/forbidden'))
 
     expect(res.status).not.toBe(307)
     expect(res.headers.get('location')).toBeNull()
@@ -241,7 +241,7 @@ describe('middleware /error page access (Task 16)', () => {
   it('lets a role-mismatched authenticated user reach /error/forbidden instead of bouncing to their role home', async () => {
     mockClient({ user: { id: 'user-1' }, profile: { role: 'member' } })
 
-    const res = await middleware(new NextRequest('http://localhost:3000/error/forbidden'))
+    const res = await proxy(new NextRequest('http://localhost:3000/error/forbidden'))
 
     expect(res.status).not.toBe(307)
     expect(res.headers.get('location')).toBeNull()
