@@ -22,7 +22,7 @@ function allowedPathPrefixes(role: 'owner' | 'instructor' | 'member') {
   return role === 'owner' ? [home, '/instructor'] : [home]
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { supabase, getResponse } = createMiddlewareClient(request)
   const { data: { user } } = await supabase.auth.getUser()
   const path = request.nextUrl.pathname
