@@ -37,10 +37,12 @@ function mockSupabase({
   userMetadata?: Record<string, unknown>
 }) {
   const rpc = vi.fn()
+  const updateUser = vi.fn(async () => ({ error: null }))
   const client = {
     auth: {
       exchangeCodeForSession: vi.fn(async () => ({ error: null })),
       getUser: vi.fn(async () => ({ data: { user: { id: 'user-1', user_metadata: userMetadata } } })),
+      updateUser,
     },
     from: vi.fn(() => ({
       select: vi.fn(() => ({
@@ -53,7 +55,7 @@ function mockSupabase({
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   vi.mocked(createClient).mockResolvedValue(client as any)
-  return { rpc }
+  return { rpc, updateUser }
 }
 
 describe('auth callback route -- Kakao-path profile_already_exists (Finding 1)', () => {
@@ -177,6 +179,15 @@ describe('auth callback route -- user_metadata.invite_code fallback when the coo
     expect(res.headers.get('location')).toBe('http://localhost:3000/')
   })
 
+  // Finding 3 (below) clears user_metadata.invite_code once accept_invite
+  // consumes it, but that clear only runs on the resume branch this fix
+  // touches. It does not retroactively clean up a code that went stale some
+  // other way (written before that fix shipped, or via
+  // acceptInviteWithPassword's direct-RPC branch, which never reaches this
+  // route -- see the comment in route.ts). This test's assertion is
+  // unchanged by that fix and stands as documentation of that residual gap:
+  // an already-stale user_metadata.invite_code on a profiled user still
+  // misroutes here.
   it('redirects to the invite page with a profile_already_exists error when an already-registered user has no cookie but a user_metadata.invite_code', async () => {
     const { rpc } = mockSupabase({ profile: { role: 'member' }, userMetadata: { invite_code: 'METACODE' } })
     mockCookies({})
@@ -198,4 +209,70 @@ describe('auth callback route -- user_metadata.invite_code fallback when the coo
     expect(res.status).toBe(307)
     expect(res.headers.get('location')).toBe('http://localhost:3000/onboarding/studio-name')
   })
+})
+
+// Durability hardening on 20f2ca7, Finding 3: user_metadata.invite_code is
+// stashed once at signUp() and nothing ever cleared it after accept_invite
+// consumed it, so it sat on the auth.users row forever. Combined with the
+// fallback this suite covers above, a user who resumed their invite through
+// this route and later authenticated again for an unrelated reason (e.g. a
+// Kakao identity getting linked to this same already-verified email) with no
+// fresh cookie would hit the `if (profile) { if (pendingInviteCode) ... }`
+// branch on the stale code and get misrouted to a "profile_already_exists"
+// invite-error page instead of an ordinary sign-in. Fix: clear
+// user_metadata.invite_code right after accept_invite succeeds below.
+describe('auth callback route -- clears user_metadata.invite_code once consumed (Finding 3)', () => {
+  beforeEach(() => {
+    vi.mocked(createClient).mockReset()
+    vi.mocked(cookies).mockReset()
+  })
+
+  it('clears user_metadata.invite_code after accept_invite succeeds on resume', async () => {
+    const { rpc, updateUser } = mockSupabase({ profile: null, userMetadata: { invite_code: 'METACODE' } })
+    rpc.mockResolvedValue({ error: null })
+    mockCookies({})
+
+    const res = await GET(new Request('http://localhost:3000/auth/callback?code=fake-code'))
+
+    expect(updateUser).toHaveBeenCalledWith({ data: { invite_code: null } })
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('http://localhost:3000/')
+  })
+
+  it('does not clear user_metadata.invite_code when accept_invite fails on resume (nothing was actually consumed)', async () => {
+    const { rpc, updateUser } = mockSupabase({ profile: null, userMetadata: { invite_code: 'METACODE' } })
+    rpc.mockResolvedValue({ error: { message: 'invite_expired' } })
+    mockCookies({})
+
+    const res = await GET(new Request('http://localhost:3000/auth/callback?code=fake-code'))
+
+    expect(updateUser).not.toHaveBeenCalled()
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('http://localhost:3000/invite/METACODE?error=invite_expired')
+  })
+
+  it('does not block the redirect when clearing user_metadata rejects outright (best-effort cleanup)', async () => {
+    const { rpc, updateUser } = mockSupabase({ profile: null, userMetadata: { invite_code: 'METACODE' } })
+    rpc.mockResolvedValue({ error: null })
+    updateUser.mockRejectedValue(new Error('network error'))
+    mockCookies({})
+
+    const res = await GET(new Request('http://localhost:3000/auth/callback?code=fake-code'))
+
+    expect(res.status).toBe(307)
+    expect(res.headers.get('location')).toBe('http://localhost:3000/')
+  })
+
+  // Closing the loop on the bug-report scenario: once the test above clears
+  // user_metadata.invite_code during resume, a later, unrelated
+  // authentication with no fresh cookie sees no metadata either, which is
+  // exactly the "unchanged behavior" case this suite already covers (the
+  // no-cookie / no-metadata test in the very first describe block above,
+  // and the empty-user_metadata test in the previous describe block) --
+  // both already assert a plain `/` redirect, not a misroute. What this fix
+  // does NOT cover -- an already-stale code from before this fix shipped, or
+  // from acceptInviteWithPassword's other, direct-RPC branch -- is confirmed
+  // and documented by the untouched test in the describe block above this
+  // one ("redirects to the invite page ... when an already-registered user
+  // has no cookie but a user_metadata.invite_code").
 })

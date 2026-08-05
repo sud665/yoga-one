@@ -77,6 +77,26 @@ export async function GET(request: Request) {
     if (error) {
       return NextResponse.redirect(`${origin}/invite/${pendingInviteCode}?error=${encodeURIComponent(error.message)}`)
     }
+    // accept_invite just consumed this code -- clear the durability fallback
+    // acceptInviteWithPassword's signUp() call stashed in user_metadata (see
+    // lib/actions/invites.ts), so it doesn't sit on this auth.users row
+    // forever. Left in place, it can resurface on a later, unrelated
+    // authentication (e.g. a Kakao identity getting linked to this same
+    // verified email) that reaches the `if (profile) { if (pendingInviteCode)
+    // ... }` branch above with no fresh cookie, misrouting an ordinary
+    // sign-in to a stale "profile_already_exists" invite-error page instead
+    // of home. `data` merges into user_metadata rather than replacing it, and
+    // `invite_code: null` deletes just that key, so `name` and anything else
+    // stashed there survives. Best-effort and non-blocking (.catch swallows
+    // it): accept_invite above already succeeded -- that's the actual state
+    // change for this request -- so a failure clearing this hygiene field
+    // shouldn't strand the user mid-redirect.
+    //
+    // acceptInviteWithPassword's *other* branch (session established
+    // immediately -- local Supabase CLI's default, confirmations disabled)
+    // calls accept_invite directly and never reaches this route at all, so it
+    // has the identical staleness gap, unaddressed here.
+    await supabase.auth.updateUser({ data: { invite_code: null } }).catch(() => {})
     return NextResponse.redirect(`${origin}/`)
   }
 
