@@ -107,7 +107,16 @@ export async function signOut() {
   redirect('/login')
 }
 
-export async function signInWithKakao(options?: { pendingStudioName?: string; pendingInviteCode?: string }) {
+export async function signInWithKakao(options?: {
+  pendingStudioName?: string
+  pendingInviteCode?: string
+  // Which page to bounce back to if the OAuth handshake itself fails to even
+  // start (signInWithOAuth erroring or returning no redirect URL -- not the
+  // later /auth/callback failures, which don't know which of the 3 role
+  // login pages the attempt started from and always fall back to the plain
+  // /login chooser). Defaults to that same chooser for callers that don't care.
+  errorRedirectTo?: string
+}) {
   const supabase = await createClient()
   const cookieStore = await cookies()
 
@@ -124,7 +133,7 @@ export async function signInWithKakao(options?: { pendingStudioName?: string; pe
   })
 
   if (error || !data.url) {
-    redirect('/login?kakaoError=1')
+    redirect(`${options?.errorRedirectTo ?? '/login'}?kakaoError=1`)
   }
 
   redirect(data.url)
