@@ -11,6 +11,7 @@ import {
   ClipboardList,
   LayoutDashboard,
   Mail,
+  MessageCircle,
   UserCog,
   UserRound,
   Users,
@@ -67,6 +68,7 @@ const ROSTER_CHILDREN: NavLeaf[] = [
 // at all (middleware.ts's owner-only second prefix).
 const MY_ACCOUNT_CHILDREN: NavLeaf[] = [
   { href: '/instructor', label: '내 수업', icon: ClipboardCheck },
+  { href: '/admin/chat', label: '채팅', icon: MessageCircle },
   { href: '/admin/profile', label: '프로필', icon: CircleUser },
 ]
 

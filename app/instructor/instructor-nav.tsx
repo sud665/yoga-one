@@ -1,6 +1,6 @@
 'use client'
 
-import { CircleUser, ClipboardCheck } from 'lucide-react'
+import { CircleUser, ClipboardCheck, MessageCircle } from 'lucide-react'
 
 import { RoleNav, type RoleNavItem } from '@/components/ui/RoleNav'
 
@@ -18,6 +18,7 @@ import { RoleNav, type RoleNavItem } from '@/components/ui/RoleNav'
 // screen under the identical icon.
 const INSTRUCTOR_NAV_ITEMS: RoleNavItem[] = [
   { href: '/instructor', label: '내 수업', icon: ClipboardCheck },
+  { href: '/instructor/chat', label: '채팅', icon: MessageCircle },
   { href: '/instructor/profile', label: '프로필', icon: CircleUser },
 ]
 

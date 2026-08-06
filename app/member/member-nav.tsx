@@ -1,6 +1,6 @@
 'use client'
 
-import { CalendarDays, CircleUser, ClipboardList, LayoutDashboard } from 'lucide-react'
+import { CalendarDays, CircleUser, ClipboardList, LayoutDashboard, MessageCircle } from 'lucide-react'
 
 import { RoleNav, type RoleNavItem } from '@/components/ui/RoleNav'
 
@@ -25,6 +25,7 @@ const MEMBER_NAV_ITEMS: RoleNavItem[] = [
   { href: '/member', label: '대시보드', icon: LayoutDashboard },
   { href: '/member/schedule', label: '일정', icon: CalendarDays },
   { href: '/member/bookings', label: '내 예약', icon: ClipboardList },
+  { href: '/member/chat', label: '채팅', icon: MessageCircle },
   { href: '/member/profile', label: '프로필', icon: CircleUser },
 ]
 
