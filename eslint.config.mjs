@@ -19,6 +19,10 @@ const eslintConfig = defineConfig([
     // and generated service worker are otherwise linted as if they were source
     // — thousands of errors from files nobody wrote.
     ".worktrees/**",
+    // Same problem, different nested-checkout convention: Claude Code's own
+    // worktree feature stores its checkouts under .claude/worktrees/ rather
+    // than the .worktrees/ used above.
+    ".claude/worktrees/**",
   ]),
 ]);
 
