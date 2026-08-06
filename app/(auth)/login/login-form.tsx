@@ -80,7 +80,14 @@ function LoginForm({ role }: { role: LoginRole }) {
             회원가입 처리 중 문제가 발생했습니다. 다시 시도하거나 고객센터에 문의해주세요.
           </p>
         )}
-        <Link href="/login" className="mt-6 block text-center text-body-md text-ink underline">
+        <div className="mt-6 flex items-center justify-center gap-3 text-label text-muted">
+          <Link href="/find-email">이메일 찾기</Link>
+          <span className="h-3 w-px bg-hairline" aria-hidden="true" />
+          <Link href="/find-password">비밀번호 찾기</Link>
+          <span className="h-3 w-px bg-hairline" aria-hidden="true" />
+          <Link href="/signup">회원가입</Link>
+        </div>
+        <Link href="/login" className="mt-5 block text-center text-body-md text-ink underline">
           다른 유형으로 로그인
         </Link>
       </div>

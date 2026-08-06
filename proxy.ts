@@ -4,7 +4,18 @@ import { createMiddlewareClient } from '@/lib/supabase/middleware'
 // that reaches '/' without passing through here (a server-action redirect).
 import { roleHomePath, type ProfileRole } from '@/lib/role-home'
 
-const PUBLIC_PREFIXES = ['/login', '/signup', '/invite', '/auth/callback', '/onboarding', '/error']
+const PUBLIC_PREFIXES = [
+  '/login',
+  '/signup',
+  '/invite',
+  '/auth/callback',
+  '/auth/reset',
+  '/find-email',
+  '/find-password',
+  '/reset-password',
+  '/onboarding',
+  '/error',
+]
 
 // Only an owner gets a second allowed prefix. The design spec explicitly
 // supports an owner who teaches their own classes in a small studio

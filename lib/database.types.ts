@@ -179,6 +179,74 @@ export type Database = {
           },
         ]
       }
+      conversation_participants: {
+        Row: {
+          conversation_id: string
+          joined_at: string
+          last_read_at: string
+          profile_id: string
+        }
+        Insert: {
+          conversation_id: string
+          joined_at?: string
+          last_read_at?: string
+          profile_id: string
+        }
+        Update: {
+          conversation_id?: string
+          joined_at?: string
+          last_read_at?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversation_participants_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversation_participants_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          kind: Database["public"]["Enums"]["conversation_kind"]
+          studio_id: string
+          title: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: Database["public"]["Enums"]["conversation_kind"]
+          studio_id: string
+          title?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: Database["public"]["Enums"]["conversation_kind"]
+          studio_id?: string
+          title?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_studio_id_fkey"
+            columns: ["studio_id"]
+            isOneToOne: false
+            referencedRelation: "studios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invites: {
         Row: {
           code: string
@@ -223,6 +291,48 @@ export type Database = {
             columns: ["studio_id"]
             isOneToOne: false
             referencedRelation: "studios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          body: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          image_path: string | null
+          sender_id: string
+        }
+        Insert: {
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          sender_id: string
+        }
+        Update: {
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          image_path?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -283,11 +393,44 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawal_feedback: {
+        Row: {
+          created_at: string
+          id: string
+          reason: string | null
+          role: Database["public"]["Enums"]["profile_role"]
+          studio_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          role: Database["public"]["Enums"]["profile_role"]
+          studio_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reason?: string | null
+          role?: Database["public"]["Enums"]["profile_role"]
+          studio_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_feedback_studio_id_fkey"
+            columns: ["studio_id"]
+            isOneToOne: false
+            referencedRelation: "studios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      _ensure_staff_group_membership: { Args: never; Returns: undefined }
       _generate_sessions_internal: {
         Args: { p_template_id: string; p_weeks_ahead: number }
         Returns: {
@@ -306,6 +449,10 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      _is_conversation_participant: {
+        Args: { p_conversation_id: string }
+        Returns: boolean
       }
       accept_invite: {
         Args: { p_code: string; p_full_name: string }
@@ -380,6 +527,10 @@ export type Database = {
         Returns: Database["public"]["Enums"]["profile_role"]
       }
       current_studio_id: { Args: never; Returns: string }
+      find_email_by_name_phone: {
+        Args: { p_full_name: string; p_phone: string }
+        Returns: string
+      }
       generate_sessions_for_all_templates: { Args: never; Returns: undefined }
       generate_sessions_for_template: {
         Args: { p_template_id: string; p_weeks_ahead?: number }
@@ -406,6 +557,31 @@ export type Database = {
           role: Database["public"]["Enums"]["profile_role"]
           studio_name: string
           valid: boolean
+        }[]
+      }
+      get_or_create_dm: {
+        Args: { p_other_profile_id: string }
+        Returns: string
+      }
+      list_dm_candidates: {
+        Args: never
+        Returns: {
+          full_name: string
+          profile_id: string
+          role: Database["public"]["Enums"]["profile_role"]
+        }[]
+      }
+      list_my_conversations: {
+        Args: never
+        Returns: {
+          conversation_id: string
+          kind: Database["public"]["Enums"]["conversation_kind"]
+          last_message: string
+          last_message_at: string
+          other_name: string
+          other_role: Database["public"]["Enums"]["profile_role"]
+          title: string
+          unread_count: number
         }[]
       }
       list_upcoming_sessions_for_member: {
@@ -437,6 +613,31 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      mark_conversation_read: {
+        Args: { p_conversation_id: string }
+        Returns: undefined
+      }
+      send_message: {
+        Args: {
+          p_body?: string
+          p_conversation_id: string
+          p_image_path?: string
+        }
+        Returns: {
+          body: string | null
+          conversation_id: string
+          created_at: string
+          id: string
+          image_path: string | null
+          sender_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "messages"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       update_my_profile: {
         Args: { p_full_name: string; p_phone: string }
         Returns: {
@@ -455,8 +656,10 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      withdraw_my_account: { Args: { p_reason?: string }; Returns: undefined }
     }
     Enums: {
+      conversation_kind: "dm" | "group"
       profile_role: "owner" | "instructor" | "member"
     }
     CompositeTypes: {
@@ -588,6 +791,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      conversation_kind: ["dm", "group"],
       profile_role: ["owner", "instructor", "member"],
     },
   },

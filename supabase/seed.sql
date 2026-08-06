@@ -93,16 +93,19 @@ begin
   v_member4_id    := pg_temp.seed_create_user('member4@yogaone.demo',     'demo1234', '강태양');
   v_member5_id    := pg_temp.seed_create_user('member5@yogaone.demo',     'demo1234', '윤소라');
 
-  insert into public.profiles (id, studio_id, role, full_name, contract_status) values
-    (v_owner_id,       v_studio_id, 'owner',      '김원장', 'not_required'),
-    (v_instructor1_id, v_studio_id, 'instructor', '박서연', 'not_required'),
-    (v_instructor2_id, v_studio_id, 'instructor', '이하늘', 'not_required'),
-    (v_instructor3_id, v_studio_id, 'instructor', '최지민', 'not_required'),
-    (v_member1_id,     v_studio_id, 'member',     '김민지', 'signed'),
-    (v_member2_id,     v_studio_id, 'member',     '이준호', 'signed'),
-    (v_member3_id,     v_studio_id, 'member',     '정다은', 'signed'),
-    (v_member4_id,     v_studio_id, 'member',     '강태양', 'signed'),
-    (v_member5_id,     v_studio_id, 'member',     '윤소라', 'pending');
+  -- phone is populated for all nine so 이메일 찾기 (find_email_by_name_phone,
+  -- 20260805000000) has real matches to test against, not just the one demo
+  -- account someone happens to remember to update by hand.
+  insert into public.profiles (id, studio_id, role, full_name, contract_status, phone) values
+    (v_owner_id,       v_studio_id, 'owner',      '김원장', 'not_required', '010-1000-0001'),
+    (v_instructor1_id, v_studio_id, 'instructor', '박서연', 'not_required', '010-1000-0002'),
+    (v_instructor2_id, v_studio_id, 'instructor', '이하늘', 'not_required', '010-1000-0003'),
+    (v_instructor3_id, v_studio_id, 'instructor', '최지민', 'not_required', '010-1000-0004'),
+    (v_member1_id,     v_studio_id, 'member',     '김민지', 'signed',       '010-1000-0005'),
+    (v_member2_id,     v_studio_id, 'member',     '이준호', 'signed',       '010-1000-0006'),
+    (v_member3_id,     v_studio_id, 'member',     '정다은', 'signed',       '010-1000-0007'),
+    (v_member4_id,     v_studio_id, 'member',     '강태양', 'signed',       '010-1000-0008'),
+    (v_member5_id,     v_studio_id, 'member',     '윤소라', 'pending',      '010-1000-0009');
 
   -- ---- Unused invites (admin/invites screen shouldn't start empty) ----
   insert into public.invites (studio_id, role, code, expires_at, created_by) values

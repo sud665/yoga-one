@@ -107,6 +107,82 @@ export async function signOut() {
   redirect('/login')
 }
 
+// 이메일 찾기: matches full_name + phone against public.profiles via the
+// anon-callable find_email_by_name_phone RPC (20260805000000), which already
+// masks the result server-side -- this action never sees (or could leak) the
+// unmasked email. A null RPC result covers both "no such person" and "found,
+// but the studio never has demo/real data for this name+phone pair" with the
+// same generic message the design calls for, rather than distinguishing them
+// and handing an attacker a name/phone oracle one bit at a time.
+export async function findEmailByNamePhone(formData: FormData): Promise<{ error: string } | { email: string }> {
+  const fullName = String(formData.get('fullName') ?? '').trim()
+  const phone = String(formData.get('phone') ?? '').trim()
+  if (!fullName || !phone) {
+    return { error: '이름과 전화번호를 입력해주세요.' }
+  }
+
+  const supabase = await createClient()
+  const { data, error } = await supabase.rpc('find_email_by_name_phone', {
+    p_full_name: fullName,
+    p_phone: phone,
+  })
+  if (error || !data) {
+    return { error: '일치하는 계정을 찾을 수 없습니다.' }
+  }
+  return { email: data }
+}
+
+// 비밀번호 찾기: resetPasswordForEmail doesn't error for an unregistered
+// email (Supabase's own anti-enumeration default -- it only actually sends
+// mail when an account exists, but reports success either way), and this
+// action deliberately doesn't second-guess that by checking existence itself
+// first. redirectTo points at /auth/reset, a route dedicated to recovery-code
+// exchange -- not /auth/callback, whose profile-exists branch would redirect
+// an already-onboarded user straight to '/' and never reach the
+// new-password screen at all.
+export async function requestPasswordReset(formData: FormData): Promise<{ error: string } | { sent: true; email: string }> {
+  const email = String(formData.get('email') ?? '').trim()
+  if (!email) {
+    return { error: '이메일을 입력해주세요.' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/reset`,
+  })
+  if (error) {
+    return { error: error.message }
+  }
+  return { sent: true, email }
+}
+
+// 비밀번호 재설정: relies on the recovery session /auth/reset/route.ts just
+// established from the emailed link's code -- updateUser() acts on whatever
+// session is in the request's cookies, no separate token param needed here.
+// Doesn't attempt the mockup copy's "다르게 설정해주세요" (must differ from
+// the old password): there is no old password to compare against in a
+// recovery flow (the user forgot it), and Supabase exposes no way to check a
+// candidate against the previous hash without actually committing a change
+// first. Treated as advisory copy, not an enforceable rule.
+export async function updatePasswordAfterReset(formData: FormData): Promise<{ error: string } | { success: true }> {
+  const password = String(formData.get('password') ?? '')
+  const passwordConfirm = String(formData.get('passwordConfirm') ?? '')
+
+  if (password.length < 8) {
+    return { error: '비밀번호는 8자 이상이어야 합니다.' }
+  }
+  if (password !== passwordConfirm) {
+    return { error: '비밀번호가 일치하지 않습니다.' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.updateUser({ password })
+  if (error) {
+    return { error: error.message }
+  }
+  return { success: true }
+}
+
 export async function signInWithKakao(options?: {
   pendingStudioName?: string
   pendingInviteCode?: string
