@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 
 import { SignOutButton } from '@/components/ui/SignOutButton'
@@ -31,6 +32,18 @@ export async function ProfileScreen() {
       <div className="mt-10 flex justify-center border-t border-hairline-soft pt-8">
         <SignOutButton />
       </div>
+
+      {/* No owner path: withdraw_my_account (20260805000001) explicitly
+          rejects an owner, since withdrawing would orphan the whole studio
+          with nobody left to manage it -- that needs a transfer/close-studio
+          flow this pass doesn't build. */}
+      {profile.role !== 'owner' && (
+        <div className="mt-4 flex justify-center">
+          <Link href={`/${profile.role}/withdraw`} className="text-caption text-muted underline">
+            탈퇴하기
+          </Link>
+        </div>
+      )}
     </div>
   )
 }

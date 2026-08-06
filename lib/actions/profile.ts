@@ -119,3 +119,27 @@ export async function changeMyPassword(formData: FormData): Promise<{ error: str
 
   return { success: true }
 }
+
+// 탈퇴. withdraw_my_account (20260805000001) does the real work -- anonymize
+// profiles, ban + mangle the auth.users email -- inside one transaction; this
+// action's only job beyond calling it is clearing the local session
+// afterward so the browser stops holding a technically-still-valid access
+// token around until it naturally expires.
+export async function withdrawAccount(formData: FormData): Promise<{ error: string } | { success: true }> {
+  const reason = String(formData.get('reason') ?? '').trim()
+
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('withdraw_my_account', {
+    p_reason: reason || undefined,
+  })
+
+  if (error) {
+    if (error.message.includes('owner_cannot_withdraw')) {
+      return { error: '원장 계정은 탈퇴할 수 없습니다. 스튜디오 이전이 필요하면 고객센터에 문의해주세요.' }
+    }
+    return { error: error.message }
+  }
+
+  await supabase.auth.signOut()
+  return { success: true }
+}
