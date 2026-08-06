@@ -154,7 +154,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
           role="status" already establishes its live region individually.
           Adding a second aria-live here would risk double-announcing the
           same text in some screen readers. */}
-      <div className="pointer-events-none fixed inset-x-0 top-4 z-50 flex flex-col items-center gap-2 px-4">
+      {/* absolute, not fixed: pinned to the app-shell frame in
+          app/layout.tsx (position: relative), not the true browser
+          viewport -- fixed would escape the frame and center itself across
+          a whole wide desktop window instead of staying within it. */}
+      <div className="pointer-events-none absolute inset-x-0 top-4 z-50 flex flex-col items-center gap-2 px-4">
         {items.map((item) => (
           <ToastItemView key={item.id} item={item} onDismiss={dismiss} />
         ))}

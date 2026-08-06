@@ -1,12 +1,14 @@
 import { AdminNav } from './admin-nav'
 
-// Sidebar conversion (this phase's approved nav change, /admin only --
-// /instructor and /member keep their existing top-nav structure).
-// AdminNav renders two responsive nav surfaces (a persistent sidebar for
-// desktop/tablet, a fixed bottom-tab bar for mobile) that swap via
-// `hidden md:flex` / `md:hidden`, never both visible at once. This shell
-// just arranges the flex row (sidebar beside content) on md+ and stacks to
-// a single column with bottom clearance for the fixed tab bar below it.
+// App screen, not a responsive website: one column, always -- the desktop
+// sidebar variant (this file used to arrange a flex-row on md+, AdminNav
+// swapping between a sidebar and a bottom tab bar via `hidden md:flex` /
+// `md:hidden`) is gone. main first, nav second: in this column flex, main's
+// flex-1 fills everything above the nav's own shrink-0 height, which is
+// what keeps the nav pinned to the bottom of the app-shell frame while only
+// main scrolls -- no fixed positioning, no bottom padding on main to
+// compensate for an overlay. Same arrangement as app/member/layout.tsx and
+// app/instructor/layout.tsx.
 //
 // No <ul>/<li> anywhere in this file or admin-nav.tsx, deliberately:
 // tests/e2e/schedule-management.spec.ts does `page.locator('ul').last()`
@@ -17,9 +19,9 @@ import { AdminNav } from './admin-nav'
 // question entirely, matching the pattern the previous top-nav already used.
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div data-role="admin" className="flex min-h-full flex-col md:flex-row">
+    <div data-role="admin" className="flex h-full flex-col">
+      <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">{children}</main>
       <AdminNav />
-      <main className="min-w-0 flex-1 pb-24 md:pb-0">{children}</main>
     </div>
   )
 }

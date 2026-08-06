@@ -45,7 +45,7 @@ function LoginForm({ role }: { role: LoginRole }) {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-canvas px-6 py-12">
+    <div className="flex min-h-full items-center justify-center bg-canvas px-6 py-12">
       <div className="w-full max-w-sm">
         {/* display-lg, used sparingly per DESIGN.md -- login is one of only a
             handful of screens in the app that reach for it. Plain Inter at

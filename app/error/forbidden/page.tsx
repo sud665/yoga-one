@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/Button'
 
 export default function ForbiddenPage() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-canvas px-6 py-12 text-center">
+    <div className="flex min-h-full flex-col items-center justify-center bg-canvas px-6 py-12 text-center">
       <div className="w-full max-w-sm">
         <h1 className="mb-4 text-heading-lg text-ink">접근할 수 없습니다</h1>
         <p className="mb-8 text-body-md text-body">

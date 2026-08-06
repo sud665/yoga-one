@@ -24,7 +24,7 @@ export default function SchedulePage() {
   }, [refresh])
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-6 py-12">
+    <div className="w-full px-6 py-12">
       <h1 className="mb-8 text-heading-lg text-ink">시간표 관리</h1>
 
       <TemplateForm onCreated={refresh} />

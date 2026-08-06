@@ -23,7 +23,7 @@ export async function ChatListScreen({ role }: { role: ProfileRole }) {
   const rooms = await listMyConversations()
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-6 py-12">
+    <div className="w-full px-6 py-12">
       <div className="mb-6 flex items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-brand-tint">

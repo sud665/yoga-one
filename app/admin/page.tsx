@@ -46,8 +46,8 @@ export default function AdminDashboardPage() {
   }, [toast])
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-6 py-8 md:py-12">
-      <h1 className="mb-6 text-heading-lg text-ink md:mb-8">원장 대시보드</h1>
+    <div className="w-full px-6 py-8">
+      <h1 className="mb-6 text-heading-lg text-ink">원장 대시보드</h1>
 
       {/* DESIGN.md `dashboard-summary-card` -- ink 배경 + on-ink 텍스트 +
           heading-lg급 숫자(card-ink 컴포넌트의 명시 타이포그래피). 이전에는
@@ -55,7 +55,7 @@ export default function AdminDashboardPage() {
           Card(variant="brand")로 대체해 다른 화면도 같은 요약카드를 재사용할
           수 있다. rounded-card가 적용되어 완전 각진 처리 대신 14px 라운드를
           쓴다. */}
-      <div className="flex flex-col gap-4 sm:flex-row" aria-live="polite">
+      <div className="flex flex-col gap-4" aria-live="polite">
         {summary === null ? (
           <>
             <Skeleton variant="block" className="h-24 flex-1" />
@@ -81,7 +81,7 @@ export default function AdminDashboardPage() {
         )}
       </div>
 
-      <div className="mt-8 grid grid-cols-2 gap-3 md:mt-12 md:grid-cols-4 md:gap-4">
+      <div className="mt-8 grid grid-cols-2 gap-3">
         {QUICK_ACTIONS.map((action) => {
           const Icon = action.icon
           return (

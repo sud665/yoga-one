@@ -45,7 +45,7 @@ export function WithdrawScreen({ role }: { role: 'member' | 'instructor' }) {
 
   if (done) {
     return (
-      <div className="mx-auto w-full max-w-lg px-6 py-12">
+      <div className="w-full px-6 py-12">
         <Card variant="soft" className="text-center">
           <p className="text-heading-md text-ink">탈퇴가 완료되었습니다</p>
           <p className="mt-2 mb-5 text-body-md text-body">
@@ -62,7 +62,7 @@ export function WithdrawScreen({ role }: { role: 'member' | 'instructor' }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-lg px-6 py-12">
+    <div className="w-full px-6 py-12">
       <p className="mb-1 text-caption text-muted">프로필 · 계정</p>
       <div className="mb-6 flex items-center gap-3">
         <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-danger-tint">

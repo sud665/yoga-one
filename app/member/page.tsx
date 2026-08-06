@@ -26,7 +26,7 @@ export default async function MemberHomePage() {
   const { nextSession, weekBookedCount, waitlistedCount } = dashboard
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-6 py-12">
+    <div className="w-full px-6 py-12">
       <header className="mb-8">
         <h1 className="text-heading-lg text-ink">
           {profile ? `안녕하세요, ${profile.fullName}님` : '안녕하세요'}

@@ -35,7 +35,7 @@ export function NewChatScreen({ role }: { role: ProfileRole }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-6 py-12">
+    <div className="w-full px-6 py-12">
       <div className="mb-6 flex items-center gap-3">
         <Link href={`${base}/chat`} aria-label="뒤로" className="rounded-full p-1.5 text-ink hover:bg-surface-soft">
           <ChevronLeft className="h-5 w-5" strokeWidth={1.75} />

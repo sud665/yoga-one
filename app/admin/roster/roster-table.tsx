@@ -39,7 +39,7 @@ export function RosterTable({ role, label }: { role: 'instructor' | 'member'; la
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-6 py-12">
+    <div className="w-full px-6 py-12">
       <h1 className="mb-8 text-heading-lg text-ink">{label} 관리</h1>
 
       <Button icon={Plus} onClick={handleInvite}>{label} 초대 링크 발급</Button>

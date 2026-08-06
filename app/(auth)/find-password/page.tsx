@@ -39,7 +39,7 @@ function FindPasswordForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-canvas px-6 py-12">
+    <div className="flex min-h-full items-center justify-center bg-canvas px-6 py-12">
       <div className="w-full max-w-sm">
         <h1 className="mb-2 text-display-lg text-ink">비밀번호 찾기</h1>
         <p className="mb-7 text-body-md text-muted">

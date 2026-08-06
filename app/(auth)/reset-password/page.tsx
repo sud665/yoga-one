@@ -25,7 +25,7 @@ export default function ResetPasswordPage() {
 
   if (done) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-canvas px-6 py-12">
+      <div className="flex min-h-full items-center justify-center bg-canvas px-6 py-12">
         <div className="w-full max-w-sm text-center">
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-brand-tint">
             <Check className="h-6 w-6 text-brand-deep" strokeWidth={2} />
@@ -41,7 +41,7 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-canvas px-6 py-12">
+    <div className="flex min-h-full items-center justify-center bg-canvas px-6 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full border border-hairline bg-surface-soft">
           <KeyRound className="h-5 w-5 text-muted" strokeWidth={1.75} />

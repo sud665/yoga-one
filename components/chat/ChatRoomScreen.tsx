@@ -167,7 +167,7 @@ export function ChatRoomScreen({ role, conversationId }: { role: ProfileRole; co
   }
 
   return (
-    <div className="flex h-screen flex-col">
+    <div className="flex h-full flex-col">
       <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-hairline bg-canvas px-2">
         <Link href={`${base}/chat`} aria-label="뒤로" className="rounded-full p-2 text-ink hover:bg-surface-soft">
           <ChevronLeft className="h-5 w-5" strokeWidth={1.75} />

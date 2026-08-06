@@ -49,7 +49,7 @@ export default function MemberSchedulePage() {
   )
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-6 py-12">
+    <div className="w-full px-6 py-12">
       <h1 className="mb-8 text-heading-lg text-ink">일정</h1>
 
       {sessions !== null && sessions.length > 0 && (

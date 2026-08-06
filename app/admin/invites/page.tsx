@@ -34,10 +34,10 @@ export default function InvitesPage() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-6 py-12">
+    <div className="w-full px-6 py-12">
       <h1 className="mb-8 text-heading-lg text-ink">초대 관리</h1>
 
-      <div className="flex flex-col gap-3 sm:flex-row">
+      <div className="flex flex-col gap-3">
         <Button icon={Plus} onClick={() => handleCreate('instructor')} disabled={isPending}>
           강사 초대 링크 발급
         </Button>

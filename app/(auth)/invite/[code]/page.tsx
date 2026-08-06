@@ -30,7 +30,7 @@ export default async function InvitePage({
 
   if (!preview || !preview.valid) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-canvas px-6 py-12 text-center">
+      <div className="flex min-h-full items-center justify-center bg-canvas px-6 py-12 text-center">
         <div className="w-full max-w-sm">
           <h1 className="mb-4 text-display-lg text-ink">유효하지 않은 초대 링크</h1>
           <p className="text-body-md text-body">
@@ -45,7 +45,7 @@ export default async function InvitePage({
   const role = preview.role === 'instructor' ? 'instructor' : 'member'
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-canvas px-6 py-12">
+    <div className="flex min-h-full items-center justify-center bg-canvas px-6 py-12">
       <div className="w-full max-w-sm">
         <h1 className="mb-8 text-display-lg text-ink">
           {preview.studio_name} — {role === 'instructor' ? '강사' : '회원'} 초대

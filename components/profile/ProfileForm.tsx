@@ -100,7 +100,7 @@ export function ProfileForm({ profile }: { profile: MyProfile }) {
               into a column of full-width boxes -- a name and a phone number
               are one block of contact detail, and neither needs the full
               width to be readable. */}
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4">
             <Field
               id="profile-full-name"
               label="이름"
@@ -128,8 +128,8 @@ export function ProfileForm({ profile }: { profile: MyProfile }) {
 
           {/* Right-aligned on desktop where the form is a bounded block, full
               width on mobile where it is the whole screen. */}
-          <div className="flex sm:justify-end">
-            <Button type="submit" disabled={savingProfile} className="w-full sm:w-auto">
+          <div className="flex">
+            <Button type="submit" disabled={savingProfile} className="w-full">
               {savingProfile ? '저장 중...' : '저장'}
             </Button>
           </div>
@@ -155,7 +155,7 @@ export function ProfileForm({ profile }: { profile: MyProfile }) {
             {/* The new password and its confirmation are a matched pair, so
                 they share a row -- seeing both at once is the whole point of
                 a confirmation field. */}
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4">
               <Field
                 id="password-new"
                 label="새 비밀번호"
@@ -179,8 +179,8 @@ export function ProfileForm({ profile }: { profile: MyProfile }) {
 
             <FormError message={passwordError} />
 
-            <div className="flex sm:justify-end">
-              <Button type="submit" variant="secondary" disabled={savingPassword} className="w-full sm:w-auto">
+            <div className="flex">
+              <Button type="submit" variant="secondary" disabled={savingPassword} className="w-full">
                 {savingPassword ? '변경 중...' : '비밀번호 변경'}
               </Button>
             </div>
