@@ -95,3 +95,39 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
   revalidatePath('/member', 'layout')
   return { success: true }
 }
+
+// Owner or the session's own instructor adding someone to its roster
+// directly -- exactly one of memberId/guestName, matching
+// admin_add_participant's own invalid_participant guard. No `.single()`,
+// same reasoning as bookSession above (admin_add_participant `returns
+// public.bookings`, a single composite row -- postgrest-js already returns
+// it unwrapped).
+export async function adminAddParticipant(
+  sessionId: string,
+  participant: { memberId: string } | { guestName: string; guestPhone?: string }
+): Promise<{ error: string } | { success: true }> {
+  const supabase = await createClient()
+  const { error } = await supabase.rpc('admin_add_participant', {
+    p_session_id: sessionId,
+    p_member_id: 'memberId' in participant ? participant.memberId : undefined,
+    p_guest_name: 'guestName' in participant ? participant.guestName : undefined,
+    p_guest_phone: 'guestName' in participant ? participant.guestPhone || undefined : undefined,
+  })
+  if (error) return { error: mapAddParticipantError(error.message) }
+  // 'layout': this can be called from either /admin/bookings or /instructor,
+  // and either way it changes what that session's roster looks like on both
+  // screens (an instructor-added guest should show up if the owner is
+  // looking at the same session, and vice versa) -- same broad-revalidate
+  // reasoning as bookSession/cancelBooking above, just for both surfaces.
+  revalidatePath('/admin/bookings', 'layout')
+  revalidatePath('/instructor', 'layout')
+  return { success: true }
+}
+
+function mapAddParticipantError(message: string): string {
+  if (message.includes('already_booked')) return '이미 이 수업에 등록된 회원입니다.'
+  if (message.includes('invalid_member')) return '이 요가원의 회원이 아닙니다.'
+  if (message.includes('session_cancelled')) return '취소된 수업입니다.'
+  if (message.includes('not_permitted')) return '이 수업에 참가자를 추가할 권한이 없습니다.'
+  return message
+}

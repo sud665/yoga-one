@@ -102,6 +102,19 @@ export function daysBetween(from: string, to: string): number {
   return Math.round((toUTC(to) - toUTC(from)) / DAY_MS)
 }
 
+/**
+ * Adds whole calendar months to a 'YYYY-MM-DD' -- membership expiry math
+ * (start_date + term_months). Same UTC-parse discipline as the rest of this
+ * file. Doesn't clamp day-of-month overflow (e.g. Jan 31 + 1 month rolls
+ * into early March, same as `new Date`'s own month-overflow behavior) --
+ * membership start dates landing on exactly that edge case are rare enough
+ * that clamping isn't worth the extra branch.
+ */
+export function addMonths(date: string, months: number): string {
+  const [y, m, d] = date.split('-').map(Number)
+  return toISO(Date.UTC(y, m - 1 + months, d))
+}
+
 /** Whether a 'YYYY-MM-DD' falls inside the range. Unbounded ends always match. */
 export function isWithin(date: string, range: PeriodRange): boolean {
   if (range.start && date < range.start) return false

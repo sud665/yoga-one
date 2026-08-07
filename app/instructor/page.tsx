@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import Link from 'next/link'
 import { listMySessionsWithBookings, markAttendance } from '@/lib/actions/attendance'
 import { Button } from '@/components/ui/Button'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -9,13 +10,15 @@ import { StatusBadge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PeriodFilter } from '@/components/ui/PeriodFilter'
 import { usePeriodFilter } from '@/lib/use-period-filter'
-import { Check, X } from 'lucide-react'
+import { AddParticipantSheet } from '@/components/bookings/AddParticipantSheet'
+import { Check, Megaphone, UserPlus, X } from 'lucide-react'
 
 export default function InstructorHomePage() {
   // `any[]`가 아니라 listMySessionsWithBookings()의 실제 반환 타입을 그대로 쓴다 --
   // app/member/bookings/page.tsx가 listMyBookings()에 쓰는 것과 동일한 관용구
   // (`Awaited<ReturnType<typeof ...>>`)로, 새 타입을 export하지 않고도 any를 피한다.
   const [sessions, setSessions] = useState<Awaited<ReturnType<typeof listMySessionsWithBookings>> | null>(null)
+  const [addSessionId, setAddSessionId] = useState<string | null>(null)
   const period = usePeriodFilter()
 
   const refresh = useCallback(() => {
@@ -40,9 +43,20 @@ export default function InstructorHomePage() {
     [sessions]
   )
 
+  const addTarget = (sessions ?? []).find((s) => s.id === addSessionId)
+
   return (
     <div className="w-full px-6 py-12">
-      <h1 className="mb-8 text-heading-lg text-ink">내 수업</h1>
+      <div className="mb-8 flex items-center justify-between gap-3">
+        <h1 className="text-heading-lg text-ink">내 수업</h1>
+        <Link
+          href="/notices"
+          className="flex h-9 shrink-0 items-center gap-1.5 rounded-button border border-hairline px-3 text-label text-ink hover:bg-surface-soft"
+        >
+          <Megaphone aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+          공지사항
+        </Link>
+      </div>
 
       {sessions !== null && sessions.length > 0 && (
         <PeriodFilter
@@ -92,7 +106,12 @@ export default function InstructorHomePage() {
                     className="flex flex-wrap items-center justify-between gap-3 border-t border-hairline-soft py-3 first:border-t-0"
                   >
                     <span className="inline-flex items-center gap-2">
-                      <span className="text-body-strong text-ink">{b.member?.full_name}</span>
+                      <span className="text-body-strong text-ink">{b.member?.full_name ?? b.guest_name}</span>
+                      {/* guest_name is only ever set for a walk-in added via
+                          admin_add_participant (bookings_member_xor_guest) --
+                          member is never null for a self-booked row, so this
+                          badge only ever appears on a walk-in's row. */}
+                      {b.guest_name && <StatusBadge tone="neutral">원데이</StatusBadge>}
                       {b.status === 'attended' && <StatusBadge tone="success">출석</StatusBadge>}
                       {b.status === 'no_show' && <StatusBadge tone="danger">결석</StatusBadge>}
                     </span>
@@ -107,8 +126,24 @@ export default function InstructorHomePage() {
                   </li>
                 ))}
             </ul>
+            <Button variant="secondary" icon={UserPlus} onClick={() => setAddSessionId(s.id)} className="w-full">
+              회원 · 원데이 추가
+            </Button>
           </Card>
         ))
+      )}
+
+      {addTarget && (
+        <AddParticipantSheet
+          sessionId={addTarget.id}
+          sessionLabel={`${addTarget.template?.title ?? ''} · ${addTarget.date}${addTarget.template?.start_time ? ` ${addTarget.template.start_time.slice(0, 5)}` : ''}`}
+          existingMemberIds={addTarget.bookings
+            .filter((b) => b.status === 'booked' || b.status === 'waitlisted')
+            .map((b) => b.member_id)
+            .filter((id): id is string => Boolean(id))}
+          onClose={() => setAddSessionId(null)}
+          onAdded={refresh}
+        />
       )}
     </div>
   )

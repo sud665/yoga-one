@@ -25,7 +25,7 @@ export async function listSessionsWithRoster() {
   const { data } = await supabase
     .from('class_sessions')
     .select(
-      '*, template:class_templates(title, start_time), instructor:profiles!class_sessions_instructor_id_fkey(full_name), bookings(id, status, member:profiles!bookings_member_id_fkey(full_name))'
+      '*, template:class_templates(title, start_time), instructor:profiles!class_sessions_instructor_id_fkey(full_name), bookings(id, status, member_id, guest_name, member:profiles!bookings_member_id_fkey(full_name))'
     )
     .gte('date', kstToday())
     .order('date')

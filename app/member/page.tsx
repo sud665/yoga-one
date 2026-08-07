@@ -1,4 +1,5 @@
-import { CalendarDays, Clock } from 'lucide-react'
+import Link from 'next/link'
+import { CalendarDays, Clock, Megaphone } from 'lucide-react'
 
 import { StatusBadge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -27,11 +28,20 @@ export default async function MemberHomePage() {
 
   return (
     <div className="w-full px-6 py-12">
-      <header className="mb-8">
-        <h1 className="text-heading-lg text-ink">
-          {profile ? `안녕하세요, ${profile.fullName}님` : '안녕하세요'}
-        </h1>
-        <p className="mt-1 text-caption text-muted">{periodLabel(kstToday(), 'day')}</p>
+      <header className="mb-8 flex items-start justify-between gap-3">
+        <div>
+          <h1 className="text-heading-lg text-ink">
+            {profile ? `안녕하세요, ${profile.fullName}님` : '안녕하세요'}
+          </h1>
+          <p className="mt-1 text-caption text-muted">{periodLabel(kstToday(), 'day')}</p>
+        </div>
+        <Link
+          href="/notices"
+          className="flex h-9 shrink-0 items-center gap-1.5 rounded-button border border-hairline px-3 text-label text-ink hover:bg-surface-soft"
+        >
+          <Megaphone aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+          공지사항
+        </Link>
       </header>
 
       {/* The screen's one voltage surface (DESIGN.md: 화면당 최대 1-2개). A

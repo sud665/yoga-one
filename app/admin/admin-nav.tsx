@@ -11,6 +11,7 @@ import {
   ClipboardList,
   LayoutDashboard,
   Mail,
+  Megaphone,
   MessageCircle,
   UserCog,
   UserRound,
@@ -51,6 +52,7 @@ const ROSTER_CHILDREN: NavLeaf[] = [
   { href: '/admin/roster/instructors', label: '강사관리', icon: UserRound },
   { href: '/admin/roster/members', label: '회원관리', icon: UsersRound },
   { href: '/admin/invites', label: '초대관리', icon: Mail },
+  { href: '/admin/notices', label: '공지사항', icon: Megaphone },
 ]
 
 // 프로필 could not simply become a sixth flat tab. The bar splits its width

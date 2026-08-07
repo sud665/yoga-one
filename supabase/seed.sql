@@ -184,6 +184,60 @@ begin
     (v_past_session_id, v_member2_id, 'no_show'),
     (v_past_session_id, v_member3_id, 'cancelled');
 
+  -- ---- Membership registrations for the 회원 관리 roster ------------------
+  -- Only member1-3 get one, deliberately -- member4/member5 stay
+  -- 'unregistered' (no member_registrations row) so the roster/detail-sheet's
+  -- graceful no-registration-data path has something real to render against,
+  -- not just the happy path. invite_id is left null: these three already
+  -- existed as accepted profiles before this registration data was added
+  -- (created directly by seed_create_user, not through register_member's
+  -- invite flow), so there's no real invite row to backfill against -- the
+  -- column exists for register_member's own atomic insert, not because every
+  -- registration must have one.
+  insert into public.member_registrations
+    (studio_id, profile_id, full_name, phone, email, plan, term_months, start_date, classes, total_price, agreements, signature_name, signed_at, created_by) values
+    -- 김민지: 주 3회, 3개월, 60일 전 개시 -> 만료까지 여유 있음 ('active')
+    (v_studio_id, v_member1_id, '김민지', '010-1000-0005', 'member1@yogaone.demo', 'w3', 3, current_date - 60,
+     array['빈야사 플로우', '하타 요가'], 445000,
+     '{"terms":true,"privacy":true,"refund":true,"safety":true,"marketing":true,"photo":true}'::jsonb,
+     '김민지', now() - interval '60 days', v_owner_id),
+    -- 이준호: 주 2회, 1개월, 20일 전 개시 -> 10일 안에 만료 ('soon')
+    (v_studio_id, v_member2_id, '이준호', '010-1000-0006', 'member2@yogaone.demo', 'w2', 1, current_date - 20,
+     array['아쉬탕가'], 130000,
+     '{"terms":true,"privacy":true,"refund":true,"safety":true,"marketing":false,"photo":false}'::jsonb,
+     '이준호', now() - interval '20 days', v_owner_id),
+    -- 정다은: 주 5회, 6개월, 200일 전 개시 -> 이미 만료 ('expired')
+    (v_studio_id, v_member3_id, '정다은', '010-1000-0007', 'member3@yogaone.demo', 'w5', 6, current_date - 200,
+     '{}'::text[], 1071000,
+     '{"terms":true,"privacy":true,"refund":true,"safety":true,"marketing":true,"photo":false}'::jsonb,
+     '정다은', now() - interval '200 days', v_owner_id);
+
+  -- ---- Notices (공지사항 관리 screen shouldn't start empty either) --------
+  insert into public.notices (studio_id, title, body, target, pin, views, created_by, created_at) values
+    (v_studio_id, '8월 15일(토) 광복절 휴무 안내',
+     '8월 15일 토요일은 광복절로 전 수업이 휴강입니다.' || chr(10) ||
+     '해당 주 회차는 다음 주로 이월되며, 정기권 만료일은 하루 연장됩니다.' || chr(10) || chr(10) ||
+     '예약해두신 수업은 자동으로 취소되고 횟수는 차감되지 않습니다. 문의는 채팅으로 남겨주세요.',
+     'all', true, 132, v_owner_id, now() - interval '3 days'),
+    (v_studio_id, '9월 정기권 결제 안내',
+     '9월 정기권 결제는 8월 25일(화)부터 받습니다.' || chr(10) || chr(10) ||
+     '· 주 2회 · 주 3회 · 주 4회 · 주 5회' || chr(10) ||
+     '· 결제는 데스크 또는 계좌이체' || chr(10) || chr(10) ||
+     '8월 말일까지 결제하신 분은 9월 1일부터 바로 예약할 수 있습니다.',
+     'member', true, 98, v_owner_id, now() - interval '5 days'),
+    (v_studio_id, '9월 시간표 배정 회의 — 8월 20일 21:00',
+     '9월 시간표를 확정하는 회의를 8월 20일 목요일 21시, 2층 라운지에서 진행합니다.' || chr(10) || chr(10) ||
+     '희망 요일과 시간대를 8월 18일까지 채팅으로 보내주세요. 대체 강사 가능 시간도 함께 적어주시면 배정이 수월합니다.',
+     'instructor', false, 12, v_owner_id, now() - interval '8 days'),
+    (v_studio_id, '샤워실 온수 배관 공사 (8/10~8/11)',
+     '8월 10일(월)~11일(화) 이틀간 샤워실 온수 배관 공사를 합니다.' || chr(10) || chr(10) ||
+     '해당 기간에는 탈의실만 이용할 수 있습니다. 수업은 정상 진행됩니다.',
+     'all', false, 167, v_owner_id, now() - interval '12 days'),
+    (v_studio_id, '매트 소독 방식 변경 안내',
+     '7월 20일부터 수업 종료 후 매트 소독을 전담 인력이 일괄 진행합니다.' || chr(10) || chr(10) ||
+     '수업이 끝나면 매트를 말아서 벽면 거치대에 세워두시면 됩니다. 개인 매트를 쓰시는 분은 그대로 이용하셔도 좋습니다.',
+     'all', false, 143, v_owner_id, now() - interval '21 days');
+
   raise notice '';
   raise notice '=== Demo accounts (all passwords: demo1234) ===';
   raise notice '원장:  owner@yogaone.demo';

@@ -48,3 +48,18 @@ export type SelectProps = Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'c
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select({ className, ...rest }, ref) {
   return <select ref={ref} className={cx(FIELD_CLASSES, className)} {...rest} />
 })
+
+// Same field language as TextInput/Select, but multi-line: fixed height
+// doesn't apply, so this overrides FIELD_CLASSES's `h-11 items-center` with
+// a min-height and top-aligned padding instead of re-deriving a parallel
+// class string.
+export type TextareaProps = Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, 'className'> & {
+  className?: string
+}
+
+const TEXTAREA_CLASSES =
+  'min-h-32 w-full rounded-input border border-hairline bg-canvas px-3.5 py-2.5 text-body-md text-ink placeholder:text-muted transition-colors duration-150 focus:border-brand-deep focus:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+
+export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea({ className, ...rest }, ref) {
+  return <textarea ref={ref} className={cx(TEXTAREA_CLASSES, className)} {...rest} />
+})

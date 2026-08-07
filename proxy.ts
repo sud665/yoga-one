@@ -27,9 +27,14 @@ const PUBLIC_PREFIXES = [
 // owner assigned as instructor had no route to reach an attendance screen at
 // all: this was purely a routing gap, not a data/RLS one. Instructor/member
 // confinement is unchanged -- only owners gain the extra allowed prefix.
+// '/notices' is shared by all three roles (the read-only 공지사항 board/
+// detail screens) -- it isn't nested under any role's home prefix, so every
+// role needs it added explicitly rather than getting it for free the way
+// e.g. /admin/notices (under owner's own '/admin' prefix) already does.
 function allowedPathPrefixes(role: ProfileRole) {
   const home = roleHomePath(role)
-  return role === 'owner' ? [home, '/instructor'] : [home]
+  const shared = ['/notices']
+  return role === 'owner' ? [home, '/instructor', ...shared] : [home, ...shared]
 }
 
 export async function proxy(request: NextRequest) {

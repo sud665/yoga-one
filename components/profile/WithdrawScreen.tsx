@@ -9,16 +9,30 @@ import { Card } from '@/components/ui/Card'
 import { Select } from '@/components/ui/TextInput'
 import { withdrawAccount } from '@/lib/actions/profile'
 
-// What withdraw_my_account (20260805000001) actually does, in plain
-// language -- it anonymizes rather than deletes (bookings/class_templates/
-// class_sessions all FK to profiles(id) with no cascade), so this list has
-// to stay accurate to that, not just to the design mockup's placeholder copy.
-const WITHDRAW_NOTES = [
-  '예약 및 출석 이력은 스튜디오 기록으로 남습니다.',
-  '이름과 전화번호는 삭제됩니다.',
-  '이 계정으로는 다시 로그인할 수 없습니다.',
-  '같은 이메일로 다시 초대받으면 새 계정으로 가입할 수 있습니다.',
-]
+// What withdraw_my_account (20260805000001, extended 20260806000000)
+// actually does, in plain language -- it cancels active bookings (promoting
+// the next waitlisted member), removes chat room membership, and anonymizes
+// rather than deletes the profile (bookings/class_templates/class_sessions
+// all FK to profiles(id) with no cascade). This has to stay accurate to
+// that, not just to the design mockup's placeholder copy -- the one thing
+// that genuinely differs by role is the first bullet: a member's own
+// bookings get cancelled automatically, but an instructor's *assigned*
+// classes don't get auto-reassigned (class_templates/class_sessions keep
+// pointing at them) -- the owner has to do that by hand.
+const WITHDRAW_NOTES: Record<'member' | 'instructor', string[]> = {
+  member: [
+    '다가오는 예약과 대기 신청이 모두 취소됩니다.',
+    '채팅방에서 나가게 되며 대화 내용은 다시 볼 수 없습니다.',
+    '예약·출석 이력은 스튜디오 기록으로 남고, 이름과 전화번호는 삭제됩니다.',
+    '이 계정으로는 다시 로그인할 수 없으며, 같은 이메일로 다시 초대받으면 새 계정으로 가입할 수 있습니다.',
+  ],
+  instructor: [
+    '담당 중인 반복 수업은 원장이 다른 강사로 재배정해야 합니다.',
+    '채팅방에서 나가게 되며 대화 내용은 다시 볼 수 없습니다.',
+    '지난 수업의 출석 기록은 스튜디오 기록으로 남고, 이름과 전화번호는 삭제됩니다.',
+    '이 계정으로는 다시 로그인할 수 없으며, 같은 이메일로 다시 초대받으면 새 계정으로 가입할 수 있습니다.',
+  ],
+}
 
 const REASON_OPTIONS = ['이사 · 거리', '수업 시간이 맞지 않음', '수강료 부담', '기타']
 
@@ -80,7 +94,7 @@ export function WithdrawScreen({ role }: { role: 'member' | 'instructor' }) {
         <Card>
           <p className="mb-3 text-heading-md text-ink">탈퇴 시 처리되는 내용</p>
           <ul className="flex flex-col gap-3">
-            {WITHDRAW_NOTES.map((note) => (
+            {WITHDRAW_NOTES[role].map((note) => (
               <li key={note} className="flex gap-2 border-t border-hairline-soft pt-3 text-body-md text-body">
                 <span aria-hidden="true" className="text-muted">
                   ·

@@ -37,22 +37,28 @@ export type Database = {
       bookings: {
         Row: {
           created_at: string
+          guest_name: string | null
+          guest_phone: string | null
           id: string
-          member_id: string
+          member_id: string | null
           session_id: string
           status: string
         }
         Insert: {
           created_at?: string
+          guest_name?: string | null
+          guest_phone?: string | null
           id?: string
-          member_id: string
+          member_id?: string | null
           session_id: string
           status: string
         }
         Update: {
           created_at?: string
+          guest_name?: string | null
+          guest_phone?: string | null
           id?: string
-          member_id?: string
+          member_id?: string | null
           session_id?: string
           status?: string
         }
@@ -295,6 +301,98 @@ export type Database = {
           },
         ]
       }
+      member_registrations: {
+        Row: {
+          agreements: Json
+          classes: string[]
+          created_at: string
+          created_by: string
+          email: string
+          full_name: string
+          id: string
+          invite_id: string | null
+          paused_at: string | null
+          phone: string
+          plan: string
+          profile_id: string | null
+          signature_name: string
+          signed_at: string
+          start_date: string
+          studio_id: string
+          term_months: number
+          total_price: number
+        }
+        Insert: {
+          agreements: Json
+          classes?: string[]
+          created_at?: string
+          created_by: string
+          email: string
+          full_name: string
+          id?: string
+          invite_id?: string | null
+          paused_at?: string | null
+          phone: string
+          plan: string
+          profile_id?: string | null
+          signature_name: string
+          signed_at?: string
+          start_date: string
+          studio_id: string
+          term_months: number
+          total_price: number
+        }
+        Update: {
+          agreements?: Json
+          classes?: string[]
+          created_at?: string
+          created_by?: string
+          email?: string
+          full_name?: string
+          id?: string
+          invite_id?: string | null
+          paused_at?: string | null
+          phone?: string
+          plan?: string
+          profile_id?: string | null
+          signature_name?: string
+          signed_at?: string
+          start_date?: string
+          studio_id?: string
+          term_months?: number
+          total_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "member_registrations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_registrations_invite_id_fkey"
+            columns: ["invite_id"]
+            isOneToOne: false
+            referencedRelation: "invites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_registrations_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "member_registrations_studio_id_fkey"
+            columns: ["studio_id"]
+            isOneToOne: false
+            referencedRelation: "studios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           body: string | null
@@ -333,6 +431,57 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notices: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string
+          id: string
+          pin: boolean
+          studio_id: string
+          target: string
+          title: string
+          views: number
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by: string
+          id?: string
+          pin?: boolean
+          studio_id: string
+          target: string
+          title: string
+          views?: number
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          pin?: boolean
+          studio_id?: string
+          target?: string
+          title?: string
+          views?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notices_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notices_studio_id_fkey"
+            columns: ["studio_id"]
+            isOneToOne: false
+            referencedRelation: "studios"
             referencedColumns: ["id"]
           },
         ]
@@ -472,12 +621,37 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      admin_add_participant: {
+        Args: {
+          p_guest_name?: string
+          p_guest_phone?: string
+          p_member_id?: string
+          p_session_id: string
+        }
+        Returns: {
+          created_at: string
+          guest_name: string | null
+          guest_phone: string | null
+          id: string
+          member_id: string | null
+          session_id: string
+          status: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "bookings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       book_session: {
         Args: { p_session_id: string }
         Returns: {
           created_at: string
+          guest_name: string | null
+          guest_phone: string | null
           id: string
-          member_id: string
+          member_id: string | null
           session_id: string
           status: string
         }
@@ -492,8 +666,10 @@ export type Database = {
         Args: { p_booking_id: string }
         Returns: {
           created_at: string
+          guest_name: string | null
+          guest_phone: string | null
           id: string
-          member_id: string
+          member_id: string | null
           session_id: string
           status: string
         }
@@ -559,6 +735,26 @@ export type Database = {
           valid: boolean
         }[]
       }
+      get_notice: {
+        Args: { p_id: string }
+        Returns: {
+          body: string
+          created_at: string
+          created_by: string
+          id: string
+          pin: boolean
+          studio_id: string
+          target: string
+          title: string
+          views: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "notices"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_or_create_dm: {
         Args: { p_other_profile_id: string }
         Returns: string
@@ -601,8 +797,10 @@ export type Database = {
         Args: { p_booking_id: string; p_status: string }
         Returns: {
           created_at: string
+          guest_name: string | null
+          guest_phone: string | null
           id: string
-          member_id: string
+          member_id: string | null
           session_id: string
           status: string
         }
@@ -616,6 +814,25 @@ export type Database = {
       mark_conversation_read: {
         Args: { p_conversation_id: string }
         Returns: undefined
+      }
+      register_member: {
+        Args: {
+          p_agreements: Json
+          p_classes: string[]
+          p_code: string
+          p_email: string
+          p_full_name: string
+          p_phone: string
+          p_plan: string
+          p_signature_name: string
+          p_start_date: string
+          p_term_months: number
+          p_total_price: number
+        }
+        Returns: {
+          invite_id: string
+          registration_id: string
+        }[]
       }
       send_message: {
         Args: {

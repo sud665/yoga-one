@@ -8,3 +8,5 @@ export type ClassTemplate = Database['public']['Tables']['class_templates']['Row
 export type ClassSession = Database['public']['Tables']['class_sessions']['Row']
 export type Booking = Database['public']['Tables']['bookings']['Row']
 export type BookingStatus = Booking['status']
+export type Notice = Database['public']['Tables']['notices']['Row']
+export type NoticeTarget = Notice['target']
