@@ -13,9 +13,38 @@ const PUBLIC_PREFIXES = [
   '/find-email',
   '/find-password',
   '/reset-password',
-  '/onboarding',
   '/error',
 ]
+
+// '/onboarding' is deliberately NOT in PUBLIC_PREFIXES above -- it needs a
+// narrower audience than "public": reachable by an authenticated user who
+// has no profile row yet (a Kakao owner signup, mid-flow), never by a fully
+// logged-out visitor. Folding it into PUBLIC_PREFIXES let anyone hit
+// /onboarding/studio-name with no session at all and see (and submit) the
+// "create my studio" form -- it only ever failed downstream, at
+// create_studio_and_owner_profile's own auth check, with the raw Postgres
+// "permission denied" surfacing to the page (QA sweep 2026-08-08, item 10).
+// This constant is consulted only in the `!profile` branch below, never in
+// the earlier `!user` branch, so an anonymous visitor still falls through to
+// the `redirect('/login')` case. It has to stay reachable for the
+// authenticated-profile-less case specifically, though: once that branch
+// redirects here, the *next* request for this same path re-enters this
+// function with user set and profile still null -- without an onboarding
+// exemption at that point, it would just `redirect('/onboarding/studio-name')`
+// again, an infinite loop back to itself.
+const ONBOARDING_PREFIX = '/onboarding'
+
+// Paths whose whole purpose is establishing a *new* identity. They have to
+// stay in PUBLIC_PREFIXES too (an anonymous visitor, and a profile-less
+// authenticated user mid-invite-acceptance, both still need to reach them),
+// but an already-onboarded user landing here -- an old bookmark, a stale
+// invite link, a signed-in owner absent-mindedly retyping /signup -- gets
+// bounced to their own role home instead of seeing a sign-up/accept-invite
+// form for an account they already have (QA sweep 2026-08-08, item 11).
+// '/find-email' / '/find-password' / '/reset-password' deliberately aren't
+// here: those are account-recovery utilities, not new-identity forms, and
+// staying reachable while logged in isn't the same kind of confusing.
+const AUTH_ENTRY_PREFIXES = ['/login', '/signup', '/invite']
 
 // Only an owner gets a second allowed prefix. The design spec explicitly
 // supports an owner who teaches their own classes in a small studio
@@ -57,7 +86,7 @@ export async function proxy(request: NextRequest) {
   const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
 
   if (!profile) {
-    if (isPublic) return getResponse()
+    if (isPublic || path.startsWith(ONBOARDING_PREFIX)) return getResponse()
     // A pending invite code (set by acceptInviteWithPassword/signInWithKakao
     // when signUp() couldn't establish a session immediately -- hosted email
     // confirmations, see lib/actions/invites.ts) means this authenticated,
@@ -86,8 +115,9 @@ export async function proxy(request: NextRequest) {
     return redirect('/onboarding/studio-name')
   }
 
+  const isAuthEntry = AUTH_ENTRY_PREFIXES.some((prefix) => path.startsWith(prefix))
   const allowedPrefixes = allowedPathPrefixes(profile.role)
-  if (!isPublic && !allowedPrefixes.some((prefix) => path.startsWith(prefix))) {
+  if (isAuthEntry || (!isPublic && !allowedPrefixes.some((prefix) => path.startsWith(prefix)))) {
     return redirect(roleHomePath(profile.role))
   }
 

@@ -147,7 +147,7 @@ export function AdminNav() {
                 )}
               >
                 <Icon aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.75} />
-                <span className="inline-flex items-center gap-0.5">
+                <span className="inline-flex items-center gap-0.5 break-keep">
                   {item.label}
                   {/* Self-critique fix: without this, 인력관리 looked
                       identical to the other 4 tabs before the first tap --
@@ -172,7 +172,13 @@ export function AdminNav() {
               )}
             >
               <Icon aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.75} />
-              <span>{item.label}</span>
+              {/* break-keep: a narrow viewport (~330px, an old iPhone SE/small
+                  Android) could wrap "시간표관리" mid-word ("시간표관" / "리")
+                  -- Korean line-breaking defaults to breaking between any two
+                  characters, unlike English's whitespace-only wrap (QA sweep
+                  2026-08-08, item 21). break-keep restricts wraps to natural
+                  word boundaries, same fix applied to RoleNav.tsx's label. */}
+              <span className="break-keep">{item.label}</span>
             </Link>
           )
         })}

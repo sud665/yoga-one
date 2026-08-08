@@ -52,6 +52,24 @@ export default function MemberRegisterPage() {
     })
   }, [])
 
+  // 3단계까지 채운 뒤 실수로 다른 탭을 눌러 서명까지 전부 날아간 사례가
+  // 있었다 (QA 전수검사 2026-08-08, 항목 18). beforeunload는 브라우저의
+  // 실제 페이지 이탈(새로고침·탭 닫기·주소창에 새 URL 입력)만 잡고 앱
+  // 내부의 Next.js 클라이언트 사이드 라우팅(하단 탭 클릭)은 잡지 못하지만,
+  // 이 앱에 라우트 전환을 가로챌 표준 수단이 없는 상태에서(Next 문서에도
+  // 없음) 가장 위험한 이탈 경로(뒤로가기/새로고침/탭 닫기)만이라도 막는
+  // 게 아예 안 막는 것보다 낫다. fullName/phone 둘 다 비어있으면(아직
+  // 아무것도 안 쓴 상태) 경고하지 않는다 -- 빈 폼을 실수로 닫는 건 잃을
+  // 게 없다.
+  useEffect(() => {
+    if (result || (!fullName.trim() && !phone.trim())) return
+    function handleBeforeUnload(event: BeforeUnloadEvent) {
+      event.preventDefault()
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [fullName, phone, result])
+
   const price = computeMembershipPrice(plan, termMonths)
   const selectedPlan = PLANS.find((p) => p.id === plan) ?? PLANS[1]
   const selectedTerm = TERMS.find((t) => t.months === termMonths) ?? TERMS[0]
@@ -224,6 +242,7 @@ export default function MemberRegisterPage() {
                 <button
                   key={p.id}
                   type="button"
+                  aria-pressed={plan === p.id}
                   onClick={() => setPlan(p.id)}
                   className={cx(
                     'flex flex-col items-start gap-0.5 rounded-input border px-3 py-2.5 text-left',
@@ -245,6 +264,7 @@ export default function MemberRegisterPage() {
                 <button
                   key={t.months}
                   type="button"
+                  aria-pressed={termMonths === t.months}
                   onClick={() => setTermMonths(t.months)}
                   className={cx(
                     'flex-1 py-2.5 text-caption',
@@ -266,6 +286,7 @@ export default function MemberRegisterPage() {
                     <button
                       key={title}
                       type="button"
+                      aria-pressed={picked}
                       onClick={() => toggleClass(title)}
                       className={cx(
                         'rounded-full border px-3.5 py-1.5 text-caption',

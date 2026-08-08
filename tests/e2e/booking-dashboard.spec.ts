@@ -28,7 +28,12 @@ test('owner sees booked and waitlisted members grouped per session', async ({ pa
   // recurrence rule as metadata beneath it, so the two are asserted
   // separately -- which is what this check always meant.
   await expect(page.getByText('Dashboard Class', { exact: true })).toBeVisible()
-  await expect(page.getByText(/매주 월요일 09:00/).first()).toBeVisible()
+  // Day label and time/instructor are now separate elements (the schedule
+  // page groups templates by day, with the day as the group's <summary> and
+  // time/instructor as the row's own metadata) -- same split already made in
+  // schedule-management.spec.ts.
+  await expect(page.getByText('매주 월요일')).toBeVisible()
+  await expect(page.getByText(/09:00 ·/)).toBeVisible()
 
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '회원 초대 링크 발급' }).click()

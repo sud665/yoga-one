@@ -1,6 +1,6 @@
 'use client'
 
-import { CircleUser, ClipboardCheck, MessageCircle } from 'lucide-react'
+import { CircleUser, ClipboardCheck, LayoutDashboard, MessageCircle } from 'lucide-react'
 
 import { RoleNav, type RoleNavItem } from '@/components/ui/RoleNav'
 
@@ -22,6 +22,17 @@ const INSTRUCTOR_NAV_ITEMS: RoleNavItem[] = [
   { href: '/instructor/profile', label: '프로필', icon: CircleUser },
 ]
 
-export function InstructorNav() {
-  return <RoleNav label="강사 메뉴" items={INSTRUCTOR_NAV_ITEMS} />
+// An owner who also teaches (proxy.ts's owner-only second allowed prefix)
+// reaches this same instructor shell -- but with only the three tabs above,
+// they had no route back to /admin short of editing the URL by hand (QA
+// sweep 2026-08-08, item 13). RoleNav's own width comment (admin-nav.tsx)
+// puts the ceiling at six flat tabs before it needs grouping; four is well
+// under that, so this is a plain fourth tab rather than another accordion.
+const OWNER_INSTRUCTOR_NAV_ITEMS: RoleNavItem[] = [
+  ...INSTRUCTOR_NAV_ITEMS,
+  { href: '/admin', label: '관리자', icon: LayoutDashboard },
+]
+
+export function InstructorNav({ isOwner = false }: { isOwner?: boolean }) {
+  return <RoleNav label="강사 메뉴" items={isOwner ? OWNER_INSTRUCTOR_NAV_ITEMS : INSTRUCTOR_NAV_ITEMS} />
 }

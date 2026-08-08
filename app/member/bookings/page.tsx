@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PeriodFilter } from '@/components/ui/PeriodFilter'
 import { usePeriodFilter } from '@/lib/use-period-filter'
+import { kstToday } from '@/lib/date'
 import { ClipboardList, X } from 'lucide-react'
 
 export default function MyBookingsPage() {
@@ -113,9 +114,16 @@ export default function MyBookingsPage() {
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-body-strong text-ink">{b.session?.date}</span>
-                  <Button variant="secondary" icon={X} onClick={() => handleCancel(b.id)}>
-                    취소
-                  </Button>
+                  {/* 지난 수업은 취소 버튼을 숨긴다 -- 서버(cancel_booking)도
+                      session_in_past로 막지만, 강사가 아직 출석 처리를 하지
+                      않은 지난 예약은 status가 여전히 'booked'/'waitlisted'로
+                      남아 있어 버튼이 계속 눌리는 상태로 보였다 (QA 전수검사
+                      2026-08-08, 항목 1/7). */}
+                  {b.session?.date && b.session.date >= kstToday() && (
+                    <Button variant="secondary" icon={X} onClick={() => handleCancel(b.id)}>
+                      취소
+                    </Button>
+                  )}
                 </div>
               </Card>
             </li>

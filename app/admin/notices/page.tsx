@@ -1,13 +1,9 @@
-import Link from 'next/link'
-import { Megaphone, Pin } from 'lucide-react'
+import { Megaphone } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
-import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { listNotices } from '@/lib/actions/notices'
-import type { NoticeTarget } from '@/lib/types'
-
-const TARGET_LABEL: Record<NoticeTarget, string> = { all: '전체', member: '회원', instructor: '강사' }
+import { NoticeRow } from './notice-row'
 
 // Server component, like ChatListScreen/MemberHomePage -- a read-only list
 // gains nothing from client-side state, and fetching on the server skips the
@@ -36,23 +32,7 @@ export default async function AdminNoticesPage() {
         // 최신순" with no separate sort control.
         <ul className="mt-10 flex flex-col">
           {notices.map((notice) => (
-            <li key={notice.id} className="border-t border-hairline py-4 first:border-t-0">
-              <Link href={`/notices/${notice.id}`} className="block">
-                <div className="mb-1.5 flex items-center gap-1.5">
-                  {notice.pin && (
-                    <Badge tone="brand" className="gap-1">
-                      <Pin aria-hidden="true" className="h-2.5 w-2.5" strokeWidth={2} />
-                      고정
-                    </Badge>
-                  )}
-                  <Badge>{TARGET_LABEL[notice.target]}</Badge>
-                </div>
-                <p className="text-body-strong text-ink">{notice.title}</p>
-                <p className="mt-1 text-caption text-muted">
-                  {notice.created_at.slice(0, 10)} · 조회 {notice.views}
-                </p>
-              </Link>
-            </li>
+            <NoticeRow key={notice.id} notice={notice} />
           ))}
         </ul>
       )}

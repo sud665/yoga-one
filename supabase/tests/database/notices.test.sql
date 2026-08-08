@@ -1,5 +1,5 @@
 begin;
-select plan(11);
+select plan(15);
 
 create temporary table test_fixtures (key text primary key, value uuid);
 
@@ -102,6 +102,47 @@ select throws_ok(
   $$select public.get_notice('99999999-0001-0000-0000-000000000001')$$,
   'not_permitted',
   'get_notice rejects cross-studio access even to an all-target notice'
+);
+
+-- 9) owner can update a notice in their own studio (QA sweep 2026-08-08,
+-- item 5 -- edit/delete UI added; "notices: owner manages own studio
+-- notices" is a `for all` policy, so this was already authorized at the RLS
+-- layer and only needed the client-side action + screen).
+select tests.authenticate_as((select value from test_fixtures where key = 'owner_n'));
+update public.notices set title = '전체 공지 (수정)' where id = '99999999-0001-0000-0000-000000000001';
+select is(
+  (select title from public.notices where id = '99999999-0001-0000-0000-000000000001'),
+  '전체 공지 (수정)',
+  'owner can update a notice in their own studio'
+);
+
+-- 10) a non-owner's update matches zero rows under the "for all" policy's
+-- USING clause -- not an error, just silently no-op. member_n can still
+-- read the title afterward via the separate targeted-read policy, so no
+-- bypass_rls() is needed to verify it didn't change.
+select tests.authenticate_as((select value from test_fixtures where key = 'member_n'));
+update public.notices set title = '해킹 시도' where id = '99999999-0001-0000-0000-000000000001';
+select is(
+  (select title from public.notices where id = '99999999-0001-0000-0000-000000000001'),
+  '전체 공지 (수정)',
+  'a non-owner update does not change the row (RLS matches zero rows, not an error)'
+);
+
+-- 11) same for delete: a non-owner's delete matches zero rows
+delete from public.notices where id = '99999999-0001-0000-0000-000000000002';
+select is(
+  (select count(*)::int from public.notices where id = '99999999-0001-0000-0000-000000000002'),
+  1,
+  'a non-owner delete does not remove the row (RLS matches zero rows, not an error)'
+);
+
+-- 12) owner can delete a notice in their own studio
+select tests.authenticate_as((select value from test_fixtures where key = 'owner_n'));
+delete from public.notices where id = '99999999-0001-0000-0000-000000000002';
+select is(
+  (select count(*)::int from public.notices where id = '99999999-0001-0000-0000-000000000002'),
+  0,
+  'owner can delete a notice in their own studio'
 );
 
 select tests.clear_authentication();

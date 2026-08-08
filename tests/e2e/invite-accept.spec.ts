@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-test('an instructor can sign up via an owner-issued invite link', async ({ page, context }) => {
+test('an instructor can sign up via an owner-issued invite link', async ({ page, browser }) => {
   const ownerEmail = `owner-inviteflow-${Date.now()}@test.local`
 
   await page.goto('/signup')
@@ -25,7 +25,18 @@ test('an instructor can sign up via an owner-issued invite link', async ({ page,
   const inviteUrl = await link.getAttribute('href')
   expect(inviteUrl).toBeTruthy()
 
-  const instructorPage = await context.newPage()
+  // browser.newContext(), not context.newPage(): @supabase/ssr sessions are
+  // cookie-based and shared per-BrowserContext (CLAUDE.md), so a shared
+  // context here would carry the owner's own session cookie onto this
+  // request. That used to be harmless in this particular test (nothing here
+  // ever goes back to the owner's `page` afterward), but proxy.ts now
+  // redirects an already-authenticated, already-onboarded user away from
+  // /invite/* entirely (QA sweep 2026-08-08, item 11) -- with a shared
+  // context this navigation would resolve to the owner's own /admin
+  // dashboard instead of the invite/accept form. A dedicated context is both
+  // the pre-existing established convention and now load-bearing.
+  const instructorContext = await browser.newContext()
+  const instructorPage = await instructorContext.newPage()
   await instructorPage.goto(inviteUrl!)
   await expect(instructorPage.getByRole('heading')).toContainText('강사 초대')
 

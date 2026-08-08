@@ -59,18 +59,30 @@ export async function getOrCreateDm(otherProfileId: string): Promise<{ error: st
   return { conversationId: data }
 }
 
-export async function sendMessage(conversationId: string, body: string): Promise<{ error: string } | { success: true }> {
+// Returns the inserted row's id/created_at (not just success: true) so the
+// caller (ChatRoomScreen) can append it to local state immediately instead
+// of waiting on the realtime echo -- QA sweep 2026-08-08, item 8: a message
+// sent right after opening a room could land before the postgres_changes
+// subscription reached SUBSCRIBED (that handshake is async and unblocked,
+// see the load() comment in ChatRoomScreen.tsx), so the INSERT committed but
+// its realtime event was never delivered to the very client that caused it
+// -- the message was in the database but silently missing from the sender's
+// own screen until a reload re-fetched history from the table directly.
+export async function sendMessage(
+  conversationId: string,
+  body: string
+): Promise<{ error: string } | { success: true; id: string; createdAt: string }> {
   const trimmed = body.trim()
   if (!trimmed) {
     return { error: '메시지를 입력해주세요.' }
   }
 
   const supabase = await createClient()
-  const { error } = await supabase.rpc('send_message', { p_conversation_id: conversationId, p_body: trimmed })
-  if (error) {
-    return { error: error.message }
+  const { data, error } = await supabase.rpc('send_message', { p_conversation_id: conversationId, p_body: trimmed })
+  if (error || !data) {
+    return { error: error?.message ?? '메시지를 보내지 못했습니다.' }
   }
-  return { success: true }
+  return { success: true, id: data.id, createdAt: data.created_at }
 }
 
 export async function markConversationRead(conversationId: string): Promise<void> {

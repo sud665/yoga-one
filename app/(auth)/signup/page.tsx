@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Link from 'next/link'
 import { signUpOwnerWithPassword, signInWithKakao } from '@/lib/actions/auth'
 import { Button } from '@/components/ui/Button'
 import { TextInput } from '@/components/ui/TextInput'
@@ -65,6 +66,13 @@ export default function SignupPage() {
             >
               카카오로 가입
             </Button>
+            {/* /login already links here ("회원가입") but had no link back --
+                a dead end for someone who already has an account and lands
+                here by mistake (QA sweep 2026-08-08, item 25). Same
+                placement/style as /login's own utility links. */}
+            <div className="mt-6 flex items-center justify-center text-label text-muted">
+              <Link href="/login">이미 계정이 있으신가요? 로그인</Link>
+            </div>
           </>
         )}
       </div>

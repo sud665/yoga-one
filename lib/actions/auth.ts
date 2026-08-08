@@ -178,9 +178,24 @@ export async function updatePasswordAfterReset(formData: FormData): Promise<{ er
   const supabase = await createClient()
   const { error } = await supabase.auth.updateUser({ password })
   if (error) {
-    return { error: error.message }
+    return { error: mapUpdatePasswordError(error.message) }
   }
   return { success: true }
+}
+
+// updateUser() acts on the recovery session /auth/reset/route.ts should have
+// already established -- if that never happened (the reset link expired,
+// was already used, or this page was opened directly with no session at
+// all), supabase-js's raw error is the English "Auth session missing!",
+// which reached the page verbatim before this mapping existed (QA sweep
+// 2026-08-08, item 9). That's the one failure mode reachable through normal
+// use (an expired/reused link), so it gets a specific, actionable message;
+// anything else falls back to the raw message same as elsewhere in this file.
+function mapUpdatePasswordError(message: string): string {
+  if (message.includes('Auth session missing')) {
+    return '재설정 링크가 만료되었거나 이미 사용되었습니다. 비밀번호 찾기를 다시 시도해주세요.'
+  }
+  return message
 }
 
 export async function signInWithKakao(options?: {

@@ -7,13 +7,37 @@ import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Mail, Plus } from 'lucide-react'
+import { useToast } from '@/components/ui/Toast'
+import { Copy, Mail, Plus } from 'lucide-react'
+
+// expires_at is a raw Postgres timestamptz ('2026-08-15T10:50:49.486+00:00')
+// -- rendered verbatim before this, unlike every other date in the app (QA
+// sweep 2026-08-08, item 15). Formatted in KST for the same reason
+// ChatRoomScreen.tsx's formatTime is: a Korean user's wall clock, not the
+// server's UTC instant.
+function formatExpiry(iso: string) {
+  return new Intl.DateTimeFormat('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    timeZone: 'Asia/Seoul',
+  }).format(new Date(iso))
+}
 
 export default function InvitesPage() {
   const [invites, setInvites] = useState<Invite[] | null>(null)
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const { toast } = useToast()
+
+  async function handleCopy(code: string) {
+    const url = `${window.location.origin}/invite/${code}`
+    await navigator.clipboard.writeText(url)
+    toast({ title: '링크를 복사했습니다', tone: 'success' })
+  }
 
   useEffect(() => {
     listInvites().then(setInvites)
@@ -89,14 +113,30 @@ export default function InvitesPage() {
                   {invite.role === 'instructor' ? '강사 초대' : '회원 초대'}
                 </p>
                 <p className="mt-0.5 text-caption text-muted">
-                  <span className="font-mono">{invite.code}</span> · {invite.expires_at}까지
+                  <span className="font-mono">{invite.code}</span> · {formatExpiry(invite.expires_at)}까지
                 </p>
               </div>
-              {/* A consumed invite is spent, not queued -- `waitlisted` put a
-                  clock on it, which read as "still waiting to be used". */}
-              <StatusBadge tone={invite.used_at ? 'neutral' : 'success'}>
-                {invite.used_at ? '사용됨' : '미사용'}
-              </StatusBadge>
+              <div className="flex items-center gap-2">
+                {/* 발급 직후에만 보이던 링크가 화면을 벗어나면 다시 볼 방법이
+                    없었다 -- 코드는 목록에 남으니 같은 URL을 그대로
+                    재구성해 복사할 수 있게 한다 (QA 전수검사 2026-08-08,
+                    항목 15). 사용된 초대는 다시 나눠줄 이유가 없으니 숨긴다. */}
+                {!invite.used_at && (
+                  <button
+                    type="button"
+                    aria-label="초대 링크 복사"
+                    onClick={() => handleCopy(invite.code)}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-hairline bg-surface text-muted transition-colors hover:bg-surface-soft hover:text-ink"
+                  >
+                    <Copy aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  </button>
+                )}
+                {/* A consumed invite is spent, not queued -- `waitlisted` put a
+                    clock on it, which read as "still waiting to be used". */}
+                <StatusBadge tone={invite.used_at ? 'neutral' : 'success'}>
+                  {invite.used_at ? '사용됨' : '미사용'}
+                </StatusBadge>
+              </div>
             </li>
           ))}
         </ul>

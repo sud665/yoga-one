@@ -87,10 +87,15 @@ export function ChatRoomScreen({ role, conversationId }: { role: ProfileRole; co
             }
             const { data: sender } = await supabase.from('profiles').select('full_name').eq('id', row.sender_id).maybeSingle()
             if (cancelled) return
-            setMessages((prev) => [
-              ...prev,
-              { id: row.id, senderId: row.sender_id, senderName: sender?.full_name ?? '', body: row.body, createdAt: row.created_at },
-            ])
+            // id-dedupe: handleSend() below already appends the sender's own
+            // message optimistically (not waiting on this realtime echo), so
+            // the INSERT this client itself caused would otherwise render
+            // twice once this subscription event for it arrives too.
+            setMessages((prev) =>
+              prev.some((m) => m.id === row.id)
+                ? prev
+                : [...prev, { id: row.id, senderId: row.sender_id, senderName: sender?.full_name ?? '', body: row.body, createdAt: row.created_at }]
+            )
             // A message arriving while the room is already open counts as
             // read immediately -- only messages sent before this screen was
             // opened wait for the explicit markConversationRead below.
@@ -163,6 +168,19 @@ export function ChatRoomScreen({ role, conversationId }: { role: ProfileRole; co
     if ('error' in result) {
       setSendError(result.error)
       setDraft(text)
+      return
+    }
+    // Append immediately rather than waiting for the realtime echo (QA sweep
+    // 2026-08-08, item 8) -- senderName is left blank because showName below
+    // never renders it for isMine messages anyway. The postgres_changes
+    // handler above dedupes on id, so this doesn't double-render once that
+    // event does arrive.
+    if (myId) {
+      setMessages((prev) =>
+        prev.some((m) => m.id === result.id)
+          ? prev
+          : [...prev, { id: result.id, senderId: myId, senderName: '', body: text, createdAt: result.createdAt }]
+      )
     }
   }
 

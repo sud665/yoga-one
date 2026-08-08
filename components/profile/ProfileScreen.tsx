@@ -6,6 +6,7 @@ import { SignOutButton } from '@/components/ui/SignOutButton'
 import { getMyProfile } from '@/lib/actions/profile'
 
 import { ProfileForm } from './ProfileForm'
+import { MyMembershipCard } from './MyMembershipCard'
 
 // One screen, three routes (/member/profile, /instructor/profile,
 // /admin/profile). The content is identical for every role -- a name, a phone
@@ -29,6 +30,11 @@ export async function ProfileScreen() {
       </div>
 
       <ProfileForm profile={profile} />
+
+      {/* 회원만: 원장/강사에게는 회원권 개념 자체가 없다. 미등록(초대 링크로만
+          가입해 회원 등록 마법사를 거치지 않은) 회원에게는 카드 자체를 숨긴다
+          -- MyMembershipCard가 내부에서 그 상태를 걸러낸다. */}
+      {profile.role === 'member' && <MyMembershipCard />}
 
       {/* Sign-out's permanent home. It sat in the top bar of every screen at
           first, then at the bottom of every page; both spent recurring space

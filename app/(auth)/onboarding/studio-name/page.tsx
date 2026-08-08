@@ -23,7 +23,17 @@ export default function StudioNameOnboardingPage() {
         p_full_name: fullName,
       })
       if (rpcError) {
-        setError(rpcError.message)
+        // proxy.ts now keeps a fully logged-out visitor off this page
+        // entirely (QA sweep 2026-08-08, item 10), so the raw Postgres
+        // "permission denied for function ..." this call used to surface
+        // when reached with no session shouldn't be reachable through normal
+        // navigation anymore -- mapped anyway as defense in depth rather
+        // than trusting that guarantee to hold forever.
+        setError(
+          rpcError.message.includes('permission denied')
+            ? '로그인이 필요합니다. 다시 로그인해주세요.'
+            : rpcError.message
+        )
         return
       }
       router.push('/admin')

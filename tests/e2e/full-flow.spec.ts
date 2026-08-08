@@ -91,10 +91,17 @@ test('full journey: onboarding through attendance', async ({ page, browser }) =>
   // 3. 시간표 등록 (정원 1 — 대기명단 시나리오를 위해). 방금 만든 강사를 이름(label)으로 배정한다 --
   // 이 시점엔 원장/강사 두 후보가 있어 정렬 순서(index)를 신뢰할 수 없다 (instructor-attendance.spec.ts와
   // 동일한 이유).
+  //
+  // day_of_week = TODAY's weekday, not a hardcoded Monday: mark_attendance now rejects a
+  // session dated in the future (QA sweep 2026-08-08, item 2), and step 8 below marks
+  // attendance on the session booked here in the same run -- same fix as
+  // instructor-attendance.spec.ts, same reasoning in full there.
+  const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토']
+  const todayDayOfWeek = new Date().getDay()
   await page.goto('/admin/schedule')
   await page.getByPlaceholder('클래스명').fill('Full Flow Class')
   await page.locator('select[name="instructorId"]').selectOption({ label: '풀플로우 강사' })
-  await page.locator('select[name="dayOfWeek"]').selectOption('1')
+  await page.locator('select[name="dayOfWeek"]').selectOption(String(todayDayOfWeek))
   await page.locator('input[name="startTime"]').fill('09:00')
   await page.getByPlaceholder('정원').fill('1')
   await page.getByRole('button', { name: '시간표 추가' }).click()
@@ -102,7 +109,12 @@ test('full journey: onboarding through attendance', async ({ page, browser }) =>
   // recurrence rule as metadata beneath it, so the two are asserted
   // separately -- which is what this check always meant.
   await expect(page.getByText('Full Flow Class', { exact: true })).toBeVisible()
-  await expect(page.getByText(/매주 월요일 09:00/).first()).toBeVisible()
+  // Day label and time/instructor are now separate elements (the schedule
+  // page groups templates by day, with the day as the group's <summary> and
+  // time/instructor as the row's own metadata) -- same split already made in
+  // schedule-management.spec.ts.
+  await expect(page.getByText(`매주 ${DAY_LABELS[todayDayOfWeek]}요일`)).toBeVisible()
+  await expect(page.getByText(/09:00 ·/)).toBeVisible()
 
   // 4. 회원1 초대 발급 및 가입 -> 예약 (정원 1이므로 이 예약으로 세션이 마감된다).
   await page.goto('/admin/invites')

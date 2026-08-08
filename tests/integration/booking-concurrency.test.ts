@@ -74,6 +74,28 @@ describe('book_session concurrency', () => {
     await admin.from('profiles').insert({ id: member1.userId, studio_id: studioId, role: 'member', full_name: 'Member 1' })
     await admin.from('profiles').insert({ id: member2.userId, studio_id: studioId, role: 'member', full_name: 'Member 2' })
 
+    // book_session now requires an active, unexpired, unpaused
+    // member_registrations row (QA sweep 2026-08-08, item 1) -- classes: []
+    // means "all classes", so this covers both Race Class and Cancel Race
+    // Class below without needing per-class rows.
+    for (const memberId of [member1.userId, member2.userId]) {
+      await admin.from('member_registrations').insert({
+        studio_id: studioId,
+        profile_id: memberId,
+        full_name: 'Member',
+        phone: '010-0000-0000',
+        email: 'member@test.local',
+        plan: 'w3',
+        term_months: 12,
+        start_date: new Date().toISOString().slice(0, 10),
+        classes: [],
+        total_price: 0,
+        agreements: {},
+        signature_name: 'Member',
+        created_by: ownerUserId,
+      })
+    }
+
     const { data: template } = await admin
       .from('class_templates')
       .insert({

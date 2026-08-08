@@ -11,6 +11,8 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { PeriodFilter } from '@/components/ui/PeriodFilter'
 import { usePeriodFilter } from '@/lib/use-period-filter'
 import { AddParticipantSheet } from '@/components/bookings/AddParticipantSheet'
+import { useToast } from '@/components/ui/Toast'
+import { kstToday } from '@/lib/date'
 import { Check, ClipboardCheck, Megaphone, UserPlus, X } from 'lucide-react'
 
 export default function InstructorHomePage() {
@@ -20,6 +22,7 @@ export default function InstructorHomePage() {
   const [sessions, setSessions] = useState<Awaited<ReturnType<typeof listMySessionsWithBookings>> | null>(null)
   const [addSessionId, setAddSessionId] = useState<string | null>(null)
   const period = usePeriodFilter()
+  const { toast } = useToast()
 
   const refresh = useCallback(() => {
     listMySessionsWithBookings().then(setSessions)
@@ -30,7 +33,11 @@ export default function InstructorHomePage() {
   }, [refresh])
 
   async function handleMark(bookingId: string, status: 'attended' | 'no_show') {
-    await markAttendance(bookingId, status)
+    const result = await markAttendance(bookingId, status)
+    if ('error' in result) {
+      toast({ title: '출석 처리에 실패했습니다', description: result.error, tone: 'error' })
+      return
+    }
     refresh()
   }
 
@@ -120,7 +127,11 @@ export default function InstructorHomePage() {
                       {b.status === 'attended' && <StatusBadge tone="success">출석</StatusBadge>}
                       {b.status === 'no_show' && <StatusBadge tone="danger">결석</StatusBadge>}
                     </span>
-                    {b.status === 'booked' && (
+                    {/* 세션 날짜가 아직 오지 않았으면 출석 버튼 자체를 숨긴다 --
+                        서버(mark_attendance)도 session_not_started로 막지만,
+                        누르면 실패하는 버튼을 보여주는 것보다 애초에 뜨지
+                        않는 편이 낫다 (QA 전수검사 2026-08-08, 항목 2). */}
+                    {b.status === 'booked' && s.date !== null && s.date <= kstToday() && (
                       <div className="flex gap-2">
                         <Button icon={Check} onClick={() => handleMark(b.id, 'attended')}>출석</Button>
                         <Button variant="secondary" icon={X} onClick={() => handleMark(b.id, 'no_show')}>

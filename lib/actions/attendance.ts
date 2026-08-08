@@ -58,7 +58,19 @@ export async function markAttendance(
 ): Promise<{ error: string } | { success: true }> {
   const supabase = await createClient()
   const { error } = await supabase.rpc('mark_attendance', { p_booking_id: bookingId, p_status: status })
-  if (error) return { error: error.message }
+  if (error) return { error: mapAttendanceError(error.message) }
   revalidatePath('/instructor')
   return { success: true }
+}
+
+// mark_attendance raises a bare exception code as its SQLERRM -- same
+// forward-raw-message problem lib/actions/bookings.ts's mapBookingError
+// documents, extended to cover the future-session check added in QA sweep
+// 2026-08-08, item 2.
+function mapAttendanceError(message: string): string {
+  if (message.includes('session_not_started')) return '아직 시작하지 않은 수업은 출석을 확정할 수 없습니다.'
+  if (message.includes('booking_not_confirmed')) return '예약이 확정되지 않은 회원입니다.'
+  if (message.includes('booking_not_found')) return '예약을 찾을 수 없습니다.'
+  if (message.includes('not_permitted')) return '권한이 없습니다.'
+  return message
 }

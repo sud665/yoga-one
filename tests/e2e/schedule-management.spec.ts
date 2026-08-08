@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test'
 
-test('owner can create a recurring class template and see generated sessions', async ({ page }) => {
+test('owner can create a recurring class template and see it listed under its day', async ({ page }) => {
   const uniqueEmail = `owner-schedule-${Date.now()}@test.local`
 
   await page.goto('/signup')
@@ -26,11 +26,11 @@ test('owner can create a recurring class template and see generated sessions', a
   await page.getByPlaceholder('정원').fill('10')
   await page.getByRole('button', { name: '시간표 추가' }).click()
 
-  // The template row now leads with the class name and keeps the
-  // recurrence rule as metadata beneath it, so the two are asserted
-  // separately -- which is what this check always meant.
+  // The template row leads with the class name; the day now lives one level
+  // up as the (open-by-default) day-group's <summary>, with time/instructor
+  // as the row's own metadata -- so day, name, and time are asserted
+  // separately, matching the actual element split.
+  await expect(page.getByText('매주 월요일')).toBeVisible()
   await expect(page.getByText('Hatha Yoga', { exact: true })).toBeVisible()
-  await expect(page.getByText(/매주 월요일 09:00/).first()).toBeVisible()
-  const sessionItems = page.locator('ul').last().locator('li')
-  await expect(sessionItems).toHaveCount(8)
+  await expect(page.getByText(/09:00 · 시간표 원장/)).toBeVisible()
 })

@@ -33,11 +33,22 @@ export interface RoleNavProps {
 // The role's own root ('/member', '/instructor') is a prefix of every other
 // item in its list, so a prefix test would leave it permanently lit. Exact
 // match for that one, prefix for the rest so nested routes still highlight
-// their section. Derived from the items rather than passed in: the root is
-// always the shortest href, and one fewer prop is one fewer thing to get
-// wrong at a call site.
+// their section. Derived from the items rather than passed in: one fewer
+// prop is one fewer thing to get wrong at a call site.
+//
+// Picked by prefix relationship, not raw string length: instructor-nav.tsx's
+// owner variant appends a `/admin` tab (QA sweep 2026-08-08, item 13), and
+// '/admin' (6 chars) is shorter than '/instructor' (11 chars) -- a
+// shortest-wins reduce would crown '/admin' root even though it shares no
+// path with any other item here, which would flip '/instructor' from
+// exact-only to prefix-matching and light up both "내 수업" and "프로필"
+// simultaneously on /instructor/profile. Falls back to shortest-href when no
+// item is a prefix of a sibling (no current nav is fully flat with no
+// hierarchy, but this keeps the function total rather than possibly
+// returning undefined).
 function rootHrefOf(items: RoleNavItem[]): string {
-  return items.reduce((shortest, item) => (item.href.length < shortest.length ? item.href : shortest), items[0].href)
+  const hub = items.find((item) => items.some((sibling) => sibling !== item && sibling.href.startsWith(`${item.href}/`)))
+  return hub?.href ?? items.reduce((shortest, item) => (item.href.length < shortest.length ? item.href : shortest), items[0].href)
 }
 
 function isActiveHref(pathname: string, href: string, rootHref: string): boolean {
@@ -69,7 +80,11 @@ export function RoleNav({ label, items }: RoleNavProps) {
             )}
           >
             <Icon aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.75} />
-            {item.label}
+            {/* break-keep: see app/admin/admin-nav.tsx's identical comment --
+                a narrow viewport could wrap a label mid-word since Korean
+                line-breaking defaults to breaking anywhere (QA sweep
+                2026-08-08, item 21). */}
+            <span className="break-keep">{item.label}</span>
           </Link>
         )
       })}

@@ -68,18 +68,34 @@ test('instructor can view booked members for their own session and mark attendan
   // two eligible profiles now in this studio (owner + instructor), index position isn't
   // guaranteed the way it is in schedule-management.spec.ts/member-booking.spec.ts, where the
   // owner is the only option available at select-time.
+  //
+  // day_of_week = TODAY's weekday, not a hardcoded Monday: mark_attendance now rejects a
+  // session dated in the future (QA sweep 2026-08-08, item 2 -- a class days from now can't
+  // have its attendance confirmed yet), and this test books "the nearest generated session"
+  // then immediately marks its attendance in the same run. Hardcoding Monday only happened to
+  // work when the suite ran on a Monday; generate_sessions_for_template materializes today's
+  // date itself as the first occurrence when day_of_week matches today's weekday (CLAUDE.md's
+  // "counted loop" note), so this keeps the nearest booked session at today regardless of which
+  // day the suite actually runs on.
+  const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토']
+  const todayDayOfWeek = new Date().getDay()
   await page.goto('/admin/schedule')
   await page.getByPlaceholder('클래스명').fill('Attendance Class')
   await page.locator('select[name="instructorId"]').selectOption({ label: '출석 강사' })
-  await page.locator('select[name="dayOfWeek"]').selectOption('1')
+  await page.locator('select[name="dayOfWeek"]').selectOption(String(todayDayOfWeek))
   await page.locator('input[name="startTime"]').fill('09:00')
   await page.getByPlaceholder('정원').fill('10')
   await page.getByRole('button', { name: '시간표 추가' }).click()
   // The template row now leads with the class name and keeps the
   // recurrence rule as metadata beneath it, so the two are asserted
   // separately -- which is what this check always meant.
+  // Day label and time/instructor are now separate elements (the schedule
+  // page groups templates by day, with the day as the group's <summary> and
+  // time/instructor as the row's own metadata) -- same split already made in
+  // schedule-management.spec.ts.
   await expect(page.getByText('Attendance Class', { exact: true })).toBeVisible()
-  await expect(page.getByText(/매주 월요일 09:00/).first()).toBeVisible()
+  await expect(page.getByText(`매주 ${DAY_LABELS[todayDayOfWeek]}요일`)).toBeVisible()
+  await expect(page.getByText(/09:00 ·/)).toBeVisible()
 
   // Member books the generated session.
   await page.goto('/admin/invites')

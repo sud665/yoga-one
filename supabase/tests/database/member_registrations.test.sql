@@ -1,5 +1,5 @@
 begin;
-select plan(9);
+select plan(10);
 
 create temporary table test_fixtures (key text primary key, value uuid);
 
@@ -23,7 +23,10 @@ insert into test_fixtures (key, value) values ('plain_invite_user', gen_random_u
 insert into auth.users (id, email, encrypted_password, email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data, aud, role)
 values ((select value from test_fixtures where key = 'plain_invite_user'), 'plaininvite@test.local', '', now(), now(), now(), '{}', '{}', 'authenticated', 'authenticated');
 
-grant select on test_fixtures to authenticated, anon;
+-- insert too, not just select: assertion 6 below inserts into test_fixtures
+-- (stashing the registration id) while already authenticate_as(owner_k), a
+-- role switch that has already happened by then.
+grant select, insert on test_fixtures to authenticated, anon;
 
 -- 1) the owner's 3-step wizard creates an invite + registration atomically
 select tests.authenticate_as((select value from test_fixtures where key = 'owner_k'));
@@ -78,11 +81,22 @@ select is(
 );
 
 -- 6) and the registration row is linked back to the new profile -- read as
--- the owner, since member_registrations RLS only permits the owner to read
--- it at all (the newly-created member themselves cannot, by design).
+-- the owner here to keep this assertion about the backfill itself; the new
+-- member's own read access to this same row is assertion 9 below
+-- (20260808000001_member_registrations_self_read.sql). Also stashes the
+-- registration's own id into test_fixtures while still authenticated as the
+-- owner: assertion 9 runs as registered_user (role 'member'), who has no
+-- RLS access to the `invites` table at all, so re-deriving it there via
+-- `where invite_id = (select id from invites where code = ...)` would
+-- silently resolve that subquery to NULL and match zero rows -- not a
+-- member_registrations RLS problem, an invites RLS problem one join away
+-- from the thing actually under test (confirmed by hand before adding this
+-- fixture capture).
 select tests.authenticate_as((select value from test_fixtures where key = 'owner_k'));
+insert into test_fixtures (key, value)
+  select 'reg_reg01', id from public.member_registrations where invite_id = (select id from public.invites where code = 'REGCODE01');
 select is(
-  (select profile_id from public.member_registrations where invite_id = (select id from public.invites where code = 'REGCODE01')),
+  (select profile_id from public.member_registrations where id = (select value from test_fixtures where key = 'reg_reg01')),
   (select value from test_fixtures where key = 'registered_user'),
   'the registration is backfilled with the new profile''s id once accepted'
 );
@@ -100,12 +114,22 @@ select is(
   'an ordinary invite with no registration behind it still lands on pending, unchanged'
 );
 
--- 8) RLS: a non-owner cannot read member_registrations directly at all
+-- 8) RLS: a non-owner with no registration of their own sees zero rows
 select tests.authenticate_as((select value from test_fixtures where key = 'instructor_k'));
 select is(
   (select count(*)::int from public.member_registrations),
   0,
-  'a non-owner sees zero member_registrations rows, even for their own studio'
+  'a non-owner with no registration of their own sees zero member_registrations rows'
+);
+
+-- 9) a member CAN read their own registration row (QA sweep 2026-08-08, item
+-- 17 -- the missing "내 회원권" screen's RLS half; lib/actions/roster.ts's
+-- getMemberDetail(profileId) does the actual query shape this backs).
+select tests.authenticate_as((select value from test_fixtures where key = 'registered_user'));
+select is(
+  (select full_name from public.member_registrations where id = (select value from test_fixtures where key = 'reg_reg01')),
+  '김등록',
+  'a member can read their own member_registrations row'
 );
 
 select tests.clear_authentication();

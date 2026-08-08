@@ -7,6 +7,7 @@ import { X } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
+import { useToast } from '@/components/ui/Toast'
 import { getMemberDetail, extendMembership, toggleMembershipPause, type MemberDetail } from '@/lib/actions/roster'
 
 export interface MemberDetailSheetProps {
@@ -23,6 +24,7 @@ export function MemberDetailSheet({ memberId, onClose, onChanged }: MemberDetail
   const [detail, setDetail] = useState<MemberDetail | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { toast } = useToast()
 
   // No memberId-changed reset needed: the parent (app/admin/roster/members/
   // page.tsx) only ever renders this component while `selectedId` is
@@ -40,6 +42,11 @@ export function MemberDetailSheet({ memberId, onClose, onChanged }: MemberDetail
 
   async function handleExtend() {
     if (!detail?.registrationId) return
+    // 클릭 한 번으로 즉시 실행되고 되돌릴 방법이 없어(QA 전수검사
+    // 2026-08-08, 항목 3 -- 오탭이 곧 데이터 변경이었음), 이 앱에 다른 확인
+    // 다이얼로그 컴포넌트가 없는 만큼 가장 가벼운 방식인 네이티브 confirm으로
+    // 막는다.
+    if (!window.confirm(`${detail.fullName}님의 회원권을 1개월 연장할까요?`)) return
     setError(null)
     setBusy(true)
     const result = await extendMembership(detail.registrationId)
@@ -48,19 +55,23 @@ export function MemberDetailSheet({ memberId, onClose, onChanged }: MemberDetail
       setError(result.error)
       return
     }
+    toast({ title: '회원권을 연장했습니다', tone: 'success' })
     await refetch()
   }
 
   async function handleTogglePause() {
     if (!detail?.registrationId) return
+    const pausing = !detail.paused
+    if (!window.confirm(pausing ? `${detail.fullName}님의 회원권을 일시정지할까요?` : `${detail.fullName}님의 회원권을 재개할까요?`)) return
     setError(null)
     setBusy(true)
-    const result = await toggleMembershipPause(detail.registrationId, !detail.paused)
+    const result = await toggleMembershipPause(detail.registrationId, pausing)
     setBusy(false)
     if ('error' in result) {
       setError(result.error)
       return
     }
+    toast({ title: pausing ? '회원권을 일시정지했습니다' : '회원권을 재개했습니다', tone: 'success' })
     await refetch()
   }
 

@@ -290,6 +290,19 @@ body {
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
+/* App-shell, not a webpage -- no scrollbar should ever be visible, on any
+   scroll container, anywhere. Scrolling itself stays fully functional; only
+   the bar rendering is suppressed. */
+@layer base {
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* brand-deep is the system's one interactive accent -- focus rings, links,
    active nav, primary CTA fill. A global :focus-visible rule keeps the
    keyboard indicator identical no matter which component an element came

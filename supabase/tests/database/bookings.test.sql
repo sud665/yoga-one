@@ -1,5 +1,5 @@
 begin;
-select plan(10);
+select plan(16);
 
 create temporary table test_fixtures (key text primary key, value uuid);
 
@@ -11,12 +11,45 @@ insert into test_fixtures (key, value)
   select 'member_1', tests.create_test_profile((select value from test_fixtures where key = 'studio_f'), 'member', 'Member 1');
 insert into test_fixtures (key, value)
   select 'member_2', tests.create_test_profile((select value from test_fixtures where key = 'studio_f'), 'member', 'Member 2');
+-- member_3/4/5/6: 각각 아래 13~16번 단언(수강 클래스 불일치/회원권 없음/일시정지/만료)
+-- 전용. member_1/2와 분리하는 이유는, 그 두 명은 1~9번 assertion이 이미 특정 순서로
+-- book/cancel을 반복하며 상태를 조립해가는 시나리오라 새 검증 조건에 걸리면 안 되기
+-- 때문 (그래서 아래 registrations에서 만료/일시정지 없이 classes도 전체 허용으로 준다).
+insert into test_fixtures (key, value)
+  select 'member_3', tests.create_test_profile((select value from test_fixtures where key = 'studio_f'), 'member', 'Member 3');
+insert into test_fixtures (key, value)
+  select 'member_4', tests.create_test_profile((select value from test_fixtures where key = 'studio_f'), 'member', 'Member 4');
+insert into test_fixtures (key, value)
+  select 'member_5', tests.create_test_profile((select value from test_fixtures where key = 'studio_f'), 'member', 'Member 5');
+insert into test_fixtures (key, value)
+  select 'member_6', tests.create_test_profile((select value from test_fixtures where key = 'studio_f'), 'member', 'Member 6');
 
 insert into public.class_templates (id, studio_id, title, instructor_id, day_of_week, start_time, duration_min, capacity)
 values ('bbbbbbbb-0000-0000-0000-000000000000', (select value from test_fixtures where key = 'studio_f'), 'Small Class', (select value from test_fixtures where key = 'owner_f'), 1, '09:00', 60, 1);
 
 insert into public.class_sessions (id, template_id, studio_id, date, instructor_id, capacity)
 values ('cccccccc-0000-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-000000000000', (select value from test_fixtures where key = 'studio_f'), current_date + 7, (select value from test_fixtures where key = 'owner_f'), 1);
+
+-- 과거 세션 (11/12번 단언: 지난 세션 예약/취소 차단). 같은 템플릿에 날짜만 다르므로
+-- class_sessions_template_id_date_key(template_id, date) 유니크와 충돌하지 않는다.
+insert into public.class_sessions (id, template_id, studio_id, date, instructor_id, capacity)
+values ('cccccccc-1111-0000-0000-000000000000', 'bbbbbbbb-0000-0000-0000-000000000000', (select value from test_fixtures where key = 'studio_f'), current_date - 1, (select value from test_fixtures where key = 'owner_f'), 10);
+
+-- member_1/member_2는 기존 1~9번 시나리오가 그대로 통과해야 하므로 classes를 빈 배열
+-- (전체 클래스 허용)로 주고 만료/일시정지 없이 충분히 넓은 기간을 잡는다.
+insert into public.member_registrations (studio_id, profile_id, full_name, phone, email, plan, term_months, start_date, classes, total_price, agreements, signature_name, created_by)
+values
+  ((select value from test_fixtures where key = 'studio_f'), (select value from test_fixtures where key = 'member_1'), 'Member 1', '010-0000-0001', 'member1@test.local', 'w3', 12, current_date - 30, '{}', 0, '{}'::jsonb, 'Member 1', (select value from test_fixtures where key = 'owner_f')),
+  ((select value from test_fixtures where key = 'studio_f'), (select value from test_fixtures where key = 'member_2'), 'Member 2', '010-0000-0002', 'member2@test.local', 'w3', 12, current_date - 30, '{}', 0, '{}'::jsonb, 'Member 2', (select value from test_fixtures where key = 'owner_f')),
+  -- member_3: 'Small Class'가 아닌 다른 수업만 등록된 플랜 (11번 단언)
+  ((select value from test_fixtures where key = 'studio_f'), (select value from test_fixtures where key = 'member_3'), 'Member 3', '010-0000-0003', 'member3@test.local', 'w3', 12, current_date - 30, '{"Other Class"}', 0, '{}'::jsonb, 'Member 3', (select value from test_fixtures where key = 'owner_f')),
+  -- member_5: 일시정지 상태 (13번 단언)
+  ((select value from test_fixtures where key = 'studio_f'), (select value from test_fixtures where key = 'member_5'), 'Member 5', '010-0000-0005', 'member5@test.local', 'w3', 12, current_date - 30, '{}', 0, '{}'::jsonb, 'Member 5', (select value from test_fixtures where key = 'owner_f')),
+  -- member_6: 이미 만료된 플랜 (14번 단언) -- start_date + term_months가 오늘보다 과거
+  ((select value from test_fixtures where key = 'studio_f'), (select value from test_fixtures where key = 'member_6'), 'Member 6', '010-0000-0006', 'member6@test.local', 'w3', 1, current_date - 400, '{}', 0, '{}'::jsonb, 'Member 6', (select value from test_fixtures where key = 'owner_f'));
+
+update public.member_registrations set paused_at = now() where profile_id = (select value from test_fixtures where key = 'member_5');
+-- member_4는 의도적으로 registration 자체가 없음 (12번 단언: 등록 안 된 회원)
 
 -- test_fixtures is owned by whichever role created it (postgres, the role
 -- this script connects as). Every tests.authenticate_as call below looks up
@@ -149,6 +182,66 @@ select is(
   ((timestamptz '2026-01-01 16:30:00+00') at time zone 'Asia/Seoul')::date,
   '2026-01-02'::date,
   'KST conversion pushes a UTC-evening timestamp into the next Seoul calendar date (the exact boundary list_upcoming_sessions_for_member/_generate_sessions_internal now use instead of current_date)'
+);
+
+-- 11) 지난 세션은 예약할 수 없다 (QA 전수검사 2026-08-08, 항목 1)
+select tests.authenticate_as((select value from test_fixtures where key = 'member_1'));
+select throws_ok(
+  $$select public.book_session('cccccccc-1111-0000-0000-000000000000')$$,
+  'session_in_past',
+  'a member cannot book a session whose date has already passed'
+);
+
+-- 12) 지난 세션의 예약은 취소할 수 없다. book_session 자체가 과거 세션을 막으므로
+-- (11번), 취소 대상 행은 bypass_rls로 직접 심어야 한다.
+select tests.bypass_rls();
+insert into test_fixtures (key, value)
+  select 'past_booking', gen_random_uuid();
+insert into public.bookings (id, session_id, member_id, status)
+values ((select value from test_fixtures where key = 'past_booking'), 'cccccccc-1111-0000-0000-000000000000', (select value from test_fixtures where key = 'member_2'), 'booked');
+
+select tests.authenticate_as((select value from test_fixtures where key = 'member_2'));
+select throws_ok(
+  format('select public.cancel_booking(%L)', (select value from test_fixtures where key = 'past_booking')),
+  'session_in_past',
+  'a member cannot cancel a booking for a session whose date has already passed'
+);
+
+-- 13) 수강 클래스 목록에 없는 수업은 예약할 수 없다
+select tests.authenticate_as((select value from test_fixtures where key = 'member_3'));
+select throws_ok(
+  $$select public.book_session('cccccccc-0000-0000-0000-000000000000')$$,
+  'class_not_in_plan',
+  'a member whose plan does not include this class cannot book it'
+);
+
+-- 14) 회원권(member_registrations) 행 자체가 없는 회원(초대 링크로만 가입, 회원
+-- 등록 마법사를 거치지 않은 경우)은 검증할 플랜이 없으므로 무제한으로 취급되어
+-- 예약할 수 있어야 한다 -- MemberDetailSheet가 이 상태를 "정보 없음"이라는 정상
+-- 상태로 표시하는 것과 같은 취급이며, tests/e2e/member-booking.spec.ts가 바로 이
+-- 초대-전용 가입 경로로 예약까지 하는 것을 정식 플로우로 검증하고 있다. 이 세션은
+-- 정원(1)이 이미 member_2로 차 있으므로 결과는 결정론적으로 'waitlisted'.
+select tests.authenticate_as((select value from test_fixtures where key = 'member_4'));
+select is(
+  (select status from public.book_session('cccccccc-0000-0000-0000-000000000000')),
+  'waitlisted',
+  'a member with no member_registrations row at all is treated as unrestricted, not blocked'
+);
+
+-- 15) 일시정지된 회원권으로는 예약할 수 없다
+select tests.authenticate_as((select value from test_fixtures where key = 'member_5'));
+select throws_ok(
+  $$select public.book_session('cccccccc-0000-0000-0000-000000000000')$$,
+  'membership_paused',
+  'a member with a paused membership cannot book a session'
+);
+
+-- 16) 만료된 회원권으로는 예약할 수 없다
+select tests.authenticate_as((select value from test_fixtures where key = 'member_6'));
+select throws_ok(
+  $$select public.book_session('cccccccc-0000-0000-0000-000000000000')$$,
+  'membership_expired',
+  'a member with an expired membership cannot book a session'
 );
 
 select tests.clear_authentication();

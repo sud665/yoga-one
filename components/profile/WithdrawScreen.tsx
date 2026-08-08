@@ -34,7 +34,15 @@ const WITHDRAW_NOTES: Record<'member' | 'instructor', string[]> = {
   ],
 }
 
-const REASON_OPTIONS = ['이사 · 거리', '수업 시간이 맞지 않음', '수강료 부담', '기타']
+// WITHDRAW_NOTES above already splits by role because the two flows genuinely
+// differ; this was the one piece of copy that didn't, and it showed --
+// '수강료 부담' (tuition burden) makes no sense as an instructor's own reason
+// for leaving (QA sweep 2026-08-08, item 14). Same Record<role, string[]>
+// shape as WITHDRAW_NOTES.
+const REASON_OPTIONS: Record<'member' | 'instructor', string[]> = {
+  member: ['이사 · 거리', '수업 시간이 맞지 않음', '수강료 부담', '기타'],
+  instructor: ['이사 · 거리', '수업 시간이 맞지 않음', '보수·처우', '기타'],
+}
 
 export function WithdrawScreen({ role }: { role: 'member' | 'instructor' }) {
   const [agreed, setAgreed] = useState(false)
@@ -111,7 +119,7 @@ export function WithdrawScreen({ role }: { role: 'member' | 'instructor' }) {
           </label>
           <Select id="withdraw-reason" name="reason" defaultValue="">
             <option value="">선택하지 않음</option>
-            {REASON_OPTIONS.map((reason) => (
+            {REASON_OPTIONS[role].map((reason) => (
               <option key={reason} value={reason}>
                 {reason}
               </option>

@@ -69,7 +69,7 @@ export async function listUpcomingSessionsWithBookingState(): Promise<MemberSche
 export async function bookSession(sessionId: string): Promise<{ error: string } | { status: string }> {
   const supabase = await createClient()
   const { data, error } = await supabase.rpc('book_session', { p_session_id: sessionId })
-  if (error || !data) return { error: error?.message ?? '예약에 실패했습니다.' }
+  if (error || !data) return { error: error ? mapBookingError(error.message) : '예약에 실패했습니다.' }
   // 'layout', not the default 'page' scope: a booking changes the schedule
   // (/member/schedule) *and* the dashboard's next-class card and counts
   // (/member), and the dashboard is a server component with nothing else to
@@ -91,9 +91,29 @@ export async function listMyBookings() {
 export async function cancelBooking(bookingId: string): Promise<{ error: string } | { success: true }> {
   const supabase = await createClient()
   const { error } = await supabase.rpc('cancel_booking', { p_booking_id: bookingId })
-  if (error) return { error: error.message }
+  if (error) return { error: mapBookingError(error.message) }
   revalidatePath('/member', 'layout')
   return { success: true }
+}
+
+// book_session/cancel_booking raise a bare exception code (e.g.
+// 'already_booked') as their SQLERRM -- supabase-js surfaces that verbatim as
+// error.message, and until this mapping existed both call sites above just
+// forwarded it straight into the page's role="alert" banner. Same pattern as
+// mapAddParticipantError below, extended to cover the past-session and
+// membership checks added in QA sweep 2026-08-08, item 1.
+function mapBookingError(message: string): string {
+  if (message.includes('already_booked')) return '이미 예약했거나 대기 중인 수업입니다.'
+  if (message.includes('session_in_past')) return '이미 지난 수업입니다.'
+  if (message.includes('session_cancelled')) return '취소된 수업입니다.'
+  if (message.includes('session_not_found')) return '수업을 찾을 수 없습니다.'
+  if (message.includes('membership_paused')) return '회원권이 일시정지 상태입니다. 원장님께 문의해주세요.'
+  if (message.includes('membership_expired')) return '회원권이 만료되었습니다. 원장님께 문의해주세요.'
+  if (message.includes('class_not_in_plan')) return '등록된 수강권에 포함되지 않은 클래스입니다.'
+  if (message.includes('cannot_cancel')) return '취소할 수 없는 예약입니다.'
+  if (message.includes('booking_not_found')) return '예약을 찾을 수 없습니다.'
+  if (message.includes('not_permitted')) return '권한이 없습니다.'
+  return message
 }
 
 // Owner or the session's own instructor adding someone to its roster

@@ -45,10 +45,18 @@ test('an owner assigned as a session instructor can reach /instructor and mark a
 
   // Owner assigns themself as the instructor -- the only option available at
   // this point (no invited instructor yet), matching schedule-management.spec.ts.
+  //
+  // day_of_week = TODAY's weekday, not a hardcoded Monday: mark_attendance now
+  // rejects a session dated in the future (QA sweep 2026-08-08, item 2), and
+  // this test books the nearest generated session then immediately marks its
+  // attendance below -- same fix, same reasoning as
+  // instructor-attendance.spec.ts/full-flow.spec.ts.
+  const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토']
+  const todayDayOfWeek = new Date().getDay()
   await page.goto('/admin/schedule')
   await page.getByPlaceholder('클래스명').fill('Owner Taught Class')
   await page.locator('select[name="instructorId"]').selectOption({ index: 1 })
-  await page.locator('select[name="dayOfWeek"]').selectOption('1')
+  await page.locator('select[name="dayOfWeek"]').selectOption(String(todayDayOfWeek))
   await page.locator('input[name="startTime"]').fill('09:00')
   await page.getByPlaceholder('정원').fill('10')
   await page.getByRole('button', { name: '시간표 추가' }).click()
@@ -56,7 +64,12 @@ test('an owner assigned as a session instructor can reach /instructor and mark a
   // recurrence rule as metadata beneath it, so the two are asserted
   // separately -- which is what this check always meant.
   await expect(page.getByText('Owner Taught Class', { exact: true })).toBeVisible()
-  await expect(page.getByText(/매주 월요일 09:00/).first()).toBeVisible()
+  // Day label and time/instructor are now separate elements (the schedule
+  // page groups templates by day, with the day as the group's <summary> and
+  // time/instructor as the row's own metadata) -- same split already made in
+  // schedule-management.spec.ts.
+  await expect(page.getByText(`매주 ${DAY_LABELS[todayDayOfWeek]}요일`)).toBeVisible()
+  await expect(page.getByText(/09:00 ·/)).toBeVisible()
 
   // The routing gap under test: previously any owner-role profile was
   // confined to /admin regardless of instructor_id assignment.
@@ -115,6 +128,14 @@ test('signing out clears the session and protects the previous route', async ({ 
   await page.getByRole('button', { name: '가입하기' }).click()
   await expect(page).toHaveURL(/\/admin/)
 
+  // Sign-out lives only on the profile screen, by design (ProfileScreen.tsx's
+  // own comment: "a profile screen is where a user already goes to deal with
+  // their account, so it belongs here and nowhere else") -- not on the
+  // dashboard this test lands on straight after signup. Pre-existing gap in
+  // this test found while running the full e2e suite for QA sweep
+  // 2026-08-08's fixes (unrelated to any of them -- git diff confirms this
+  // test's body was untouched by that work).
+  await page.goto('/admin/profile')
   await page.getByRole('button', { name: '로그아웃' }).click()
   await expect(page).toHaveURL(/\/login/)
 

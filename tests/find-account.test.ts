@@ -131,11 +131,24 @@ describe('updatePasswordAfterReset', () => {
     expect(result).toEqual({ success: true })
   })
 
-  it('surfaces a Supabase error (e.g. no/expired recovery session) instead of a false success', async () => {
-    mockSupabase({ updateError: { message: 'Auth session missing' } })
+  // Maps to a Korean, actionable message rather than forwarding Supabase's
+  // raw English text -- QA sweep 2026-08-08, item 9. This exact message is
+  // what updateUser() throws when the recovery session /auth/reset was
+  // supposed to establish never existed (link expired/already used/page
+  // opened directly), the one failure mode reachable through normal use.
+  it('maps an expired/missing recovery session to a Korean, actionable message instead of the raw Supabase text', async () => {
+    mockSupabase({ updateError: { message: 'Auth session missing!' } })
     const result = await updatePasswordAfterReset(
       buildFormData({ password: 'newpass123', passwordConfirm: 'newpass123' })
     )
-    expect(result).toEqual({ error: 'Auth session missing' })
+    expect(result).toEqual({ error: '재설정 링크가 만료되었거나 이미 사용되었습니다. 비밀번호 찾기를 다시 시도해주세요.' })
+  })
+
+  it('falls back to the raw Supabase message for an error this mapping does not recognize, instead of a false success', async () => {
+    mockSupabase({ updateError: { message: 'some other Supabase error' } })
+    const result = await updatePasswordAfterReset(
+      buildFormData({ password: 'newpass123', passwordConfirm: 'newpass123' })
+    )
+    expect(result).toEqual({ error: 'some other Supabase error' })
   })
 })

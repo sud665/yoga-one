@@ -1,5 +1,5 @@
 begin;
-select plan(7);
+select plan(8);
 
 create temporary table test_fixtures (key text primary key, value uuid);
 -- 이 파일은 fixture 생성 후 authenticate_as로 역할을 바꾼 다음에도 test_fixtures에
@@ -23,8 +23,16 @@ insert into test_fixtures (key, value)
 insert into public.class_templates (id, studio_id, title, instructor_id, day_of_week, start_time, duration_min, capacity)
 values ('eeeeeeee-0000-0000-0000-000000000000', (select value from test_fixtures where key = 'studio_g'), 'Class', (select value from test_fixtures where key = 'instructor_g'), 1, '09:00', 60, 10);
 
+-- date = current_date (오늘), current_date + 7이 아님: mark_attendance는 이제 세션이
+-- 아직 시작하지 않은 미래 날짜면 session_not_started를 던진다 (QA 전수검사
+-- 2026-08-08, 항목 2) -- 1~7번 단언은 출석 확정이 "성공"하는 경로를 검증하므로
+-- 오늘 날짜 세션이어야 한다. 미래 날짜 차단 자체는 8번 단언에서 별도 세션으로 검증한다.
 insert into public.class_sessions (id, template_id, studio_id, date, instructor_id, capacity)
-values ('ffffffff-0000-0000-0000-000000000000', 'eeeeeeee-0000-0000-0000-000000000000', (select value from test_fixtures where key = 'studio_g'), current_date + 7, (select value from test_fixtures where key = 'instructor_g'), 10);
+values ('ffffffff-0000-0000-0000-000000000000', 'eeeeeeee-0000-0000-0000-000000000000', (select value from test_fixtures where key = 'studio_g'), current_date, (select value from test_fixtures where key = 'instructor_g'), 10);
+
+-- 8번 단언 전용: 아직 열리지 않은 미래 세션
+insert into public.class_sessions (id, template_id, studio_id, date, instructor_id, capacity)
+values ('ffffffff-2222-0000-0000-000000000000', 'eeeeeeee-0000-0000-0000-000000000000', (select value from test_fixtures where key = 'studio_g'), current_date + 7, (select value from test_fixtures where key = 'instructor_g'), 10);
 
 -- Studio H: 6번 단언(스튜디오 간/멀티테넌트 격리)을 위한 두 번째 스튜디오. 자체
 -- 강사/세션/예약을 갖춰야 studio_g 쪽 호출자가 정말로 "다른 테넌트"의 예약을
@@ -41,6 +49,14 @@ values ('22222222-0000-0000-0000-000000000000', (select value from test_fixtures
 
 insert into public.class_sessions (id, template_id, studio_id, date, instructor_id, capacity)
 values ('33333333-0000-0000-0000-000000000000', '22222222-0000-0000-0000-000000000000', (select value from test_fixtures where key = 'studio_h'), current_date + 7, (select value from test_fixtures where key = 'instructor_h'), 10);
+
+-- book_session이 이제 member_registrations 존재/미만료/비일시정지/수강 클래스를
+-- 검증하므로 (QA 전수검사 2026-08-08, 항목 1), 아래 book_session 호출들이 성공하려면
+-- member_g/member_h 둘 다 유효한 등록이 있어야 한다. classes는 빈 배열(전체 허용).
+insert into public.member_registrations (studio_id, profile_id, full_name, phone, email, plan, term_months, start_date, classes, total_price, agreements, signature_name, created_by)
+values
+  ((select value from test_fixtures where key = 'studio_g'), (select value from test_fixtures where key = 'member_g'), 'Member G', '010-0000-0007', 'memberg@test.local', 'w3', 12, current_date - 30, '{}', 0, '{}'::jsonb, 'Member G', (select value from test_fixtures where key = 'owner_g')),
+  ((select value from test_fixtures where key = 'studio_h'), (select value from test_fixtures where key = 'member_h'), 'Member H', '010-0000-0008', 'memberh@test.local', 'w3', 12, current_date - 30, '{}', 0, '{}'::jsonb, 'Member H', (select value from test_fixtures where key = 'instructor_h'));
 
 select tests.authenticate_as((select value from test_fixtures where key = 'member_g'));
 insert into test_fixtures (key, value)
@@ -128,6 +144,20 @@ select throws_ok(
   format('select public.mark_attendance(%L, %L)', (select value from test_fixtures where key = 'booking_h'), 'attended'),
   'not_permitted',
   'a studio owner cannot mark attendance for another studio''s booking (cross-studio isolation)'
+);
+
+-- 8) 아직 열리지 않은(미래) 세션의 출석은 확정할 수 없다 (QA 전수검사 2026-08-08,
+-- 항목 2 -- 실증된 버그: 강사 화면에서 이틀 뒤 수업도 출석 버튼이 눌려 즉시
+-- attended로 저장됨).
+select tests.authenticate_as((select value from test_fixtures where key = 'member_g'));
+insert into test_fixtures (key, value)
+  select 'future_booking_g', id from public.book_session('ffffffff-2222-0000-0000-000000000000');
+
+select tests.authenticate_as((select value from test_fixtures where key = 'instructor_g'));
+select throws_ok(
+  format('select public.mark_attendance(%L, %L)', (select value from test_fixtures where key = 'future_booking_g'), 'attended'),
+  'session_not_started',
+  'attendance cannot be marked for a session that has not happened yet'
 );
 
 select tests.clear_authentication();

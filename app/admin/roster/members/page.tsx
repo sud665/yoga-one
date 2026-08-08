@@ -70,6 +70,7 @@ export default function MemberRosterPage() {
       active: all.filter((m) => m.status === 'active').length,
       soon: all.filter((m) => m.status === 'soon').length,
       expired: all.filter((m) => m.status === 'expired').length,
+      unregistered: all.filter((m) => m.status === 'unregistered').length,
     }
   }, [members])
 
@@ -126,6 +127,11 @@ export default function MemberRosterPage() {
           <StatCell label="유효" value={stats.active} />
           <StatCell label="만료 임박" value={stats.soon} tone="text-warning" />
           <StatCell label="만료" value={stats.expired} tone="text-danger" />
+          {/* 이 셀이 없으면 위 세 칸의 합이 헤더의 "전체 N명"과 어긋나
+              보였다 -- 초대 링크로만 가입해 회원권 정보가 없는 회원은 셋
+              중 어디에도 잡히지 않았기 때문 (QA 전수검사 2026-08-08, 항목
+              27). */}
+          <StatCell label="정보 없음" value={stats.unregistered} />
         </div>
       )}
 

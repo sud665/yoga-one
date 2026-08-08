@@ -197,6 +197,22 @@ export async function getMemberDetail(profileId: string): Promise<MemberDetail |
   }
 }
 
+// A member's own "내 회원권" screen (QA sweep 2026-08-08, item 17 -- only the
+// owner could see a member's plan/expiry/remaining days before this;
+// 20260808000001_member_registrations_self_read.sql added the RLS policy
+// this needs). Deliberately resolves auth.uid() itself rather than taking a
+// profileId param the way getMemberDetail does: this is a "show me my own
+// data" call, and not accepting an id at all is simpler to reason about than
+// accepting one and trusting RLS to quietly ignore a mismatched value.
+export async function getMyMembership(): Promise<MemberDetail | null> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return null
+  return getMemberDetail(user.id)
+}
+
 // 연장: pushes the expiry out by one more month, matching the design's
 // single-click "연장" button (no date picker/duration input to choose a
 // different length). A flat +1 month per click rather than "add their

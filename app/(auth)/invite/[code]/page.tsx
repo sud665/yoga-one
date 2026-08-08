@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { InviteAcceptForm } from './invite-accept-form'
 
@@ -37,6 +38,12 @@ export default async function InvitePage({
             {describeInviteError(errorParam) ??
               '이 링크는 만료되었거나 이미 사용되었습니다. 원장님께 재발급을 요청해주세요.'}
           </p>
+          {/* A dead end otherwise -- e.g. profile_already_exists tells the
+              reader to log out and retry, but nothing here led back to
+              /login to actually do that (QA sweep 2026-08-08, item 25). */}
+          <Link href="/login" className="mt-6 inline-block text-body-md text-brand-deep underline">
+            로그인 화면으로
+          </Link>
         </div>
       </div>
     )
