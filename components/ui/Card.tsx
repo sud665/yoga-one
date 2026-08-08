@@ -1,8 +1,11 @@
 import { cx } from './utils'
 
-// DESIGN.md `card`/`card-ink`: hairline border + rounded-card (14px) is the
-// system's primary structural device now ("헤어라인이 먼저, 그림자는 없음")
-// -- there is no drop-shadow variant anywhere in this system, by design.
+// DESIGN.md `card`/`card-brand`: hairline border + rounded-card (16px) is
+// still the primary structural device, but this pass ("Classical") adds a
+// soft shadow on top of it -- surface (white) is now a distinct layer from
+// canvas (warm greige), and a hairline alone reads flatter than the design
+// source's own cards. See globals.css's Shadow comment for why the
+// zero-shadow rule two prior passes kept was dropped.
 export type CardVariant = 'default' | 'soft' | 'brand'
 export type CardPadding = 'sm' | 'md' | 'lg'
 
@@ -14,16 +17,17 @@ export interface CardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'c
 }
 
 const VARIANT_CLASSES: Record<CardVariant, string> = {
-  // Standard panel: canvas + hairline border (Elevation Level 1).
-  default: 'border border-hairline bg-canvas text-ink',
-  // Recessed panel, no border needed -- surface-soft already reads as a
-  // step back from canvas.
+  // Standard panel: surface + hairline border + elev-1 shadow.
+  default: 'border border-hairline bg-surface text-ink shadow-elev-1',
+  // Recessed panel, no border/shadow needed -- surface-soft already reads
+  // as a step back from canvas, and DESIGN.md's shadow rule only applies to
+  // true white surfaces (surface-soft is deliberately flat).
   soft: 'bg-surface-soft text-ink',
   // DESIGN.md `card-brand`: the system's one "voltage" surface (DESIGN.md:
   // "화면당 최대 1-2개 -- 전압은 희소해야 신호가 된다"), used sparingly for
-  // e.g. the dashboard's summary stats. Sage pass renamed this from `ink`
-  // along with the fill it names -- the heaviest surface on a screen is now
-  // the brand rather than near-black.
+  // e.g. the dashboard's summary stats. The fill itself is brand-deep,
+  // which this pass moves from sage to forest green -- the token value
+  // changed in globals.css, nothing here needed to change.
   brand: 'bg-brand-deep text-on-brand',
 }
 

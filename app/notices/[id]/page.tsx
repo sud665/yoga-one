@@ -33,7 +33,7 @@ export default async function NoticeDetailPage({ params }: { params: Promise<{ i
 
       <div className="mb-2.5 flex items-center gap-1.5">
         {notice.pin && (
-          <Badge tone="tag-mint" className="gap-1">
+          <Badge tone="brand" className="gap-1">
             <Pin aria-hidden="true" className="h-2.5 w-2.5" strokeWidth={2} />
             고정
           </Badge>

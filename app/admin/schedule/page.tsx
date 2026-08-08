@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { CalendarDays } from 'lucide-react'
 import { listTemplatesWithUpcomingSessions, type TemplateWithLabel } from '@/lib/actions/schedule'
 import { TemplateForm } from './template-form'
 import type { ClassSession } from '@/lib/types'
@@ -25,7 +26,12 @@ export default function SchedulePage() {
 
   return (
     <div className="w-full px-6 py-12">
-      <h1 className="mb-8 text-heading-lg text-ink">시간표 관리</h1>
+      <div className="mb-8 flex items-center gap-3">
+        <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-brand-tint">
+          <CalendarDays className="h-[19px] w-[19px] text-brand-deep" strokeWidth={1.75} />
+        </span>
+        <h1 className="text-heading-lg text-ink">시간표 관리</h1>
+      </div>
 
       <TemplateForm onCreated={refresh} />
 

@@ -101,7 +101,7 @@ export function PeriodFilter({
               onClick={() => onGranularityChange(option.value)}
               className={cx(
                 'flex-1 px-3 py-2 text-caption transition-colors',
-                selected ? 'bg-brand-tint text-brand-deep' : 'bg-canvas text-muted hover:text-ink'
+                selected ? 'bg-brand-tint text-brand-deep' : 'bg-surface text-muted hover:text-ink'
               )}
             >
               {option.label}

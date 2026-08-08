@@ -83,7 +83,7 @@ function ToastItemView({ item, onDismiss }: { item: ToastItem; onDismiss: (id: n
     <div
       role={TONE_ROLE[item.tone]}
       className={cx(
-        'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-card border border-hairline bg-canvas p-4',
+        'pointer-events-auto flex w-full max-w-sm items-start gap-3 rounded-card border border-hairline bg-surface shadow-elev-2 p-4',
         'motion-safe:transition motion-safe:duration-200 motion-safe:ease-out',
         visible
           ? 'motion-safe:translate-y-0 motion-safe:opacity-100'

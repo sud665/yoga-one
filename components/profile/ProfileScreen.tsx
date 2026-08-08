@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { CircleUser } from 'lucide-react'
 
 import { SignOutButton } from '@/components/ui/SignOutButton'
 import { getMyProfile } from '@/lib/actions/profile'
@@ -20,7 +21,12 @@ export async function ProfileScreen() {
 
   return (
     <div className="w-full px-6 py-12">
-      <h1 className="mb-8 text-heading-lg text-ink">프로필</h1>
+      <div className="mb-8 flex items-center gap-3">
+        <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-brand-tint">
+          <CircleUser className="h-[19px] w-[19px] text-brand-deep" strokeWidth={1.75} />
+        </span>
+        <h1 className="text-heading-lg text-ink">프로필</h1>
+      </div>
 
       <ProfileForm profile={profile} />
 

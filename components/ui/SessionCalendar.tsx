@@ -115,7 +115,7 @@ export function SessionCalendar({ selected, onSelect, datesWithSessions, classNa
         // the day *button* stays a fixed 36px circle centered in its cell, so
         // widening the grid spreads the columns out instead of stretching the
         // circles into ovals.
-        root: cx('w-full rounded-card border border-hairline bg-canvas p-4', defaults.root),
+        root: cx('w-full rounded-card border border-hairline bg-surface shadow-elev-1 p-4', defaults.root),
         month_grid: cx('w-full', defaults.month_grid),
         months: cx('relative flex flex-col', defaults.months),
         month: cx('flex w-full flex-col gap-2', defaults.month),

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Plus } from 'lucide-react'
+import { Mail, Plus } from 'lucide-react'
 
 export default function InvitesPage() {
   const [invites, setInvites] = useState<Invite[] | null>(null)
@@ -35,7 +35,12 @@ export default function InvitesPage() {
 
   return (
     <div className="w-full px-6 py-12">
-      <h1 className="mb-8 text-heading-lg text-ink">초대 관리</h1>
+      <div className="mb-8 flex items-center gap-3">
+        <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-brand-tint">
+          <Mail className="h-[19px] w-[19px] text-brand-deep" strokeWidth={1.75} />
+        </span>
+        <h1 className="text-heading-lg text-ink">초대 관리</h1>
+      </div>
 
       <div className="flex flex-col gap-3">
         <Button icon={Plus} onClick={() => handleCreate('instructor')} disabled={isPending}>

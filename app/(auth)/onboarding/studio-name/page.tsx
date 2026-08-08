@@ -33,7 +33,7 @@ export default function StudioNameOnboardingPage() {
   return (
     <div className="flex min-h-full items-center justify-center bg-canvas px-6 py-12">
       <form onSubmit={handleSubmit} className="w-full max-w-sm">
-        <h1 className="mb-8 text-display-lg text-ink">요가원 정보를 입력해주세요</h1>
+        <h1 className="mb-8 font-serif text-headline-lg text-ink">요가원 정보를 입력해주세요</h1>
         <div className="flex flex-col gap-4">
           <TextInput
             value={studioName}

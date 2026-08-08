@@ -129,7 +129,7 @@ export function AdminNav() {
           scrolling region" arrangement app/member/layout.tsx and
           app/instructor/layout.tsx use, instead of overlaying content that
           then needs bottom padding to clear it. */}
-      <nav aria-label="관리자 메뉴" className="flex h-16 shrink-0 items-stretch border-t border-hairline bg-canvas px-1" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      <nav aria-label="관리자 메뉴" className="flex h-16 shrink-0 items-stretch border-t border-hairline bg-surface px-1 shadow-elev-2" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
         {NAV_ITEMS.map((item) => {
           if (isParent(item)) {
             const Icon = item.icon
@@ -142,8 +142,8 @@ export function AdminNav() {
                 aria-haspopup="dialog"
                 aria-expanded={openSheetId === item.id}
                 className={cx(
-                  'flex flex-1 flex-col items-center justify-center gap-1 border-t-2 px-2 text-utility-xs',
-                  isChildActive ? 'border-brand-deep text-brand-deep' : 'border-transparent text-muted'
+                  'mx-0.5 my-1.5 flex flex-1 flex-col items-center justify-center gap-1 rounded-button px-2 text-utility-xs transition-colors',
+                  isChildActive ? 'bg-brand-tint text-brand-deep' : 'text-muted'
                 )}
               >
                 <Icon aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.75} />
@@ -167,8 +167,8 @@ export function AdminNav() {
               href={item.href}
               aria-current={active ? 'page' : undefined}
               className={cx(
-                'flex flex-1 flex-col items-center justify-center gap-1 border-t-2 px-2 text-utility-xs',
-                active ? 'border-brand-deep text-brand-deep' : 'border-transparent text-muted'
+                'mx-0.5 my-1.5 flex flex-1 flex-col items-center justify-center gap-1 rounded-button px-2 text-utility-xs transition-colors',
+                active ? 'bg-brand-tint text-brand-deep' : 'text-muted'
               )}
             >
               <Icon aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.75} />
@@ -209,7 +209,7 @@ function NavSheet({ item, pathname, onClose }: { item: NavParent; pathname: stri
         role="dialog"
         aria-modal="true"
         aria-label={item.label}
-        className="relative flex flex-col gap-3 rounded-t-card border-t border-hairline bg-canvas p-4 motion-safe:animate-[roster-sheet-in_180ms_ease-out]"
+        className="relative flex flex-col gap-3 rounded-t-card border-t border-hairline bg-surface shadow-elev-2 p-4 motion-safe:animate-[roster-sheet-in_180ms_ease-out]"
         style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
       >
         <div className="flex items-center justify-between px-1">

@@ -86,8 +86,8 @@ export default function AdminNoticeWritePage() {
                 type="button"
                 onClick={() => setTarget(t.value)}
                 className={
-                  'h-9 flex-1 rounded-[6px] text-label transition-colors ' +
-                  (target === t.value ? 'bg-canvas text-ink' : 'text-muted')
+                  'h-9 flex-1 rounded-lg text-label transition-colors ' +
+                  (target === t.value ? 'bg-surface text-ink' : 'text-muted')
                 }
               >
                 {t.label}
@@ -112,7 +112,7 @@ export default function AdminNoticeWritePage() {
           onChange={(event) => setBody(event.target.value)}
         />
 
-        <label className="flex cursor-pointer items-center gap-3 rounded-input border border-hairline bg-canvas p-3.5">
+        <label className="flex cursor-pointer items-center gap-3 rounded-input border border-hairline bg-surface p-3.5">
           <input
             type="checkbox"
             checked={pin}

@@ -30,7 +30,7 @@ export default function ResetPasswordPage() {
           <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-full bg-brand-tint">
             <Check className="h-6 w-6 text-brand-deep" strokeWidth={2} />
           </div>
-          <h1 className="mb-3 text-heading-lg text-ink">비밀번호를 변경했습니다</h1>
+          <h1 className="mb-3 font-serif text-headline-md text-ink">비밀번호를 변경했습니다</h1>
           <p className="mb-8 text-body-md text-muted">새 비밀번호로 다시 로그인해주세요.</p>
           <Button href="/login" className="w-full">
             로그인하기
@@ -46,7 +46,7 @@ export default function ResetPasswordPage() {
         <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-full border border-hairline bg-surface-soft">
           <KeyRound className="h-5 w-5 text-muted" strokeWidth={1.75} />
         </div>
-        <h1 className="mb-2 text-display-lg leading-tight text-ink">
+        <h1 className="mb-2 font-serif text-headline-lg text-ink">
           새 비밀번호
           <br />
           설정

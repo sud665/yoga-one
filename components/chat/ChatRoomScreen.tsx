@@ -168,7 +168,7 @@ export function ChatRoomScreen({ role, conversationId }: { role: ProfileRole; co
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-hairline bg-canvas px-2">
+      <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-hairline bg-surface px-2">
         <Link href={`${base}/chat`} aria-label="뒤로" className="rounded-full p-2 text-ink hover:bg-surface-soft">
           <ChevronLeft className="h-5 w-5" strokeWidth={1.75} />
         </Link>
@@ -195,8 +195,8 @@ export function ChatRoomScreen({ role, conversationId }: { role: ProfileRole; co
                 <div
                   className={
                     isMine
-                      ? 'whitespace-pre-wrap rounded-[14px_14px_2px_14px] bg-brand-deep px-3.5 py-2.5 text-body-md text-on-brand'
-                      : 'whitespace-pre-wrap rounded-[14px_14px_14px_2px] border border-hairline bg-surface-soft px-3.5 py-2.5 text-body-md text-ink'
+                      ? 'whitespace-pre-wrap rounded-[14px_14px_4px_14px] bg-brand-deep px-3.5 py-2.5 text-body-md text-on-brand'
+                      : 'whitespace-pre-wrap rounded-[14px_14px_14px_4px] border border-hairline bg-surface px-3.5 py-2.5 text-body-md text-ink'
                   }
                 >
                   {message.body}
@@ -215,7 +215,7 @@ export function ChatRoomScreen({ role, conversationId }: { role: ProfileRole; co
         </p>
       )}
 
-      <div className="flex shrink-0 items-center gap-2 border-t border-hairline bg-canvas p-3">
+      <div className="flex shrink-0 items-center gap-2 border-t border-hairline bg-surface p-3">
         <input
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
@@ -226,7 +226,7 @@ export function ChatRoomScreen({ role, conversationId }: { role: ProfileRole; co
             }
           }}
           placeholder="메시지 입력"
-          className="h-11 min-w-0 flex-1 rounded-input border border-hairline bg-canvas px-3.5 text-body-md text-ink placeholder:text-muted focus:border-info focus:outline-none"
+          className="h-11 min-w-0 flex-1 rounded-input border border-hairline bg-surface px-3.5 text-body-md text-ink placeholder:text-muted focus:border-brand-deep focus:outline-none"
         />
         <button
           type="button"

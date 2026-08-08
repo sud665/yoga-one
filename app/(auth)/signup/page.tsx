@@ -29,7 +29,7 @@ export default function SignupPage() {
   return (
     <div className="flex min-h-full items-center justify-center bg-canvas px-6 py-12">
       <div className="w-full max-w-sm">
-        <h1 className="mb-8 text-display-lg text-ink">요가원 시작하기</h1>
+        <h1 className="mb-8 font-serif text-headline-lg text-ink">요가원 시작하기</h1>
         {pendingConfirmation ? (
           // 이메일 확인이 필요한 상태 (hosted 프로젝트에서 enable_confirmations=true인
           // 경우) -- lib/actions/invites.ts의 InviteAcceptForm과 동일한 처리.

@@ -29,7 +29,7 @@ export default async function NoticeBoardPage() {
             <li key={notice.id} className="border-t border-hairline py-4 first:border-t-0">
               <Link href={`/notices/${notice.id}`} className="block">
                 {notice.pin && (
-                  <Badge tone="tag-mint" className="mb-1.5 gap-1">
+                  <Badge tone="brand" className="mb-1.5 gap-1">
                     <Pin aria-hidden="true" className="h-2.5 w-2.5" strokeWidth={2} />
                     고정
                   </Badge>

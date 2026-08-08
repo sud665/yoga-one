@@ -22,12 +22,15 @@ export type TextInputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, '
 }
 
 // Shared base: 44px height (matches button height -- forms and CTAs share
-// one baseline), hairline border, rounded-input (8px), body-md typography.
-// `flex items-center` rather than relying on line-height alone to vertically
-// center single-line text at a fixed height -- more robust across browsers
-// than tuning line-height to exactly fill the box.
+// one baseline), hairline border, rounded-input (12px as of the "Classical"
+// pass, was 8px -- now matches rounded-button), body-md typography, surface
+// (white) background rather than canvas -- this pass splits the two (see
+// globals.css's Canvas/Surface comment). `flex items-center` rather than
+// relying on line-height alone to vertically center single-line text at a
+// fixed height -- more robust across browsers than tuning line-height to
+// exactly fill the box.
 const FIELD_CLASSES =
-  'flex h-11 w-full items-center rounded-input border border-hairline bg-canvas px-3.5 text-body-md text-ink placeholder:text-muted transition-colors duration-150 focus:border-brand-deep focus:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+  'flex h-11 w-full items-center rounded-input border border-hairline bg-surface px-3.5 text-body-md text-ink placeholder:text-muted transition-colors duration-150 focus:border-brand-deep focus:outline-none disabled:cursor-not-allowed disabled:opacity-50'
 
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(function TextInput(
   { className, ...rest },
@@ -58,7 +61,7 @@ export type TextareaProps = Omit<React.TextareaHTMLAttributes<HTMLTextAreaElemen
 }
 
 const TEXTAREA_CLASSES =
-  'min-h-32 w-full rounded-input border border-hairline bg-canvas px-3.5 py-2.5 text-body-md text-ink placeholder:text-muted transition-colors duration-150 focus:border-brand-deep focus:outline-none disabled:cursor-not-allowed disabled:opacity-50'
+  'min-h-32 w-full rounded-input border border-hairline bg-surface px-3.5 py-2.5 text-body-md text-ink placeholder:text-muted transition-colors duration-150 focus:border-brand-deep focus:outline-none disabled:cursor-not-allowed disabled:opacity-50'
 
 export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function Textarea({ className, ...rest }, ref) {
   return <textarea ref={ref} className={cx(TEXTAREA_CLASSES, className)} {...rest} />

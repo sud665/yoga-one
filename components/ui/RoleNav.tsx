@@ -53,7 +53,7 @@ export function RoleNav({ label, items }: RoleNavProps) {
   return (
     <nav
       aria-label={label}
-      className="flex h-16 shrink-0 items-stretch border-t border-hairline bg-canvas px-1"
+      className="flex h-16 shrink-0 items-stretch border-t border-hairline bg-surface px-1 shadow-elev-2"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       {items.map((item) => {
@@ -64,8 +64,8 @@ export function RoleNav({ label, items }: RoleNavProps) {
             href={item.href}
             aria-current={active(item.href) ? 'page' : undefined}
             className={cx(
-              'flex flex-1 flex-col items-center justify-center gap-1 border-t-2 px-2 text-utility-xs',
-              active(item.href) ? 'border-brand-deep text-brand-deep' : 'border-transparent text-muted'
+              'mx-0.5 my-1.5 flex flex-1 flex-col items-center justify-center gap-1 rounded-button px-2 text-utility-xs transition-colors',
+              active(item.href) ? 'bg-brand-tint text-brand-deep' : 'text-muted'
             )}
           >
             <Icon aria-hidden="true" className="h-5 w-5 shrink-0" strokeWidth={1.75} />

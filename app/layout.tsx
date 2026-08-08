@@ -1,20 +1,33 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Gowun_Batang } from "next/font/google";
+import localFont from "next/font/local";
 import { OfflineBanner } from "./offline-banner";
 import { ToastProvider } from "@/components/ui/Toast";
 import "./globals.css";
 
-// DESIGN.md typography (retoken pass): Inter only, for every size including
-// display-lg -- the Bebas Neue display face the previous DESIGN.md
-// specified for login/onboarding headlines is gone. Grepped every
-// `Bebas`/`display-hero`/`font-display` usage across the app first: the
-// only match anywhere was this file's own font load, so dropping it has no
-// other call site to fix (auth pages never rendered a `display-hero`
-// className -- that pass documented them as out of scope, and this pass's
-// auth sweep uses `text-display-lg` directly instead).
-const inter = Inter({
-  variable: "--font-inter",
+// DESIGN.md typography ("Classical" pass): Inter is gone -- it has no
+// Hangul glyphs at all, so every Korean character in this app has always
+// silently fallen back past it to the OS default font. Pretendard Variable
+// (self-hosted via the `pretendard` npm package, not the CDN link the
+// Claude Design source used -- self-hosting avoids an external request this
+// app's offline-first PWA shell shouldn't depend on) replaces it as the one
+// sans face for everything. Gowun Batang is new: a serif loaded at weight
+// 400 only (the design source's own CSS requests 400+700 but never
+// references 700 anywhere in its markup -- confirmed by grep) for the
+// handful of auth-shell display headlines that use `text-headline-lg`/
+// `text-headline-md` (see app/globals.css's Typography block).
+const pretendard = localFont({
+  src: "../node_modules/pretendard/dist/web/variable/woff2/PretendardVariable.woff2",
+  variable: "--font-pretendard",
+  display: "swap",
+  weight: "45 920",
+});
+
+const gowunBatang = Gowun_Batang({
+  variable: "--font-gowun-batang",
   subsets: ["latin"],
+  weight: "400",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -27,7 +40,7 @@ export const viewport: Viewport = {
   // Matches --color-brand-deep and public/manifest.json's theme_color: this
   // tints the browser/OS chrome around an installed PWA, so all three have
   // to agree or the app frame and the app disagree on what color it is.
-  themeColor: "#4f6d55",
+  themeColor: "#1f3a2e",
 };
 
 export default function RootLayout({
@@ -36,7 +49,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ko" className={`${inter.variable} h-full antialiased`}>
+    <html
+      lang="ko"
+      className={`${pretendard.variable} ${gowunBatang.variable} h-full antialiased`}
+    >
       <body className="h-full bg-surface-strong">
         {/* App-shell frame, not a responsive website: capped at a phone
             width and centered, rather than reflowing to fill a wide desktop

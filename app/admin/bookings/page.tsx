@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { UserPlus } from 'lucide-react'
+import { ClipboardList, UserPlus } from 'lucide-react'
 import { listSessionsWithRoster } from '@/lib/actions/dashboard'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -41,7 +41,12 @@ export default function BookingsDashboardPage() {
 
   return (
     <div className="w-full px-6 py-12">
-      <h1 className="mb-8 text-heading-lg text-ink">예약 현황</h1>
+      <div className="mb-8 flex items-center gap-3">
+        <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-brand-tint">
+          <ClipboardList className="h-[19px] w-[19px] text-brand-deep" strokeWidth={1.75} />
+        </span>
+        <h1 className="text-heading-lg text-ink">예약 현황</h1>
+      </div>
 
       {sessions !== null && sessions.length > 0 && (
         <PeriodFilter
@@ -146,7 +151,7 @@ function RosterRow({ label, bookings, waitlisted = false }: { label: string; boo
           <span
             key={i}
             className={`rounded-full px-2.5 py-0.5 text-caption ${
-              waitlisted ? 'bg-warning-tint text-warning' : 'bg-surface-soft text-ink'
+              waitlisted ? 'bg-warning-tint text-warning' : 'bg-brand-tint text-brand-deep'
             }`}
           >
             {b.member?.full_name ?? b.guest_name ?? '?'}

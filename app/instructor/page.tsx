@@ -11,7 +11,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { PeriodFilter } from '@/components/ui/PeriodFilter'
 import { usePeriodFilter } from '@/lib/use-period-filter'
 import { AddParticipantSheet } from '@/components/bookings/AddParticipantSheet'
-import { Check, Megaphone, UserPlus, X } from 'lucide-react'
+import { Check, ClipboardCheck, Megaphone, UserPlus, X } from 'lucide-react'
 
 export default function InstructorHomePage() {
   // `any[]`가 아니라 listMySessionsWithBookings()의 실제 반환 타입을 그대로 쓴다 --
@@ -48,7 +48,12 @@ export default function InstructorHomePage() {
   return (
     <div className="w-full px-6 py-12">
       <div className="mb-8 flex items-center justify-between gap-3">
-        <h1 className="text-heading-lg text-ink">내 수업</h1>
+        <div className="flex items-center gap-3">
+          <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-brand-tint">
+            <ClipboardCheck className="h-[19px] w-[19px] text-brand-deep" strokeWidth={1.75} />
+          </span>
+          <h1 className="text-heading-lg text-ink">내 수업</h1>
+        </div>
         <Link
           href="/notices"
           className="flex h-9 shrink-0 items-center gap-1.5 rounded-button border border-hairline px-3 text-label text-ink hover:bg-surface-soft"
@@ -111,7 +116,7 @@ export default function InstructorHomePage() {
                           admin_add_participant (bookings_member_xor_guest) --
                           member is never null for a self-booked row, so this
                           badge only ever appears on a walk-in's row. */}
-                      {b.guest_name && <StatusBadge tone="neutral">원데이</StatusBadge>}
+                      {b.guest_name && <StatusBadge tone="warning">원데이</StatusBadge>}
                       {b.status === 'attended' && <StatusBadge tone="success">출석</StatusBadge>}
                       {b.status === 'no_show' && <StatusBadge tone="danger">결석</StatusBadge>}
                     </span>

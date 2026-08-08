@@ -36,7 +36,7 @@ function FindEmailForm() {
   return (
     <div className="flex min-h-full items-center justify-center bg-canvas px-6 py-12">
       <div className="w-full max-w-sm">
-        <h1 className="mb-2 text-display-lg text-ink">이메일 찾기</h1>
+        <h1 className="mb-2 font-serif text-headline-lg text-ink">이메일 찾기</h1>
         <p className="mb-7 text-body-md text-muted">
           가입할 때 등록한 이름과 전화번호로 로그인 이메일을 확인합니다.
         </p>

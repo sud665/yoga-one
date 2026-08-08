@@ -11,98 +11,89 @@
    This block is purely additive: it does not reset Tailwind's default
    palette/scale (`--color-*: initial` etc.).
 
-   ---- Retoken pass (this file's second rewrite) -----------------------------
-   DESIGN.md was rewritten wholesale: the previous Nike-commerce-derived
-   system (pure #111111 ink, pill/rounded-full CTAs, Bebas Neue display type)
-   is replaced by an Airtable-editorial-derived system (#181d26 ink, 12px
-   "squared-rounded" button corners, Inter-only type, hairline borders as the
-   primary structural device, zero shadows anywhere). This is a token VALUE
-   and NAME swap, not a re-architecture -- the @theme/@utility/@layer
-   mechanism, the admin sidebar structure, and the components/ui/* primitive
-   approach are all kept from the previous pass (DESIGN.md itself says so
-   explicitly). Every old-system color/radius/typography name that has no
-   equivalent in the new spec is removed outright (danger/success/info tint
-   colors, tag-peach/mint/mustard/cream, the display-hero utility, the
-   sm/md/lg 18/24/30px radius overrides, the inset-line shadow token) --
-   grepped every one of them across app/ and components/ first (see commit
-   message) to confirm zero remaining consumers before deleting.
+   ---- "Classical" forest-green pass (this file's fourth rewrite) -----------
+   DESIGN.md's 3rd revision, importing a Claude Design prototype ("요가원 앱
+   21개 화면 디자인") wholesale. The sage rebrand (#6b8f71/#4f6d55, one flat
+   canvas layer doubling as every card's background, zero shadows anywhere,
+   Inter-only type) is replaced by: a deeper forest-green accent (#1f3a2e),
+   a two-layer canvas/surface system (warm greige page, white surfaces
+   floating on it) with soft ambient shadows, and Pretendard Variable
+   (proper Hangul coverage) + Gowun Batang (serif display headlines) in
+   place of Inter -- which has no Hangul glyphs at all, so every Korean
+   character in this app has always silently fallen back to the OS default
+   font regardless of what DESIGN.md's typography table claimed. Semantic
+   status colors (success/warning/danger) and ink/body/muted text colors are
+   untouched -- confirmed byte-identical hex values against the design
+   source. See DESIGN.md's Overview for the full rationale on each change.
    ============================================================================ */
 
 @theme inline {
-  /* Runtime font variable set by next/font on <html> in app/layout.tsx.
-     `@theme inline` is required here because this references a custom
-     property that only exists at runtime, not a literal value known at
-     build time. Bebas Neue's --font-bebas-neue/--font-display are gone:
-     DESIGN.md's new type system is Inter-only (no display-hero face is
-     specified anymore -- display-lg is just a larger/bolder Inter size),
-     confirmed via `grep -rl "Bebas\|display-hero\|font-display"` finding
-     only app/layout.tsx itself, so removing both the font load and this
-     alias has zero other call sites to fix. */
-  --font-sans: var(--font-inter);
-  /* --font-mono intentionally left undefined -- unchanged from the previous
-     pass; Tailwind's own default monospace stack applies automatically. */
+  /* Runtime font variables set by next/font on <html> in app/layout.tsx.
+     `@theme inline` is required here because these reference custom
+     properties that only exist at runtime, not literal values known at
+     build time. --font-pretendard is a self-hosted next/font/local variable
+     font (the `pretendard` npm package -- avoids depending on an external
+     CDN request the way the design source's own <link> did, which matters
+     for this app's offline-first PWA shell); --font-gowun-batang is a
+     next/font/google load at weight 400 only (the design source's own CSS
+     loads 400+700 from Google Fonts but never references 700 anywhere in
+     its markup -- confirmed by grep -- so only 400 ships here). */
+  --font-sans: var(--font-pretendard);
+  --font-serif: var(--font-gowun-batang);
+  /* --font-mono intentionally left undefined -- unchanged from previous
+     passes; Tailwind's own default monospace stack applies automatically. */
 }
 
 @theme {
   /* ---- Color -- DESIGN.md `colors` ----------------------------------
-     Sage pass (this file's third rewrite). The Airtable-editorial values
-     above were pure white canvas + near-black ink + a blue interactive
-     accent, which read as an admin tool rather than something a member
-     would open daily -- the reason DESIGN.md was revised. Three changes,
-     and only these three: the canvas warms, ink picks up a moss undertone
-     so it sits in the same temperature as the rest, and the single
-     interactive accent moves from blue to sage. Every structural rule
-     (hairline borders, zero shadows, no weight above 500, one or two
-     "voltage" surfaces per screen) is unchanged.
-
-     brand vs brand-deep is a contrast split, not a preference: #6B8F71 on
-     canvas is ~2.6:1, too low for text or for white-on-sage, so it is
-     restricted to decorative fills and icons. Anything carrying text --
-     the primary CTA's background, links, active nav -- uses brand-deep
-     (~5.4:1 on canvas, ~4.9:1 under white text). */
+     "Classical" pass: brand-deep/brand-pressed move from sage to forest
+     green (#1f3a2e/#2a4a38); brand-tint keeps its exact previous value
+     (#e8f0e9 -- confirmed the design source uses the identical hex for its
+     icon-badge circles and active nav pills, so nothing to change there).
+     brand itself (#6b8f71, the old plain sage) is kept defined but its role
+     narrows to one legacy consumer: SessionCalendar's unselected "day has a
+     session" dot marker -- the design source's own companion PeriodFilter
+     component still hardcodes that exact old sage hex for that one marker,
+     so this is a deliberate carry-over, not drift, and keeping the named
+     token (rather than inlining a hex at that one call site) keeps faith
+     with DESIGN.md's "never write hex in prose" rule. */
   --color-brand: #6b8f71;
-  --color-brand-deep: #4f6d55;
-  --color-brand-pressed: #405c46;
+  --color-brand-deep: #1f3a2e;
+  --color-brand-pressed: #2a4a38;
   --color-brand-tint: #e8f0e9;
   --color-on-brand: #ffffff;
 
   --color-ink: #1e221c;
   --color-on-ink: #ffffff;
-  --color-canvas: #fbfaf7;
-  --color-surface-soft: #f6f3ec;
-  --color-surface-strong: #e3e1d8;
+  /* ---- Canvas / Surface -- two-layer system, replaces the previous
+     one-layer `canvas` (which doubled as the page background AND every
+     card/input/button/nav background). canvas is now the PAGE background
+     only -- the app-shell frame in app/layout.tsx and <body>. surface (new
+     token) is white and is what every card/control/nav/sheet/toast
+     background actually renders as; see each component file for the
+     bg-canvas -> bg-surface migration this required. */
+  --color-canvas: #efeeec;
+  --color-surface: #ffffff;
+  --color-surface-soft: #f4f4f2;
+  --color-surface-strong: #e5e4e1;
   --color-body: #3a4038;
   --color-muted: #6f746a;
-  --color-hairline: #e1ded4;
-  --color-hairline-soft: #edeae1;
+  --color-hairline: #e6e4e0;
+  --color-hairline-soft: #f1f0ee;
   /* ---- Semantic states ------------------------------------------------
-     Three states, each a text/icon color plus the pale tint it sits on.
-     Every pairing is verified against WCAG AA (4.5:1) in both directions
-     that actually occur -- on the canvas, and on its own tint:
-
-       success  5.84 on canvas   5.30 on tint   6.10 under white
-       warning  5.68 on canvas   5.20 on tint   5.93 under white
-       danger   6.52 on canvas   5.70 on tint   6.81 under white
-
-     success no longer resolves to the brand values. Merging them read well
-     as theory -- a confirmed booking is the brand moment -- but not on
-     screen: a sage "예약완료" badge sitting beside a sage "예약하기" button
-     made status and action the same color, so the badge looked tappable.
-     #1b7043 is a deeper, more saturated green, far enough from the muted
-     brand sage (#4f6d55) to read as information rather than an affordance.
-
-     warning is new. Waiting-list state had been rendering in `muted` grey,
-     which says "inactive" when it means "you are in line" -- an actual
-     state the member needs to notice. */
+     Unchanged from the sage pass -- confirmed byte-identical against the
+     design source's hex literals. A brand-color change is exactly the kind
+     of edit that should NOT ripple into these; they're independent by
+     design (see DESIGN.md's Semantic Colors section for why success
+     stopped equaling brand two passes ago -- that reasoning holds
+     regardless of what brand's own hex is). */
   --color-success: #1b7043;
   --color-success-tint: #e6f2ea;
   --color-warning: #8a5a00;
   --color-warning-tint: #faefd9;
   --color-danger: #aa2d00;
   --color-danger-tint: #f6e8e3;
-  /* info is legacy: it lost the focus-ring/link/active-state job to brand
-     and survives only for genuinely informational messaging (Toast's `info`
-     tone). Do not reach for it when styling a new screen. */
+  /* info is legacy: still not the default choice for a new screen. */
   --color-info: #1b61c9;
   --color-info-tint: #e8f0fc;
   --color-tag-peach: #fcab79;
@@ -111,99 +102,135 @@
   --color-tag-cream: #f5e9d4;
 
   /* ---- Radius -- DESIGN.md `rounded` ----------------------------------
-     rounded-none (0px) and rounded-full (9999px) already match DESIGN.md
-     exactly via Tailwind's own built-ins, so they're not redefined here.
-     The previous pass's --radius-sm/md/lg (18/24/30px, serving the old
-     pill-button/badge scale) are removed outright -- confirmed unused via
-     grep (`rounded-sm`/`rounded-md`/`rounded-lg` appear nowhere in app/ or
-     components/), and DESIGN.md's new shape scale has no sm/md/lg concept
-     at all: every container-sized radius is now named for what it's FOR
-     (input/button/card), not a generic T-shirt size. */
-  --radius-input: 8px;
+     Collapses from a 3-tier scale to 2: radius-input now matches
+     radius-button (12px, was 8px) -- inputs and buttons read as one
+     "control" tier now -- and radius-card grows 14px -> 16px. Pure value
+     changes under the same token names, so every existing `rounded-input`/
+     `rounded-button`/`rounded-card`/`rounded-t-card` call site repaints
+     for free with zero className edits. */
+  --radius-input: 12px;
   --radius-button: 12px;
-  --radius-card: 14px;
+  --radius-card: 16px;
+
+  /* ---- Shadow -- DESIGN.md `elevation` (new in this pass) --------------
+     Two prior passes stated plainly there was not a single shadow anywhere
+     in this system ("그림자는 시스템 전체에 단 하나도 없다"). This pass
+     reverses that: now that `surface` (white) is a distinct layer from
+     `canvas` (warm greige) rather than the same color, a soft ambient
+     shadow on surface elements reads calmer than relying on a hairline
+     border alone to separate them. elev-1 is for surface elements (Card,
+     list containers, search bars, SessionCalendar's root); elev-2 is for
+     more prominent chrome (bottom nav, bottom sheets, Toast). surface-soft
+     elements (EmptyState, info banners) deliberately do NOT get a shadow --
+     only true white surfaces do, confirmed against the design source's own
+     CSS (its shadow override targets `background: var(--color-surface)`
+     specifically, never surface-soft). `accent` is the primary Button's
+     own tinted glow (forest-green-tinted, not neutral) -- ported because
+     it sits on the single most-seen interactive element in the app; the
+     design source's near-invisible inset shadow on white inputs is
+     deliberately NOT ported here (negligible visual gain, risks clashing
+     with browser autofill styling). */
+  --shadow-elev-1: 0 1px 1px rgba(20, 24, 20, 0.04), 0 2px 6px -2px rgba(20, 24, 20, 0.07);
+  --shadow-elev-2: 0 1px 2px rgba(20, 24, 20, 0.05), 0 12px 28px -10px rgba(20, 24, 20, 0.18);
+  --shadow-accent: 0 2px 5px rgba(31, 58, 46, 0.22), 0 8px 18px -8px rgba(31, 58, 46, 0.38);
 
   /* ---- Spacing -- DESIGN.md `spacing` (4px grid) ----------------------
-     Only xxs/xxl/section are defined as named tokens, matching the previous
+     Only xxs/xxl/section are defined as named tokens, matching every prior
      pass's approach and for the exact same reason documented there:
      Tailwind v4's `--spacing-*` namespace isn't padding/margin/gap-only --
      it's the single shared scale behind every length utility, INCLUDING
      max-w-sm/md/lg/xl, min-w-*, w-*, h-*. Defining `--spacing-xs` etc. to
      match DESIGN.md's own names would silently collide with and override
-     those. DESIGN.md's new values (xxs=4/xs=8/sm=12/md=16/lg=24/xl=32/
-     xxl=40/section=48) happen to land exactly on Tailwind's stock 4px-based
+     those. DESIGN.md's values (xxs=4/xs=8/sm=12/md=16/lg=24/xl=32/xxl=40/
+     section=48) happen to land exactly on Tailwind's stock 4px-based
      numeric scale for the five colliding names, so they're reachable
      without any alias at all: xs=8px is `p-2`, sm=12px is `p-3`, md=16px is
      `p-4`, lg=24px is `p-6`, xl=32px is `p-8` (same for m-/gap-/etc). Only
      xxs/xxl/section are kept as real named aliases since those spellings
-     don't collide with any reserved Tailwind scale key. */
+     don't collide with any reserved Tailwind scale key. Unchanged by this
+     pass -- the design source didn't touch the spacing scale's shape.  */
   --spacing-xxs: 4px;
   --spacing-xxl: 40px;
   --spacing-section: 48px;
 
   /* ---- Breakpoints ------------------------------------------------------
-     Unchanged from the previous pass -- DESIGN.md's Responsive Behavior
-     section explicitly keeps the previous breakpoints/touch-target rules,
-     this retoken pass is palette/type/shape only. */
+     Unchanged from every previous pass -- this pass is palette/type/shape/
+     elevation only, DESIGN.md's Responsive Behavior rules aren't touched. */
   --breakpoint-desktop: 1200px;
 
   /* ---- Typography -- DESIGN.md `typography` ---------------------------
-     Each entry pairs a font-size with its DESIGN.md line-height/weight via
-     Tailwind v4's `--text-*--line-height` / `--text-*--font-weight`
-     companion variables, so e.g. `text-heading-lg` alone applies size +
-     line-height + weight together. Nine tokens now (was thirteen): the old
-     scale's heading-xl/button-lg/button-sm/link-md/caption-sm are gone,
-     folded into a smaller, denser scale (DESIGN.md is explicit that this
-     system runs "a step denser" than the previous one -- body 16px->14px
-     etc.) -- and display-hero (Bebas-only, uppercase-transform) is replaced
-     by display-lg, a plain large/medium-weight Inter size with no special
-     utility needed since it has no font-family or text-transform of its
-     own anymore, just size/line-height/weight like every other entry. */
-  --text-display-lg: 32px;
-  --text-display-lg--line-height: 1.2;
-  --text-display-lg--font-weight: 500;
+     Two new serif tokens (headline-lg/headline-md, Gowun Batang, always
+     weight 400) for auth-shell display headlines. display-lg deliberately
+     stays a SANS token, not repointed to serif, because it already has a
+     live non-auth consumer: app/member/page.tsx's D-day countdown figure
+     on the dashboard hero card, which must stay sans/heavy/tabular --
+     repointing display-lg to serif would have silently turned that figure
+     into a script face with no other call site to catch the regression.
+     Every sans size step gets a weight bump per the design source's
+     "size-driven weight" rule (bigger sans text reads heavier now; small
+     labels/captions keep their previous weight -- "작은 글자는 조용히") and
+     a negative letter-spacing baked in per size step, values taken from
+     the design source's own per-size-step table. The source enforces that
+     table via a CSS attribute-selector hack layered over raw inline
+     styles (`[style*="font-size: 24px"]{letter-spacing:...}` etc) -- a
+     trick specific to that prototype tool's need to retrofit consistency
+     onto independently-authored inline styles, not something to reproduce
+     in token-driven React. The *resolved* values are baked directly into
+     each named token here instead. */
+  --text-headline-lg: 34px;
+  --text-headline-lg--line-height: 1.3;
+  --text-headline-lg--font-weight: 400;
+  --text-headline-lg--letter-spacing: -0.01em;
+
+  --text-headline-md: 26px;
+  --text-headline-md--line-height: 1.35;
+  --text-headline-md--font-weight: 400;
+  --text-headline-md--letter-spacing: -0.019em;
+
+  --text-display-lg: 34px;
+  --text-display-lg--line-height: 1;
+  --text-display-lg--font-weight: 680;
+  --text-display-lg--letter-spacing: -0.042em;
 
   --text-heading-lg: 24px;
   --text-heading-lg--line-height: 1.3;
-  --text-heading-lg--font-weight: 500;
+  --text-heading-lg--font-weight: 600;
+  --text-heading-lg--letter-spacing: -0.028em;
 
   --text-heading-md: 16px;
   --text-heading-md--line-height: 1.4;
-  --text-heading-md--font-weight: 500;
+  --text-heading-md--font-weight: 600;
+  --text-heading-md--letter-spacing: -0.028em;
 
   --text-body-md: 14px;
   --text-body-md--line-height: 1.5;
   --text-body-md--font-weight: 400;
+  --text-body-md--letter-spacing: -0.019em;
 
   --text-body-strong: 14px;
   --text-body-strong--line-height: 1.5;
   --text-body-strong--font-weight: 500;
+  --text-body-strong--letter-spacing: -0.019em;
 
   --text-button: 14px;
   --text-button--line-height: 1.4;
   --text-button--font-weight: 500;
+  --text-button--letter-spacing: -0.019em;
 
   --text-label: 13px;
   --text-label--line-height: 1.4;
   --text-label--font-weight: 500;
+  --text-label--letter-spacing: -0.015em;
 
   --text-caption: 12px;
   --text-caption--line-height: 1.4;
   --text-caption--font-weight: 500;
+  --text-caption--letter-spacing: -0.008em;
 
   --text-utility-xs: 11px;
   --text-utility-xs--line-height: 1.4;
   --text-utility-xs--font-weight: 500;
-
-  /* ---- Elevation -- DESIGN.md `Elevation & Depth` --------------------
-     DESIGN.md states plainly there is not a single shadow anywhere in this
-     system ("그림자는 시스템 전체에 단 하나도 없다") -- stronger than the
-     previous version, which still had one inset-line box-shadow token
-     (confirmed unused by any component even then; removed outright now,
-     no replacement). Level 1 (hairline) is a plain 1px border and needs no
-     token of its own -- `border border-hairline` expresses it directly.
-     Level 2 (ink block) is a background color, not a shadow -- Card's
-     `ink` variant already expresses it via `bg-ink`. */
+  --text-utility-xs--letter-spacing: -0.008em;
 }
 
 /* Admin mobile bottom-tab bar: previously scrolled horizontally to fit 7
@@ -227,7 +254,7 @@
 :root {
   /* Kept in step with --color-canvas/--color-ink above. These two drive
      <body> and app/page.tsx's bg-foreground/text-background utilities. */
-  --background: #fbfaf7;
+  --background: #efeeec;
   --foreground: #1e221c;
 }
 
@@ -264,13 +291,11 @@ body {
 }
 
 /* brand-deep is the system's one interactive accent -- focus rings, links,
-   active nav state -- and now also the primary CTA's fill, which is where
-   this system departs from the blue-accent version it replaces (blue was
-   explicitly barred from filled backgrounds; sage is the brand, so it
-   isn't). A global :focus-visible rule keeps the keyboard indicator
-   identical no matter which component an element came from. It layers an
-   outline on top of whatever a control already does on focus rather than
-   replacing it -- TextInput, for instance, also swaps its border color. */
+   active nav, primary CTA fill. A global :focus-visible rule keeps the
+   keyboard indicator identical no matter which component an element came
+   from. It layers an outline on top of whatever a control already does on
+   focus rather than replacing it -- TextInput, for instance, also swaps
+   its border color. */
 @layer base {
   :focus-visible {
     outline: 2px solid var(--color-brand-deep);
@@ -279,7 +304,7 @@ body {
   }
 }
 
-/* Respect prefers-reduced-motion app-wide -- unchanged from the previous
+/* Respect prefers-reduced-motion app-wide -- unchanged from every previous
    pass. Collapses every animation/transition's duration to effectively zero
    for users who've asked the OS for reduced motion, regardless of whether a
    given component remembered its own motion-reduce: variant. */

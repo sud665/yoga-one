@@ -44,40 +44,53 @@ export async function ChatListScreen({ role }: { role: ProfileRole }) {
         <EmptyState title="대화가 없습니다" description="새 채팅을 눌러 대화를 시작해보세요." />
       ) : (
         <div className="flex flex-col">
-          {rooms.map((room) => (
-            <Link
-              key={room.conversationId}
-              href={`${base}/chat/${room.conversationId}`}
-              className="flex items-center gap-3 border-t border-hairline py-3.5 first:border-t-0"
-            >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-soft text-body-strong text-ink">
-                {room.kind === 'group' ? (
-                  <Users className="h-5 w-5" strokeWidth={1.75} />
-                ) : (
-                  (room.otherName ?? '?').slice(0, 1)
-                )}
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="flex items-baseline gap-1.5">
-                  <span className="truncate text-body-strong text-ink">
-                    {room.kind === 'group' ? room.title : room.otherName}
+          {rooms.map((room) => {
+            // Group rooms read as neutral (surface-strong); 1:1 rooms are
+            // brand-tinted, matching the design source's avatar treatment
+            // (kind === 'dm' ? brand-tint/brand-deep : fill-muted/body).
+            const avatarTone =
+              room.kind === 'group' ? 'bg-surface-strong text-body' : 'bg-brand-tint text-brand-deep'
+            return (
+              <Link
+                key={room.conversationId}
+                href={`${base}/chat/${room.conversationId}`}
+                className="flex items-center gap-3 border-t border-hairline py-3.5 first:border-t-0"
+              >
+                <span
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-body-strong ${avatarTone}`}
+                >
+                  {room.kind === 'group' ? (
+                    <Users className="h-5 w-5" strokeWidth={1.75} />
+                  ) : (
+                    (room.otherName ?? '?').slice(0, 1)
+                  )}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-baseline gap-1.5">
+                    <span className="truncate text-body-strong text-ink">
+                      {room.kind === 'group' ? room.title : room.otherName}
+                    </span>
+                    <span className="shrink-0 text-utility-xs text-muted">
+                      {room.kind === 'group' ? '그룹' : room.otherRole ? ROLE_LABEL[room.otherRole] : ''}
+                    </span>
                   </span>
-                  <span className="shrink-0 text-utility-xs text-muted">
-                    {room.kind === 'group' ? '그룹' : room.otherRole ? ROLE_LABEL[room.otherRole] : ''}
+                  <span className="block truncate text-body-md text-muted">
+                    {room.lastMessage ?? '대화를 시작해보세요'}
                   </span>
                 </span>
-                <span className="block truncate text-body-md text-muted">{room.lastMessage ?? '대화를 시작해보세요'}</span>
-              </span>
-              <span className="flex shrink-0 flex-col items-end gap-1.5">
-                {room.lastMessageAt && <span className="text-utility-xs text-muted">{formatTime(room.lastMessageAt)}</span>}
-                {room.unreadCount > 0 && (
-                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-deep px-1.5 text-utility-xs text-on-brand">
-                    {room.unreadCount}
-                  </span>
-                )}
-              </span>
-            </Link>
-          ))}
+                <span className="flex shrink-0 flex-col items-end gap-1.5">
+                  {room.lastMessageAt && (
+                    <span className="text-utility-xs text-muted">{formatTime(room.lastMessageAt)}</span>
+                  )}
+                  {room.unreadCount > 0 && (
+                    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-deep px-1.5 text-utility-xs text-on-brand">
+                      {room.unreadCount}
+                    </span>
+                  )}
+                </span>
+              </Link>
+            )
+          })}
         </div>
       )}
     </div>

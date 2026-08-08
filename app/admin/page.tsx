@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { LayoutDashboard } from 'lucide-react'
 import { getDashboardSummary } from '@/lib/actions/dashboard'
 import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -47,7 +48,12 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="w-full px-6 py-8">
-      <h1 className="mb-6 text-heading-lg text-ink">원장 대시보드</h1>
+      <div className="mb-6 flex items-center gap-3">
+        <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-brand-tint">
+          <LayoutDashboard className="h-[19px] w-[19px] text-brand-deep" strokeWidth={1.75} />
+        </span>
+        <h1 className="text-heading-lg text-ink">원장 대시보드</h1>
+      </div>
 
       {/* DESIGN.md `dashboard-summary-card` -- ink 배경 + on-ink 텍스트 +
           heading-lg급 숫자(card-ink 컴포넌트의 명시 타이포그래피). 이전에는

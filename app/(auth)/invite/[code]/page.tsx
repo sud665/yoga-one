@@ -32,7 +32,7 @@ export default async function InvitePage({
     return (
       <div className="flex min-h-full items-center justify-center bg-canvas px-6 py-12 text-center">
         <div className="w-full max-w-sm">
-          <h1 className="mb-4 text-display-lg text-ink">유효하지 않은 초대 링크</h1>
+          <h1 className="mb-4 font-serif text-headline-lg text-ink">유효하지 않은 초대 링크</h1>
           <p className="text-body-md text-body">
             {describeInviteError(errorParam) ??
               '이 링크는 만료되었거나 이미 사용되었습니다. 원장님께 재발급을 요청해주세요.'}
@@ -47,7 +47,7 @@ export default async function InvitePage({
   return (
     <div className="flex min-h-full items-center justify-center bg-canvas px-6 py-12">
       <div className="w-full max-w-sm">
-        <h1 className="mb-8 text-display-lg text-ink">
+        <h1 className="mb-8 font-serif text-headline-lg text-ink">
           {preview.studio_name} — {role === 'instructor' ? '강사' : '회원'} 초대
         </h1>
         {errorParam && (

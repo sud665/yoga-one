@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PeriodFilter } from '@/components/ui/PeriodFilter'
 import { usePeriodFilter } from '@/lib/use-period-filter'
-import { X } from 'lucide-react'
+import { ClipboardList, X } from 'lucide-react'
 
 export default function MyBookingsPage() {
   // `any[]`가 아니라 listMyBookings()의 실제 반환 타입을 그대로 사용한다 -- 이미
@@ -56,7 +56,12 @@ export default function MyBookingsPage() {
 
   return (
     <div className="w-full px-6 py-12">
-      <h1 className="mb-8 text-heading-lg text-ink">내 예약</h1>
+      <div className="mb-8 flex items-center gap-3">
+        <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-brand-tint">
+          <ClipboardList className="h-[19px] w-[19px] text-brand-deep" strokeWidth={1.75} />
+        </span>
+        <h1 className="text-heading-lg text-ink">내 예약</h1>
+      </div>
 
       {bookings !== null && bookings.length > 0 && (
         <PeriodFilter

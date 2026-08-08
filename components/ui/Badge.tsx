@@ -3,16 +3,19 @@ import { AlertCircle, AlertTriangle, Check, Clock, type LucideIcon } from 'lucid
 import { cx } from './utils'
 
 // DESIGN.md `tag-chip`: a filled pastel pill for class-type/category labels.
-// Retoken pass: the old 3-tag palette (tag-a/b/c, each with its own soft/
-// deep text-color pairing) is replaced by DESIGN.md's 4 flat pastel tags
-// (peach/mint/mustard/cream) borrowed from the Airtable demo-grid cards --
-// every tag now uses the SAME text color (ink) regardless of background,
-// since DESIGN.md states plainly "텍스트는 전부 ink(파스텔이라 대비 문제
-// 없음)". Simpler than the old per-tag text-color table, and there are
-// still zero call sites for this component anywhere in the app (grepped
-// `<Badge` across app/ -- no matches), so this is a free redesign, not a
-// breaking one.
-export type BadgeTone = 'neutral' | 'tag-peach' | 'tag-mint' | 'tag-mustard' | 'tag-cream'
+// The 4 flat pastel tags (peach/mint/mustard/cream) borrowed from the
+// Airtable demo-grid cards each use the SAME text color (ink) regardless of
+// background, since DESIGN.md states plainly "텍스트는 전부 ink(파스텔이라
+// 대비 문제 없음)".
+//
+// `neutral` (the default) is a filled surface-strong pill, not bordered --
+// its only call sites are the notice screens' target label ("전체"/"회원"/
+// "강사"), and the design source renders that as a flat fill, not an
+// outline. `brand` is new in the "Classical" pass: the notice screens'
+// "고정" (pinned) indicator uses the same brand-tint/brand-deep pair as
+// everything else in the system, not a pastel tag -- DESIGN.md's Icons
+// section is explicit that pin isn't a class-type label.
+export type BadgeTone = 'neutral' | 'brand' | 'tag-peach' | 'tag-mint' | 'tag-mustard' | 'tag-cream'
 
 export interface BadgeProps {
   tone?: BadgeTone
@@ -21,7 +24,8 @@ export interface BadgeProps {
 }
 
 const BADGE_TONE_CLASSES: Record<BadgeTone, string> = {
-  neutral: 'border border-hairline bg-canvas text-ink',
+  neutral: 'bg-surface-strong text-body',
+  brand: 'bg-brand-tint text-brand-deep',
   'tag-peach': 'bg-tag-peach text-ink',
   'tag-mint': 'bg-tag-mint text-ink',
   'tag-mustard': 'bg-tag-mustard text-ink',

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { CalendarDays } from 'lucide-react'
 import { listUpcomingSessionsWithBookingState, bookSession } from '@/lib/actions/bookings'
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/Badge'
@@ -50,7 +51,12 @@ export default function MemberSchedulePage() {
 
   return (
     <div className="w-full px-6 py-12">
-      <h1 className="mb-8 text-heading-lg text-ink">일정</h1>
+      <div className="mb-8 flex items-center gap-3">
+        <span className="flex h-[38px] w-[38px] items-center justify-center rounded-full bg-brand-tint">
+          <CalendarDays className="h-[19px] w-[19px] text-brand-deep" strokeWidth={1.75} />
+        </span>
+        <h1 className="text-heading-lg text-ink">일정</h1>
+      </div>
 
       {sessions !== null && sessions.length > 0 && (
         <PeriodFilter

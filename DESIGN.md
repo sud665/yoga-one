@@ -3,33 +3,36 @@ version: beta
 name: Yoga-One-Design
 description: |
   요가원 관리 모바일 앱(Expo/React Native — 2026-08-02 웹 폐기, 앱 온리 전환)을 위한 디자인 시스템.
-  토큰은 src/constants/theme.ts에 1:1로 구현되어 있다.
+  실사용 구현은 이 Next.js 앱의 app/globals.css `@theme` 블록이 1:1 소스다(별도 Expo 클라이언트는
+  expo-native-app 브랜치에 보존되어 있고 이 문서를 따라가지 않는다).
 
-  2026-08-02 2차 개정 — **세이지 브랜드 레이어 도입.** 이전 판(Airtable-에디토리얼)은 순백 캔버스 +
-  근흑 잉크 + 블루 포커스만으로 구성된 순수 관리도구 문법이었고, 사용자 피드백이 정확히 그 지점을
-  찔렀다: "너무 검은색 흰색만 있다, 관리 프로그램 같다, 회원도 쓰는 앱이다." 이번 개정은 절제 원칙
-  (헤어라인 경계, 그림자 없음, 볼드 없음, 화면당 전압 1-2개)은 그대로 두고 그 위의 온도만 바꾼다:
-  ① 순백 캔버스 → 웜 화이트/샌드, ② 잉크의 블루 언더톤 → 모스(이끼) 언더톤, ③ 유일한 액센트를
-  블루(info)에서 세이지 그린(brand)으로 교체하고 CTA가 잉크 블록 대신 세이지를 입는다.
-  Airtable에서 가져온 구조 문법은 유지하되, 색의 세계는 이제 요가원의 것(세이지·샌드·리넨)이다.
+  2026-08-08 3차 개정 — **"Classical" 포리스트 그린 패스.** 전판(세이지 리브랜드)은 순백+근흑
+  관리도구 인상을 세이지 그린 하나로 풀었다. 이번 개정은 Claude Design으로 제작한 21개 화면
+  프로토타입을 그대로 들여오며 세 가지를 더 바꾼다: ① 유일한 액센트가 세이지(#6B8F71 계열)에서
+  더 깊은 포리스트 그린(#1F3A2E)으로 이동, ② 캔버스 하나로 카드까지 겸하던 1레이어 구조가
+  웜 그레이지 페이지 위에 흰 표면이 뜨는 2레이어 구조로 바뀌고 그 흰 표면에 옅은 그림자가 붙는다
+  (전판·전전판이 지켜온 "그림자 시스템 전체에 하나도 없다" 원칙의 명시적 폐기), ③ 타이포가
+  Inter 단일 체제에서 Pretendard Variable(본문·UI 전체) + Gowun Batang(로그인류 대형 헤드라인
+  전용 명조)로 바뀐다. 절제 원칙 중 살아남는 것과 폐기되는 것은 아래 각 섹션에 명시한다.
 
   admin-sidebar 어휘는 웹 시절의 것으로 현재 클라이언트에는 대응물이 없다(원장 nav는 하단 탭 5개).
 
 colors:
   brand: "#6B8F71"
-  brand-deep: "#4F6D55"
-  brand-pressed: "#405C46"
+  brand-deep: "#1F3A2E"
+  brand-pressed: "#2A4A38"
   brand-tint: "#E8F0E9"
   ink: "#1E221C"
   on-ink: "#FFFFFF"
   on-brand: "#FFFFFF"
-  canvas: "#FBFAF7"
-  surface-soft: "#F6F3EC"
-  surface-strong: "#E3E1D8"
+  canvas: "#EFEEEC"
+  surface: "#FFFFFF"
+  surface-soft: "#F4F4F2"
+  surface-strong: "#E5E4E1"
   body: "#3A4038"
   muted: "#6F746A"
-  hairline: "#E1DED4"
-  hairline-soft: "#EDEAE1"
+  hairline: "#E6E4E0"
+  hairline-soft: "#F1F0EE"
   success: "#1B7043"
   success-tint: "#E6F2EA"
   warning: "#8A5A00"
@@ -44,66 +47,78 @@ colors:
   tag-cream: "#F5E9D4"
 
 typography:
-  display-lg:
-    fontFamily: Inter
-    fontSize: 32px
-    fontWeight: 500
-    lineHeight: 1.2
-    letterSpacing: 0
-  heading-lg:
-    fontFamily: Inter
-    fontSize: 24px
-    fontWeight: 500
+  headline-lg:
+    fontFamily: Gowun Batang
+    fontSize: 34px
+    fontWeight: 400
     lineHeight: 1.3
-    letterSpacing: 0
+    letterSpacing: -0.01em
+  headline-md:
+    fontFamily: Gowun Batang
+    fontSize: 26px
+    fontWeight: 400
+    lineHeight: 1.35
+    letterSpacing: -0.019em
+  display-lg:
+    fontFamily: Pretendard Variable
+    fontSize: 34px
+    fontWeight: 680
+    lineHeight: 1
+    letterSpacing: -0.042em
+  heading-lg:
+    fontFamily: Pretendard Variable
+    fontSize: 24px
+    fontWeight: 600
+    lineHeight: 1.3
+    letterSpacing: -0.028em
   heading-md:
-    fontFamily: Inter
+    fontFamily: Pretendard Variable
     fontSize: 16px
-    fontWeight: 500
+    fontWeight: 600
     lineHeight: 1.4
-    letterSpacing: 0
+    letterSpacing: -0.028em
   body-md:
-    fontFamily: Inter
+    fontFamily: Pretendard Variable
     fontSize: 14px
     fontWeight: 400
     lineHeight: 1.5
-    letterSpacing: 0
+    letterSpacing: -0.019em
   body-strong:
-    fontFamily: Inter
+    fontFamily: Pretendard Variable
     fontSize: 14px
     fontWeight: 500
     lineHeight: 1.5
-    letterSpacing: 0
+    letterSpacing: -0.019em
   button:
-    fontFamily: Inter
+    fontFamily: Pretendard Variable
     fontSize: 14px
     fontWeight: 500
     lineHeight: 1.4
-    letterSpacing: 0
+    letterSpacing: -0.019em
   label:
-    fontFamily: Inter
+    fontFamily: Pretendard Variable
     fontSize: 13px
     fontWeight: 500
     lineHeight: 1.4
-    letterSpacing: 0
+    letterSpacing: -0.015em
   caption:
-    fontFamily: Inter
+    fontFamily: Pretendard Variable
     fontSize: 12px
     fontWeight: 500
     lineHeight: 1.4
-    letterSpacing: 0
+    letterSpacing: -0.008em
   utility-xs:
-    fontFamily: Inter
+    fontFamily: Pretendard Variable
     fontSize: 11px
     fontWeight: 500
     lineHeight: 1.4
-    letterSpacing: 0
+    letterSpacing: -0.008em
 
 rounded:
   none: 0px
-  input: 8px
+  input: 12px
   button: 12px
-  card: 14px
+  card: 16px
   full: 9999px
 
 spacing:
@@ -116,6 +131,11 @@ spacing:
   xxl: 40px
   section: 48px
 
+elevation:
+  elev-1: "0 1px 1px rgba(20,24,20,.04), 0 2px 6px -2px rgba(20,24,20,.07)"
+  elev-2: "0 1px 2px rgba(20,24,20,.05), 0 12px 28px -10px rgba(20,24,20,.18)"
+  accent: "0 2px 5px rgba(31,58,46,.22), 0 8px 18px -8px rgba(31,58,46,.38)"
+
 components:
   button-primary:
     backgroundColor: "{colors.brand-deep}"
@@ -124,12 +144,13 @@ components:
     rounded: "{rounded.button}"
     padding: 12px 20px
     height: 44px
+    elevation: "{elevation.accent}"
   button-primary-active:
     backgroundColor: "{colors.brand-pressed}"
     textColor: "{colors.on-brand}"
     rounded: "{rounded.button}"
   button-secondary:
-    backgroundColor: "{colors.canvas}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     typography: "{typography.button}"
     rounded: "{rounded.button}"
@@ -137,7 +158,7 @@ components:
     height: 44px
     border: "1px solid {colors.hairline}"
   button-danger:
-    backgroundColor: "{colors.canvas}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.danger}"
     typography: "{typography.button}"
     rounded: "{rounded.button}"
@@ -145,13 +166,13 @@ components:
     height: 44px
     border: "1px solid {colors.danger}"
   button-icon-circular:
-    backgroundColor: "{colors.canvas}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     rounded: "{rounded.full}"
     size: 40px
     border: "1px solid {colors.hairline}"
   text-input:
-    backgroundColor: "{colors.canvas}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     typography: "{typography.body-md}"
     rounded: "{rounded.input}"
@@ -162,28 +183,31 @@ components:
     border: "1px solid {colors.brand-deep}"
     rounded: "{rounded.input}"
   card:
-    backgroundColor: "{colors.canvas}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     typography: "{typography.body-strong}"
     rounded: "{rounded.card}"
     border: "1px solid {colors.hairline}"
+    elevation: "{elevation.elev-1}"
   card-brand:
     backgroundColor: "{colors.brand-deep}"
     textColor: "{colors.on-brand}"
     typography: "{typography.heading-lg}"
     rounded: "{rounded.card}"
   session-card:
-    backgroundColor: "{colors.canvas}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     typography: "{typography.body-strong}"
     rounded: "{rounded.card}"
     border: "1px solid {colors.hairline}"
+    elevation: "{elevation.elev-1}"
   quick-action-card:
-    backgroundColor: "{colors.canvas}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     typography: "{typography.caption}"
     rounded: "{rounded.card}"
     border: "1px solid {colors.hairline}"
+    elevation: "{elevation.elev-1}"
   status-badge:
     typography: "{typography.caption}"
     rounded: "{rounded.full}"
@@ -192,18 +216,26 @@ components:
     typography: "{typography.caption}"
     rounded: "{rounded.full}"
     padding: 4px 10px
+  page-header-badge:
+    backgroundColor: "{colors.brand-tint}"
+    textColor: "{colors.brand-deep}"
+    size: 38px
+    iconSize: 19px
   app-tabs:
-    backgroundColor: "{colors.canvas}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.muted}"
     activeTextColor: "{colors.brand-deep}"
+    activeBackgroundColor: "{colors.brand-tint}"
     typography: "{typography.caption}"
     border: "1px solid {colors.hairline}"
+    elevation: "{elevation.elev-2}"
   toast:
-    backgroundColor: "{colors.canvas}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     typography: "{typography.body-strong}"
     rounded: "{rounded.card}"
     border: "1px solid {colors.hairline}"
+    elevation: "{elevation.elev-2}"
   skeleton:
     backgroundColor: "{colors.hairline-soft}"
     rounded: "{rounded.card}"
@@ -221,213 +253,247 @@ components:
 
 ## Overview
 
-구조 문법(헤어라인 경계, 무그림자, 크기·대비 기반 타이포 위계)은 Airtable 분석에서 계승한 것을
-유지하고, 색의 세계를 요가원의 것으로 교체한 시스템이다. 세 가지 축:
+구조 문법(헤어라인 경계, 크기·대비 기반 타이포 위계)은 Airtable 분석에서 계승한 것을 유지하지만,
+이번 패스는 전판이 지켰던 두 원칙을 의도적으로 깬다 — 캔버스 1레이어와 무그림자. 네 가지 축:
 
-1. **웜 캔버스.** 순백(#FFFFFF)이 아니라 웜 화이트 `{colors.canvas}`(#FBFAF7) 위에서 모든 화면이
-   시작한다. 보조 표면은 샌드 `{colors.surface-soft}`(#F6F3EC). "관리 프로그램" 인상의 근원이
-   순백+순흑 조합이었으므로, 배경의 온도가 이 시스템에서 가장 큰 한 수다.
-2. **세이지가 유일한 브랜드 전압.** `{colors.brand}`(#6B8F71) 계열이 CTA·활성 상태·긍정 신호를
-   전부 담당한다. 텍스트/작은 요소에는 대비가 검증된 `{colors.brand-deep}`(#4F6D55, 캔버스 위
-   ≈5.4:1·화이트 위 ≈4.9:1)를 쓰고, 밝은 `{colors.brand}`는 장식·아이콘·큰 면에만 쓴다.
-   이전 판의 블루(`info`)가 맡던 인터랙티브 액센트 역할은 전부 brand로 이관됐다.
-3. **잉크는 모스 언더톤.** `{colors.ink}`(#1E221C)는 블루가 아니라 이끼 쪽으로 기운 근흑이라
-   세이지·샌드와 같은 온도에서 섞인다. 잉크는 이제 텍스트와 아이콘의 색이지, CTA의 색이 아니다.
+1. **포리스트 그린이 유일한 브랜드 전압.** `{colors.brand}`(#6B8F71, 세이지)는 이제 장식용
+   레거시 마커 하나(달력의 "수업 있음" 점)로만 남고, CTA·활성 상태·포커스 링·아이콘 배지는 전부
+   `{colors.brand-deep}`(#1F3A2E, 포리스트 그린)가 담당한다. 대비가 검증된 짙은 색 하나로
+   텍스트/CTA/아이콘을 전부 처리한다는 점에서 이전 세이지 체계보다 오히려 단순해졌다 — "밝은 색은
+   장식만, 짙은 색은 텍스트도"라는 2단 대비 분리가 이번 패스엔 없다.
+2. **캔버스가 2레이어로 갈라진다.** 전판까지는 `{colors.canvas}` 하나가 페이지 배경이자 카드·
+   인풋·버튼·내비게이션 배경이었다. 이번 패스는 웜 그레이지 페이지(`{colors.canvas}`, #EFEEEC)
+   위에 흰 표면(`{colors.surface}`, #FFFFFF — 신규 토큰)이 뜨는 구조다. 헤어라인만으로 표면을
+   가르던 이전 규칙은 유지하되, 그 위에 옅은 앰비언트 그림자 한 겹을 더한다(아래 Elevation 참고).
+3. **그림자가 시스템에 들어온다.** 두 판 전부터 이어온 "그림자 시스템 전체에 하나도 없다" 규칙은
+   이번 패스로 폐기된다. 표면이 캔버스와 다른 색을 갖게 된 이상, 흰 표면에 최소한의 그림자를
+   주는 쪽이 헤어라인만으로 반사되는 것보다 실제로 더 차분하게 읽힌다 — 볼드·원색 없이도 깊이를
+   표현하는 수단이 하나 늘었다고 보는 편이 정확하다.
+4. **타이포가 두 서체로 갈라진다.** Inter는 한글 글리프가 아예 없는 서체였다 — 이 앱의 모든
+   한글 텍스트는 지금까지 `Inter`가 아니라 그 뒤의 시스템 폴백으로 조판되고 있었다(눈에 보이지
+   않던 실질적 공백). 이번 패스는 본문·UI 전체를 Pretendard Variable로 옮겨 그 공백을 메우고,
+   로그인류 대형 헤드라인에만 Gowun Batang 명조를 얹는다. 명조는 무게가 아니라 크기·자간으로
+   존재감을 낸다 — `headline-*` 토큰은 전부 400(레귤러) 고정이다.
 
-**유지하는 절제 원칙** (전판 그대로): 헤어라인 1px가 1차 경계 장치이고 리터럴 그림자는 시스템에
-하나도 없다. 볼드(600+)도 없다 — display까지 500이 최대. 화면당 "전압" 표면(card-brand, primary
-버튼)은 1-2개로 제한한다. 컬러 블록을 남발하는 순간 세이지도 관리툴의 파랑만큼 시끄러워진다.
+**유지하는 절제 원칙**: 헤어라인이 여전히 1차 경계 장치다(그림자는 그 위에 얹는 보조 장치이지
+대체재가 아니다). 화면당 "전압" 표면(card-brand, primary 버튼)은 1-2개로 제한한다. 컬러 블록을
+남발하는 순간 포리스트 그린도 이전 세이지·전판의 파랑만큼 시끄러워진다.
 
 ## Colors
 
 ### Brand
-- **Brand** (`{colors.brand}` #6B8F71): 세이지 그린. 큰 면(브랜드 카드의 장식, 아이콘, 활성 보더),
-  일러스트성 요소. 흰 텍스트를 얹기엔 대비가 부족하므로(≈3.3:1) 텍스트가 올라가는 면에는 쓰지 않는다.
-- **Brand Deep** (`{colors.brand-deep}` #4F6D55): 실무의 주인공. primary CTA 배경, 링크·활성 탭
-  텍스트, 포커스 링, 긍정 배지 텍스트. 흰 텍스트(4.9:1)와 캔버스 위 텍스트(5.4:1) 모두 AA 통과.
-- **Brand Pressed** (`{colors.brand-pressed}` #405C46): primary 눌림 상태.
-- **Brand Tint** (`{colors.brand-tint}` #E8F0E9): 활성 탭/칩/세그먼트 배경, 긍정 배지 배경,
-  선택 상태 하이라이트.
+- **Brand Deep** (`{colors.brand-deep}` #1F3A2E): 실질적으로 유일한 액센트. primary CTA 배경,
+  링크·활성 탭 텍스트/배경, 포커스 링, 아이콘 배지의 아이콘 색, 긍정 선택 상태 전부. 흰 텍스트·
+  캔버스 위 텍스트 모두 넉넉히 AA를 통과한다(짙은 포리스트 그린이라 세이지보다 대비 여유가 크다).
+- **Brand Pressed** (`{colors.brand-pressed}` #2A4A38): primary 눌림 상태.
+- **Brand Tint** (`{colors.brand-tint}` #E8F0E9): 아이콘 배지 배경, 활성 탭/칩/세그먼트 배경,
+  선택 상태 하이라이트. 전판과 정확히 같은 값 — 세이지 시절부터 쓰던 옅은 민트 틴트가 액센트가
+  바뀐 뒤에도 그대로 어울려서 유지했다.
+- **Brand** (`{colors.brand}` #6B8F71): 더 이상 일반 장식색이 아니다. 유일하게 살아남은 용도는
+  `SessionCalendar`의 "이 날짜에 수업 있음" 점 마커(선택되지 않은 상태) 하나뿐 — 새 액센트가
+  거기까지 칠하면 선택 표시와 헷갈리기 때문에 옛 세이지를 보조 마커로 남겨뒀다. 새 화면에서
+  장식용 큰 면에 쓰지 않는다.
 
-### Neutral
-- **Canvas** (#FBFAF7): 모든 페이지 배경. / **Surface Soft** (#F6F3EC): 빈 상태, 보조 표면.
-- **Surface Strong** (#E3E1D8): 비활성·중립 강조 표면.
-- **Ink** (#1E221C) / **Body** (#3A4038) / **Muted** (#6F746A): 텍스트 3단계. 전부 모스/그레이지
-  언더톤 — 순수 무채색을 쓰지 않는다.
-- **Hairline** (#E1DED4) / **Hairline Soft** (#EDEAE1): 경계선과 스켈레톤. 역시 웜 톤.
+### Neutral — 2레이어
+- **Canvas** (`{colors.canvas}` #EFEEEC): 페이지 배경 전용. 앱 셸 프레임(`app/layout.tsx`의
+  `max-w-md` 래퍼)과 `<body>`만 이 색을 쓴다.
+- **Surface** (`{colors.surface}` #FFFFFF, 신규): 카드·인풋·버튼·내비게이션·시트·토스트 등
+  "콘텐츠를 담는 표면"은 전부 이 흰색이다. canvas 위에 뜨는 층이라는 뜻에서 대개
+  `{elevation.elev-1}`이나 `{elevation.elev-2}`를 동반한다.
+- **Surface Soft** (`{colors.surface-soft}` #F4F4F2): 빈 상태, 옅은 안내 박스, 호버 배경 — 그림자
+  없이 캔버스보다 한 톤 밝은 정도로만 존재감을 낸다.
+- **Surface Strong** (`{colors.surface-strong}` #E5E4E1): 비활성·중립 배지/필 배경.
+- **Ink** (#1E221C) / **Body** (#3A4038) / **Muted** (#6F746A): 텍스트 3단계 — 값 불변. 전판의
+  모스 언더톤 근흑이 포리스트 그린과도 잘 맞아 그대로 가져왔다.
+- **Hairline** (#E6E4E0) / **Hairline Soft** (#F1F0EE): 경계선과 스켈레톤. 새 캔버스 톤에 맞춰
+  살짝 재조정.
 
 ### Semantic — 성공 · 경고 · 실패
 
-세 상태는 각각 **텍스트/아이콘 색 + 그 위에 얹히는 옅은 tint** 한 쌍이다. 모든 조합을 실제로 발생하는
-두 방향(캔버스 위, 자기 tint 위)에서 WCAG AA(4.5:1) 기준으로 계산 검증했다.
+**값이 완전히 그대로다.** 브랜드 색이 바뀌어도 상태색은 브랜드와 독립적이어야 한다는 전판의
+결정이 이번 개정에서도 그대로 옳았다 — 새 디자인 소스의 모든 성공/경고/실패 hex를 대조한 결과
+바이트 단위로 동일했다.
 
-| 상태 | 색 | tint | 캔버스 위 | tint 위 | 흰 글자 |
-|---|---|---|---|---|---|
-| **Success** | `#1B7043` | `#E6F2EA` | 5.84 | 5.30 | 6.10 |
-| **Warning** | `#8A5A00` | `#FAEFD9` | 5.68 | 5.20 | 5.93 |
-| **Danger** | `#AA2D00` | `#F6E8E3` | 6.52 | 5.70 | 6.81 |
+| 상태 | 색 | tint |
+|---|---|---|
+| **Success** | `#1B7043` | `#E6F2EA` |
+| **Warning** | `#8A5A00` | `#FAEFD9` |
+| **Danger** | `#AA2D00` | `#F6E8E3` |
 
-- **Success** — 예약확정·출석·유효한 초대. **더 이상 브랜드 세이지와 같은 값이 아니다.** 둘을 합치는 건
-  이론상 말이 됐지만("확정된 예약이 곧 브랜드의 순간") 화면에서 무너졌다: 세이지 "예약완료" 배지가
-  세이지 "예약하기" 버튼 옆에 앉으면서 상태와 액션이 같은 색이 됐고 배지가 눌리는 것처럼 보였다.
-  `#1B7043`은 더 깊고 채도 높은 초록이라 절제된 브랜드 세이지(`#4F6D55`)와 충분히 떨어져 **정보로
-  읽히지 액션으로 읽히지 않는다.**
-- **Warning** — 신설. 대기명단 상태가 그동안 `muted` 회색이었는데, 그건 "비활성"이라는 뜻이지 "당신은
-  줄을 서 있다"가 아니다. 회원이 알아채야 하는 상태라 자기 색을 준다.
-- **Danger** — 정원마감·취소·결석·파괴적 액션. 알람처럼 튀는 빨강이 아닌 차분한 산화철색이라 절제
-  원칙과 맞고 세이지·샌드와 같은 온도에서 섞인다.
-- **Info** (#1B61C9) — 역할 축소된 유산 토큰. 인터랙티브 액센트 자리는 brand가 가져갔고, 순수 정보성
-  알림(Toast의 `info` 톤)에만 남는다. 신규 화면의 기본 선택지가 아니다.
+- **Info** (#1B61C9) — 여전히 역할 축소된 유산 토큰. 새 화면의 기본 선택지가 아니다.
 
-**색만으로 상태를 전달하지 않는다.** 상태 배지와 토스트는 항상 아이콘을 동반한다 — 색맹 사용자나 흑백
-출력에서도 상태가 읽혀야 한다. 이전의 작은 컬러 점(dot)은 색을 한 번 더 반복할 뿐 두 번째 채널이
-아니었다.
+**색만으로 상태를 전달하지 않는다** 원칙도 불변 — 상태 배지·토스트는 항상 아이콘을 동반한다.
 
 ## Icons
 
-**lucide-react**. 이전엔 인라인 SVG를 직접 그렸는데 4개일 땐 괜찮았지만 10개로 늘면서 각각을 검토하고
-서로 시각적 일관성을 유지하는 비용이 생겼다. 라이브러리는 그 일관된 손을 공짜로 주고, lucide의 얇은
-기하학적 스트로크는 애초에 그 손그림들이 흉내내던 것이다.
+**lucide-react**, 불변. 크기·스트로크 관례도 그대로: nav·퀵액션 20px(`h-5 w-5`), 버튼·배지
+16px(`h-4 w-4`), 배지 내부 14px(`h-3.5 w-3.5`), 본문 stroke-width 1.75 / 작은 배지 2.25.
 
-- **크기**: nav·퀵액션 20px(`h-5 w-5`), 버튼·배지 16px(`h-4 w-4`), 배지 내부 14px(`h-3.5 w-3.5`).
-- **스트로크**: 본문 맥락 1.75, 작은 배지 2.25(작을수록 굵게 해야 같은 무게로 보인다).
-- **접근성**: 라벨이 옆에 있으면 아이콘은 항상 `aria-hidden` — 이름은 텍스트가 갖고 한 번만 읽힌다.
-  아이콘만 있는 버튼은 `aria-label` 필수.
-- **어디에 쓰나**: 글리프가 **관례로 굳은 액션**에만 — 추가(`Plus`), 복사(`Copy`), 공유(`Share2`),
-  취소·닫기(`X`), 로그아웃(`LogOut`), 확인(`Check`). 도메인 고유 액션("대기 등록", "예약하기")에 아이콘을
-  발명해 붙이면 해독할 게 하나 더 느는 것이라 **텍스트만 쓴다.**
-- nav 아이콘은 `admin-nav.tsx`에서 의미 기반 별칭(`ScheduleIcon` 등)으로 재수출한다. 나중에 글리프를
-  바꿀 때 소비처를 전부 고치지 않고 그 블록 한 줄만 고치면 된다.
+**신규 관례 — 페이지 헤더 배지.** `{components.page-header-badge}`: 38px `rounded-full
+bg-brand-tint` 원 안에 19px 아이콘(`text-brand-deep`, stroke-width 1.75), `<h1>` 옆에 나란히.
+이 시스템에서 아이콘이 제목과 짝을 이루는 유일한 자리이며, 화면이 무엇에 관한 것인지 텍스트보다
+먼저 눈에 들어오게 한다. 회원 탈퇴 등 파괴적 흐름은 같은 크기를 유지하되 danger 톤
+(`bg-danger-tint`/`text-danger`)으로 바꾼다. 회원 본인의 대시보드만 예외 — 이 배지 대신 본인
+이니셜 아바타(같은 크기, 같은 tint)를 쓴다: "이 화면은 무엇에 관한 화면인가"가 아니라 "이건
+당신의 화면입니다"를 말해야 하는 유일한 자리이기 때문이다.
 
 ### Tag (클래스 타입 라벨)
-tag-peach/mint/mustard/cream 파스텔 4색 유지 — 시간표 필터 칩, 클래스 타입 라벨 전용.
-텍스트는 전부 `{colors.ink}`. 본문·CTA 색으로 쓰지 않는다.
+tag-peach/mint/mustard/cream 파스텔 4색 유지 — 시간표 필터 칩, 클래스 타입 라벨 전용. 공지사항의
+"고정" 표시는 이 파스텔 태그가 **아니다** — brand-tint/brand-deep 페어를 쓴다(상태가 아니라
+분류지만, 새 디자인 소스가 명시적으로 그렇게 그렸다). 텍스트는 전부 `{colors.ink}`.
 
 ## Typography
 
-**Inter** 하나. 앱에서는 `@expo-google-fonts/inter`의 `Inter_400Regular`/`Inter_500Medium` 두
-패밀리로 로드한다(400/500만 실제로 사용 — 시스템에 볼드가 없다. RN은 커스텀 폰트의 fontWeight
-매핑이 플랫폼마다 어긋나므로 weight를 패밀리 이름으로 고정한다).
+**두 서체.** 본문·UI 전체는 **Pretendard Variable**(가변 폰트, 실제 사용 웨이트는 400/500/600만),
+로그인류 대형 헤드라인만 **Gowun Batang**(명조, 400 하나만 로드 — 원본 디자인이 700도 불러오지만
+실사용처가 없어 400만 가져왔다). Inter는 완전히 제거했다 — 애초에 한글 글리프가 없어 이 앱의
+한글 텍스트에는 한 번도 적용된 적이 없었고(시스템 폰트로 조용히 폴백), 새 디자인 소스도 CSS에서
+import만 하고 실제로 어디에도 참조하지 않는다(grep으로 확인).
 
-| Token | Size | Weight | Use |
-|---|---|---|---|
-| display-lg | 32px | 500 | 로그인/온보딩 헤드라인 |
-| heading-lg | 24px | 500 | 페이지 타이틀 |
-| heading-md | 16px | 500 | 카드/섹션 타이틀 |
-| body-md | 14px | 400 | 본문 |
-| body-strong | 14px | 500 | 목록 항목, 클래스명 |
-| button | 14px | 500 | 버튼 라벨 |
-| label | 13px | 500 | 폼 라벨 |
-| caption | 12px | 500 | 부제, 배지, 칩 |
-| utility-xs | 11px | 500 | 타임스탬프, 탭 라벨 |
+| Token | Size | Weight | Family | Use |
+|---|---|---|---|---|
+| headline-lg | 34px | 400 | Gowun Batang | 로그인/가입/온보딩/초대/이메일·비밀번호 찾기 헤드라인 |
+| headline-md | 26px | 400 | Gowun Batang | 짧은 중앙정렬 헤드라인 (비밀번호 재설정 완료, 접근 불가) |
+| display-lg | 34px | 680 | Pretendard | 큰 숫자 표시 (회원 대시보드 D-day) |
+| heading-lg | 24px | 600 | Pretendard | 페이지 타이틀 (아이콘 배지와 짝) |
+| heading-md | 16px | 600 | Pretendard | 카드/섹션 타이틀 |
+| body-md | 14px | 400 | Pretendard | 본문 |
+| body-strong | 14px | 500 | Pretendard | 목록 항목, 클래스명 |
+| button | 14px | 500 | Pretendard | 버튼 라벨 |
+| label | 13px | 500 | Pretendard | 폼 라벨 |
+| caption | 12px | 500 | Pretendard | 부제, 배지, 칩 |
+| utility-xs | 11px | 500 | Pretendard | 타임스탬프, 탭 라벨 |
+
+**크기가 무게를 정한다.** 전판의 "display까지 500이 최대"는 폐기됐다 — heading-lg/md는 이번
+패스에서 600으로 올라간다. 다만 `headline-*`(명조)는 예외: 크든 작든 400 고정이다. 명조는 무게가
+아니라 서체 자체와 자간으로 무게감을 낸다는 것이 원본 디자인의 명시적 결정이다. 본문·라벨·캡션은
+그대로 가벼운 무게를 유지한다 — "작은 글자는 조용히"는 전판과 같다.
+
+**자간이 전부 음수로 좁아진다.** 전판은 모든 토큰이 `letterSpacing: 0`이었다. 한글 UI에서 살짝
+좁힌 자간은 글자 사이가 조밀해 보이는 걸 방지하는 실용적 조정이며, 원본 디자인의 크기별 자간
+표를 토큰마다 구운 값으로 반영했다(원본은 이걸 raw 인라인 스타일 전체에 CSS 속성-선택자 훅으로
+사후 강제하는 방식을 쓰는데, 그건 그 프로토타입 툴 특유의 기법이라 토큰화된 리액트 코드로는
+그대로 옮기지 않고 최종 결과값만 각 토큰에 직접 굽는다).
 
 ## Elevation & Depth
 
 | Level | Treatment | Use |
 |---|---|---|
-| 0 — Flat | 보더 없음 | 페이지 배경, 탭 바 배경 |
-| 1 — Hairline | 1px `{colors.hairline}` | **기본값.** 카드, 인풋, 탭 바 상단 경계, 빈 상태 |
-| 2 — Brand block | `{colors.brand-deep}` 배경 | card-brand(대시보드 핵심 통계), primary CTA — 화면당 1-2개 |
+| 0 — Flat | 보더 없음 | 페이지 배경(canvas) |
+| 1 — Hairline | 1px `{colors.hairline}` | 여전히 1차 경계 장치. surface-soft(빈 상태, 안내 박스)는 이 레벨에 머물고 그림자를 받지 않는다. |
+| 2 — Surface shadow | `{elevation.elev-1}` | `{colors.surface}`(흰색) 표면 전부 — Card, 목록 컨테이너, 검색바, 캘린더. |
+| 3 — Chrome shadow | `{elevation.elev-2}` | 더 도드라져야 하는 크롬 — 하단 탭 바, 바텀시트, 토스트. |
+| 4 — Brand block | `{colors.brand-deep}` 배경 | card-brand, primary 버튼(+ `{elevation.accent}` 그린 틴트 그림자) — 화면당 1-2개 |
 
-그림자는 시스템 전체에 단 하나도 없다. 전판의 "잉크 블록" 전압은 "세이지 블록"으로 교체됐다 —
-검정 대신 브랜드가 화면의 가장 무거운 표면이 된다.
+전판·전전판의 "그림자는 시스템 전체에 단 하나도 없다"는 이번 패스로 폐기된다. 흰 표면이
+캔버스와 분리되는 순간부터는 헤어라인 하나로 버티는 것보다 옅은 앰비언트 그림자를 더하는 쪽이
+차분하게 읽힌다 — 원본 디자인이 인풋에 주는 극도로 미세한 inset 그림자는 의도적으로 들여오지
+않았다(거의 안 보이는 수준이고 브라우저 자동완성 스타일과 부딪힐 위험이 더 크다). 상태바 높이에
+맞춘 원본의 페이지 상단 패딩(82px→70px) 같은 프로토타입 전용 수치도 들여오지 않는다 — 이 앱은
+실제 상태바가 없는 반응형 PWA다.
 
 ## Shapes
 
 | Token | Value | Use |
 |---|---|---|
 | none | 0px | 탭 바 등 화면 폭에 붙는 구조 크롬 |
-| input | 8px | 텍스트 인풋 |
+| input | 12px | 텍스트 인풋 — 전판 8px에서 button과 같은 값으로 통합 |
 | button | 12px | 모든 CTA — 알약형 아님 |
-| card | 14px | 데이터 컨테이너 전부 |
-| full | 9999px | 상태 배지, 태그 칩, 요일 칩, 아바타 — 작은 원형 요소 전용 |
+| card | 16px | 데이터 컨테이너 전부 — 전판 14px에서 소폭 확대 |
+| full | 9999px | 상태 배지, 태그 칩, 요일 칩, 아바타, 페이지 헤더 배지 — 작은 원형 요소 전용 |
+
+3단 스케일(input 8 / button 12 / card 14)이 2단(control 12 / surface 16)으로 정리됐다 — input과
+button이 이제 같은 값이라 실질적으로 "컨트롤 vs 표면" 두 단계다.
 
 ## Components
 
 ### Buttons
-- **button-primary** — 화면당 1순위 액션 하나. `{colors.brand-deep}` 배경 + 흰 라벨.
-  회원의 "예약하기", 원장의 "반복 수업 추가"가 이 얼굴이다. 잉크 배경 CTA는 폐기됐다.
-- **button-secondary** — 캔버스 배경 + hairline 보더 + 잉크 라벨.
-- **button-danger** — 캔버스 배경 + danger 보더/라벨. 배경을 채우지 않는다.
-- **button-icon-circular** — hairline 보더 + full 라운드, 40px.
+- **button-primary** — 화면당 1순위 액션 하나. `{colors.brand-deep}` 배경 + 흰 라벨 +
+  `{elevation.accent}`(포리스트 그린 틴트 그림자 — 채워진 CTA가 캔버스 위에서 살짝 뜨는 느낌).
+- **button-secondary** — `{colors.surface}` 배경(전판은 canvas) + hairline 보더 + 잉크 라벨.
+- **button-danger** — surface 배경, danger 보더/라벨. 배경을 채우지 않는다.
+- **button-icon-circular** — hairline 보더 + full 라운드, 40px, surface 배경.
 
 ### Inputs
-- **text-input / text-input-focus** — 44px, hairline 보더, 포커스 시 `{colors.brand-deep}` 보더.
-- **field-label** — `{typography.label}` + `{colors.muted}`, 인풋 위 6px. 값이 미리 채워진 채
-  열리는 폼(프로필)에만 쓴다. 그 외 폼은 placeholder만으로 식별한다 — 라벨과 placeholder를
-  둘 다 두면 같은 말을 두 번 하는 셈이고, 기존 스펙들도 placeholder로 필드를 찾는다.
+- **text-input / text-input-focus** — 44px, surface 배경(전판은 canvas), hairline 보더, 포커스 시
+  `{colors.brand-deep}` 보더. 라운드가 12px로 커졌다(전판 8px).
+- **field-label** — 프로필처럼 값이 미리 채워진 폼에만. 그 외는 placeholder만으로 식별.
 
 ### Cards & Signals
-- **card** — 범용 컨테이너. 캔버스 + hairline + 14px.
-- **card-brand** — 소수의 강조 표면(대시보드 핵심 통계). `{colors.brand-deep}` 배경 + 흰 타이포.
-  화면당 1-2개 제한은 전판의 card-ink 규칙을 그대로 승계.
-- **status-badge** — full 라운드 + 톤별 tint 배경. 긍정(예약확정/출석/유효)은 brand-tint +
-  brand-deep 텍스트, 부정은 danger 계열, 중립(대기)은 surface-strong + body.
-- **tag-chip** — 파스텔 tag 배경 + 잉크 텍스트.
+- **card** — 범용 컨테이너. surface + hairline + 16px + `{elevation.elev-1}`.
+- **card-brand** — 화면당 1-2개 제한의 "전압" 표면. `{colors.brand-deep}` 배경 + 흰 타이포. 값
+  불변, 배경 hex만 세이지에서 포리스트로.
+- **status-badge** — full 라운드 + 톤별 tint 배경, 값 불변(성공/경고/실패는 안 바뀌었다).
+- **tag-chip** — 파스텔 tag 배경 + 잉크 텍스트. "고정" 같은 분류 배지는 여기 안 들어간다(Icons
+  섹션의 태그 규칙 참고).
+- **page-header-badge** — 신규. 아이콘 배지 + `<h1>`, Icons 섹션에 상세.
 
 ### Navigation
 
-세 역할이 같은 어휘를 쓰되 화면 수만큼만 쓴다. 768px 미만은 하단 탭 바, 이상은
-원장만 사이드바이고 나머지 둘은 상단 바다.
+세 역할이 같은 어휘를 쓰되 화면 수만큼만 쓴다. 768px 미만은 하단 탭 바, 이상은 원장만
+사이드바이고 나머지 둘은 상단 바다.
 
 | 역할 | 탭 | 데스크톱 |
 |---|---|---|
 | 원장 | 대시보드 · 시간표관리 · **인력관리▴** · 예약현황 · **내 정보▴** | 240px 사이드바 |
-| 회원 | 대시보드 · 일정 · 내 예약 · 프로필 | 상단 바 |
-| 강사 | 내 수업 · 프로필 | 상단 바 |
+| 회원 | 대시보드 · 일정 · 내 예약 · 채팅 · 프로필 | 상단 바 |
+| 강사 | 내 수업 · 채팅 · 프로필 | 상단 바 |
 
-- **app-tabs** — 하단 탭 바 64px. 캔버스 배경 + 상단 hairline, 활성 탭은 상단 2px
-  `{colors.brand-deep}` 바 + 같은 색 아이콘/라벨. `env(safe-area-inset-bottom)`로
-  홈 인디케이터를 피한다.
-- **app-tabs-sheet (▴)** — 자식이 있는 탭. 탭 자체는 이동하지 않고 하단 시트를 연다.
-  라벨 옆 위쪽 셰브론이 유일한 예고 신호이며, 사이드바 아코디언과 같은 글리프를 쓴다.
-  탭 하나당 최소 폭은 375px ÷ 탭 수 ≥ 62px이어야 하고, "시간표관리"가 그 하한을
-  정한다 — 6개부터는 평면으로 못 들어가므로 묶는다.
-- **app-nav-top** — 56px, 하단 hairline, 활성 항목은 하단 2px `{colors.brand-deep}` 보더.
-  탭 바와 같은 아이콘·라벨을 쓴다.
-- 아이콘은 역할이 아니라 **의미**로 고른다. 같은 종류의 화면은 누가 보든 같은 글리프다
-  (대시보드=LayoutDashboard, 일정=CalendarDays, 예약=ClipboardList, 내 수업=ClipboardCheck,
-  프로필=CircleUser).
+- **app-tabs** — 하단 탭 바 64px. `{colors.surface}` 배경(전판 canvas) + `{elevation.elev-2}`.
+  활성 탭은 전판의 "상단 2px 보더 바" 방식을 버리고, 아이콘+라벨을 감싸는 `rounded-button`
+  배경 필로 바뀐다 — `{colors.brand-tint}` 배경 + `{colors.brand-deep}` 텍스트/아이콘. 보더
+  스트라이프는 완전히 사라진다.
+- **app-tabs-sheet (▴)** — 자식이 있는 탭. 탭 자체는 이동하지 않고 하단 시트를 연다(surface +
+  `rounded-t-card`). 라벨 옆 위쪽 셰브론이 유일한 예고 신호.
+- **app-nav-top** — 56px, 하단 hairline, 활성 항목은 하단 2px `{colors.brand-deep}` 보더 유지
+  (탭 바와 달리 이 상단 바는 필 배경으로 바꾸지 않는다 — 채팅방 헤더처럼 좁은 바에서 필 배경은
+  비집고 들어갈 자리가 없다).
+- 아이콘은 역할이 아니라 **의미**로 고른다(대시보드=LayoutDashboard, 일정=CalendarDays,
+  예약=ClipboardList, 내 수업=ClipboardCheck, 프로필=CircleUser).
 
 ### Sign-out
-- **sign-out** — 라벨 + LogOut 글리프, `{colors.muted}`, 버튼 얼굴 없음.
-  **자리는 프로필 화면 하단 하나뿐이다**(원장 데스크톱 사이드바 최하단은 예외).
-  상단 바 → 페이지 하단 푸터를 거쳐 여기로 왔다. 앞의 둘은 어쩌다 한 번 쓰는 출구에
-  모든 화면의 고정 공간을 내주고 있었다.
+- **sign-out** — 라벨 + LogOut 글리프, `{colors.muted}`, 버튼 얼굴 없음. 자리는 프로필 화면
+  하단 하나뿐(원장 데스크톱 사이드바 최하단은 예외).
 
 ## Feedback & States
 
-- **toast** — 캔버스 + hairline + 14px, 톤별 좌측 액센트(긍정 brand / 실패 danger / 중립 ink).
+- **toast** — surface + hairline + 16px + `{elevation.elev-2}`, 톤별 좌측 액센트(긍정 brand-deep
+  / 실패 danger / 중립 ink).
 - **skeleton** — hairline-soft 배경.
-- **empty-state** — surface-soft + hairline. "없음"이 아니라 다음 행동을 안내한다.
+- **empty-state** — surface-soft + hairline, 그림자 없음. "없음"이 아니라 다음 행동을 안내한다.
 - **focus-ring** — `{colors.brand-deep}` 2px, 오프셋 2px.
 - **Reduced Motion** — 시스템 설정 시 전환 duration 0.
 
 ## Do's and Don'ts
 
 ### Do
-- 화면당 primary(세이지 CTA)는 하나. 나머지는 secondary.
-- 긍정 상태(확정·출석·유효)는 brand 계열로 — success라는 별도 그린을 만들지 않는다.
-- 경계는 전부 hairline. 그림자 금지.
-- brand(밝은 세이지)는 장식·아이콘·큰 면 전용, 텍스트·CTA 배경은 brand-deep.
-- 캔버스/샌드/잉크의 웜 톤을 지킨다 — 순백·순흑·순회색을 새로 넣지 않는다.
+- 화면당 primary(포리스트 그린 CTA)는 하나. 나머지는 secondary.
+- 긍정 상태(확정·출석·유효)는 success 그린으로 — brand-deep과 혼동하지 않는다(둘은 이제 색조차
+  다르다: 브랜드는 포리스트, success는 좀 더 밝고 채도 높은 초록).
+- 흰 표면(`surface`)에는 `elev-1`을, 캔버스·surface-soft에는 그림자를 얹지 않는다 — 그림자는
+  "표면이 떠 있다"는 신호이지 장식이 아니다.
+- 명조(headline-*)는 항상 400, 항상 중앙정렬 단일 컬럼 화면에만.
+- canvas/surface/surface-soft/surface-strong의 웜 톤을 지킨다 — 순백·순흑·순회색을 새로 넣지 않는다.
 
 ### Don't
-- card-brand와 primary 버튼을 한 화면에 3개 이상 쌓지 않는다 — 전압은 희소해야 신호다.
-- info 블루를 새 화면의 액센트로 쓰지 않는다 (정보성 배너 전용 유산 토큰).
-- 태그 파스텔을 본문 텍스트나 CTA에 쓰지 않는다.
-- display에 500보다 굵은 weight를 쓰지 않는다.
+- card-brand와 primary 버튼을 한 화면에 3개 이상 쌓지 않는다.
+- info 블루를 새 화면의 액센트나 포커스 색으로 쓰지 않는다(`ChatRoomScreen`이 과거 이 실수를
+  했었다 — brand-deep으로 정정됨).
+- 태그 파스텔을 본문 텍스트나 CTA에, 혹은 "고정" 같은 분류 배지에 쓰지 않는다.
+- 아이콘 배지 크기(38px 원 / 19px 아이콘)를 화면마다 다른 임의값으로 재발명하지 않는다.
 - full 라운드를 큰 버튼에 쓰지 않는다.
 
 ## Iteration Guide
 
-1. 새 화면은 기존 어휘(card, status-badge, tag-chip, empty-state)로 먼저 조립을 시도한다.
+1. 새 화면은 기존 어휘(card, status-badge, tag-chip, empty-state, page-header-badge)로 먼저
+   조립을 시도한다.
 2. 색·타이포는 토큰 참조로만 — 프로즈에 hex를 풀어쓰지 않는다.
 3. 새 상태는 `-active`/`-focus` 엔트리로 추가한다.
-4. "이 화면에서 세이지가 몇 번 등장하는가"를 셀 것 — 3번 이상이면 하나를 뺀다.
+4. "이 화면에서 brand-deep이 몇 번 등장하는가"를 셀 것 — 3번 이상이면 하나를 뺀다.
 
 ## Known Gaps
 
-- 채팅/단체채팅, 수강료관리 화면 어휘는 해당 스펙 진행 시 추가.
-- 앱 아이콘·스플래시는 아직 Expo 기본 — 스토어 제출 전 세이지/샌드 브랜딩으로 교체 필요.
+- 수강료관리 화면 어휘는 해당 스펙 진행 시 추가(채팅/공지사항/탈퇴/회원등록마법사는 이번 패스로
+  정의 완료).
+- 앱 아이콘·스플래시는 아직 Expo 기본 — 스토어 제출 전 포리스트 그린 브랜딩으로 교체 필요.
 - 다크 모드 없음 (라이트 온리 시스템 — 전판 결정 유지).

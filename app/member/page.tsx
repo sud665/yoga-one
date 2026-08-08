@@ -29,11 +29,23 @@ export default async function MemberHomePage() {
   return (
     <div className="w-full px-6 py-12">
       <header className="mb-8 flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-heading-lg text-ink">
-            {profile ? `안녕하세요, ${profile.fullName}님` : '안녕하세요'}
-          </h1>
-          <p className="mt-1 text-caption text-muted">{periodLabel(kstToday(), 'day')}</p>
+        <div className="flex items-center gap-3">
+          {/* Personal, not a generic page-header badge -- DESIGN.md's Icons
+              section calls this screen the one exception: it needs to say
+              "this is your screen", not "this screen is about X", so it
+              gets the signed-in member's own initial instead of a glyph. */}
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-tint text-label text-brand-deep">
+            {(profile?.fullName ?? ' ').slice(0, 1)}
+          </span>
+          <div>
+            <h1 className="text-heading-lg text-ink">
+              {profile ? `${profile.fullName}님, 반가워요` : '반가워요'}
+            </h1>
+            <p className="mt-1 flex items-center gap-1.5 text-caption text-muted">
+              <CalendarDays aria-hidden="true" className="h-3 w-3 shrink-0" strokeWidth={2} />
+              {periodLabel(kstToday(), 'day')}
+            </p>
+          </div>
         </div>
         <Link
           href="/notices"
@@ -48,29 +60,35 @@ export default async function MemberHomePage() {
           member opens this app to answer "when am I next in class", so that
           answer gets the brand fill and everything below it stays quiet. */}
       {nextSession ? (
-        <Card variant="brand">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="text-caption text-on-brand/70">다음 수업</p>
-              <p className="mt-1 text-heading-lg">{nextSession.title}</p>
-            </div>
+        <Card variant="brand" className="relative overflow-hidden">
+          {/* Hairline-on-fill ring, on-brand at 10% -- the one place a
+              border reads on top of a filled surface instead of replacing
+              it. Matches the source design's own brand card exactly. */}
+          <span aria-hidden="true" className="pointer-events-none absolute inset-0 rounded-card border border-on-brand/10" />
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-utility-xs font-semibold tracking-wide text-on-brand/60">다음 수업</p>
             {/* The badge sits on a filled surface, where the tinted
-                StatusBadge would fight the fill -- an outlined chip in the
-                same on-brand ink reads as part of the card instead. */}
-            <span className="rounded-full border border-on-brand/30 px-3 py-1 text-caption text-on-brand">
+                StatusBadge would fight the fill -- a soft on-brand wash
+                reads as part of the card instead. */}
+            <span className="rounded-full bg-on-brand/15 px-2.5 py-1 text-utility-xs font-semibold text-on-brand/90">
               {nextSession.status === 'booked' ? '예약완료' : '대기중'}
             </span>
           </div>
 
-          {/* Three facts on one row rather than three stacked lines: the
-              countdown is what the eye lands on, the date and time qualify
-              it, and the instructor is the last thing anyone reads. */}
-          <div className="mt-5 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          {/* The countdown is what the eye lands on -- dominant figure and
+              title share one baseline, date/time/instructor move to their
+              own row below a hairline divider rather than crowding the
+              same line. */}
+          <div className="mt-3.5 flex flex-wrap items-baseline gap-2.5">
             <span className="text-display-lg">{dday(nextSession.date)}</span>
-            <span className="text-body-strong text-on-brand">
+            <span className="text-heading-md text-on-brand/95">{nextSession.title}</span>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-on-brand/15 pt-3.5 text-label text-on-brand/80">
+            <span>
               {periodLabel(nextSession.date, 'day')} {nextSession.startTime}
             </span>
-            <span className="text-caption text-on-brand/70">{nextSession.instructorName}</span>
+            <span aria-hidden="true" className="h-2.5 w-px bg-on-brand/25" />
+            <span>{nextSession.instructorName}</span>
           </div>
         </Card>
       ) : (

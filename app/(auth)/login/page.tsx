@@ -39,7 +39,7 @@ function LoginForm() {
   return (
     <div className="flex min-h-full items-center justify-center bg-canvas px-6 py-12">
       <div className="w-full max-w-sm">
-        <h1 className="mb-2 text-center text-display-lg text-ink">로그인</h1>
+        <h1 className="mb-2 text-center font-serif text-headline-lg text-ink">로그인</h1>
         <p className="mb-8 text-center text-caption text-muted">
           초대받은 이메일과 원장 계정으로만 로그인할 수 있습니다.
         </p>
