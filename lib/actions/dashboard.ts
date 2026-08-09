@@ -44,28 +44,66 @@ export async function listSessionsWithRoster() {
   }))
 }
 
-// Both counts rely entirely on RLS to scope to the caller's own studio, same pattern
-// as listInstructors()/listProfilesByRole() elsewhere: "class_sessions: view same
-// studio" for todaySessionCount, "bookings: owner views studio bookings" for
-// waitlistedCount (studio-scoped via the session's studio_id, not member identity) --
-// so no explicit `.eq('studio_id', ...)` filter is needed or added.
-export async function getDashboardSummary() {
+export interface OwnerDashboardSession {
+  id: string
+  date: string
+  /** 'HH:MM' */
+  startTime: string | null
+  title: string | null
+  instructorName: string | null
+  capacity: number
+  bookedCount: number
+  waitlistedCount: number
+}
+
+// getDashboardSummary의 후속. 숫자 두 개만 돌려주던 시절엔 대시보드가
+// "오늘 수업 3건"이라고 말할 뿐 그 세 건이 무엇인지 보여줄 수 없었다 --
+// 목록까지 돌려줘 대시보드가 예약 현황으로 가는 관리 진입점이 되게 한다.
+// RLS 스코프는 listSessionsWithRoster와 동일("class_sessions: view same
+// studio" + "bookings: owner views studio bookings")이라 명시적
+// studio_id 필터는 여기서도 불필요하다. bookings 임베드는 status만 뽑아
+// 명단(회원 이름)은 끌고 오지 않는다 -- 대시보드는 세지, 읽지 않는다.
+export async function getOwnerDashboard() {
   const supabase = await createClient()
   const today = kstToday()
 
-  const { count: todaySessionCount } = await supabase
+  const { data } = await supabase
     .from('class_sessions')
-    .select('*', { count: 'exact', head: true })
-    .eq('date', today)
+    .select(
+      'id, date, capacity, template:class_templates(title, start_time), instructor:profiles!class_sessions_instructor_id_fkey(full_name), bookings(status)'
+    )
+    .gte('date', today)
+    .order('date')
 
-  const { count: waitlistedCount } = await supabase
-    .from('bookings')
-    .select('*', { count: 'exact', head: true })
-    .eq('status', 'waitlisted')
+  const upcoming: OwnerDashboardSession[] = (data ?? [])
+    .map((s) => ({
+      id: s.id,
+      date: s.date,
+      startTime: s.template?.start_time?.slice(0, 5) ?? null,
+      title: s.template?.title ?? null,
+      instructorName: s.instructor?.full_name ?? null,
+      capacity: s.capacity,
+      bookedCount: s.bookings.filter((b) => b.status === 'booked').length,
+      waitlistedCount: s.bookings.filter((b) => b.status === 'waitlisted').length,
+    }))
+    // 쿼리는 date만 정렬하므로 같은 날 세션은 시간순 타이브레이크가 필요
+    // 하다 -- getMemberDashboard의 "다음 수업" 정렬과 같은 이유.
+    .sort((a, b) =>
+      a.date === b.date ? (a.startTime ?? '').localeCompare(b.startTime ?? '') : a.date.localeCompare(b.date)
+    )
+
+  const todaySessions = upcoming.filter((s) => s.date === today)
+  const waitlistedSessions = upcoming.filter((s) => s.waitlistedCount > 0)
 
   return {
-    todaySessionCount: todaySessionCount ?? 0,
-    waitlistedCount: waitlistedCount ?? 0,
+    todaySessions,
+    /** 다가오는(오늘 포함) 세션 중 대기자가 있는 것만. */
+    waitlistedSessions,
+    todaySessionCount: todaySessions.length,
+    // 다가오는 세션의 대기 합계. 이전 버전은 bookings 테이블 전체를 세서
+    // 이미 지나간 세션의 대기 잔재까지 포함했다 -- 원장이 조치할 수 있는
+    // 숫자만 세는 쪽으로 좁힌다.
+    waitlistedCount: waitlistedSessions.reduce((n, s) => n + s.waitlistedCount, 0),
   }
 }
 

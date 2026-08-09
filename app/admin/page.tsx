@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { LayoutDashboard } from 'lucide-react'
-import { getDashboardSummary } from '@/lib/actions/dashboard'
+import { ChevronRight, LayoutDashboard } from 'lucide-react'
+import { getOwnerDashboard, type OwnerDashboardSession } from '@/lib/actions/dashboard'
 import { Card } from '@/components/ui/Card'
+import { StatusBadge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
+import { kstToday } from '@/lib/date'
+import { periodLabel } from '@/lib/period'
 import { ScheduleIcon, InstructorIcon, MembersIcon, InviteIcon } from './admin-nav'
 
 // DESIGN.md `quick-action-card`: 원장 대시보드의 바로가기(강사관리·회원관리·
@@ -23,21 +26,19 @@ const QUICK_ACTIONS = [
 ] as const
 
 export default function AdminDashboardPage() {
-  // 초기값을 {todaySessionCount:0, waitlistedCount:0}이 아니라 null로 둔다 --
-  // 이전 버전은 로딩 중에도 항상 "오늘 수업 0건"을 렌더했다가 실제 값으로
-  // 바뀌는 깜빡임이 있었다. null인 동안 Skeleton을 보여주는 쪽이 Adjustment
-  // #3가 요구하는 로딩 패턴에 맞고, 실제로 그 깜빡임 버그도 없앤다.
-  const [summary, setSummary] = useState<Awaited<ReturnType<typeof getDashboardSummary>> | null>(null)
+  // 초기값을 0들로 채운 객체가 아니라 null로 둔다 -- 이전 버전은 로딩
+  // 중에도 항상 "오늘 수업 0건"을 렌더했다가 실제 값으로 바뀌는 깜빡임이
+  // 있었다. null인 동안 Skeleton을 보여주는 쪽이 Adjustment #3가 요구하는
+  // 로딩 패턴에 맞고, 실제로 그 깜빡임 버그도 없앤다.
+  const [dashboard, setDashboard] = useState<Awaited<ReturnType<typeof getOwnerDashboard>> | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
-    getDashboardSummary()
-      .then(setSummary)
+    getOwnerDashboard()
+      .then(setDashboard)
       .catch(() => {
-        // Adjustment #3의 토스트 패턴을 쓰는 첫 실제 사례: 이 fetch는
-        // 원래 실패를 전혀 다루지 않았다(에러 발생 시 그냥 조용히 아무 일도
-        // 일어나지 않은 것처럼 보였다) -- member/bookings 페이지의
-        // cancel_booking 에러 처리와 같은 이유로, 조용한 실패는 버그다.
+        // Adjustment #3의 토스트 패턴: 조용한 실패는 버그다 (member/bookings
+        // 페이지의 cancel_booking 에러 처리와 같은 이유).
         toast({
           title: '대시보드를 불러오지 못했습니다',
           description: '잠시 후 새로고침해 주세요.',
@@ -55,37 +56,62 @@ export default function AdminDashboardPage() {
         <h1 className="text-heading-lg text-ink">원장 대시보드</h1>
       </div>
 
-      {/* DESIGN.md `dashboard-summary-card` -- ink 배경 + on-ink 텍스트 +
-          heading-lg급 숫자(card-ink 컴포넌트의 명시 타이포그래피). 이전에는
-          페이지마다 `rounded-none bg-black`을 직접 반복했는데, 이제
-          Card(variant="brand")로 대체해 다른 화면도 같은 요약카드를 재사용할
-          수 있다. rounded-card가 적용되어 완전 각진 처리 대신 14px 라운드를
-          쓴다. */}
-      <div className="flex flex-col gap-4" aria-live="polite">
-        {summary === null ? (
-          <>
-            <Skeleton variant="block" className="h-24 flex-1" />
-            <Skeleton variant="block" className="h-24 flex-1" />
-          </>
-        ) : (
-          <>
-            {/* Only the first stat gets the brand fill. Two filled blocks
-                side by side spend the screen's whole voltage budget on a
-                pair of numbers and leave neither looking primary --
-                DESIGN.md's "전압은 희소해야 신호가 된다". Today's class
-                count is what an owner opens this page for; the waitlist
-                count is context. */}
-            <Card variant="brand" className="flex-1">
+      {dashboard === null ? (
+        <div className="flex flex-col gap-4" aria-live="polite">
+          <Skeleton variant="block" className="h-24" />
+          <Skeleton variant="block" className="h-24" />
+          <Skeleton variant="block" className="h-40" />
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4" aria-live="polite">
+          {/* DESIGN.md `dashboard-summary-card`. 첫 번째 카드만 brand fill --
+              두 개가 나란히 채워지면 화면의 전압 예산을 숫자 한 쌍에 다 쓰고
+              어느 쪽도 primary로 읽히지 않는다 ("전압은 희소해야 신호가
+              된다"). 두 카드 모두 아래 상세 섹션으로 스크롤 없이 이동할 수
+              있게 예약 현황 페이지로 링크한다 -- 숫자만 있고 눌러도 아무
+              일도 없던 것이 이 대시보드의 원래 불만이었다. */}
+          <Link href="/admin/bookings" aria-label="오늘 수업 자세히 보기 — 예약 현황">
+            <Card variant="brand" className="transition-opacity hover:opacity-90">
               <p className="text-caption text-on-brand/70">오늘 수업</p>
-              <p className="text-heading-lg">{summary.todaySessionCount}건</p>
+              <p className="text-heading-lg">{dashboard.todaySessionCount}건</p>
             </Card>
-            <Card className="flex-1">
+          </Link>
+          <Link href="/admin/bookings" aria-label="대기중인 예약 자세히 보기 — 예약 현황">
+            <Card className="transition-colors hover:bg-surface-soft">
               <p className="text-caption text-muted">대기중인 예약</p>
-              <p className="text-heading-lg text-ink">{summary.waitlistedCount}건</p>
+              <p className="text-heading-lg text-ink">{dashboard.waitlistedCount}건</p>
             </Card>
-          </>
-        )}
-      </div>
+          </Link>
+
+          <SectionHeader title="오늘 수업" />
+          {dashboard.todaySessions.length === 0 ? (
+            <Card>
+              <p className="text-body-strong text-ink">오늘은 예정된 수업이 없습니다</p>
+              <p className="mt-1 text-body-md text-muted">시간표관리에서 반복 시간표를 등록해보세요.</p>
+            </Card>
+          ) : (
+            <ul className="flex flex-col gap-2">
+              {dashboard.todaySessions.map((s) => (
+                <SessionRow key={s.id} session={s} />
+              ))}
+            </ul>
+          )}
+
+          {/* 대기자가 없으면 섹션 자체를 접는다 -- 위 요약 카드가 이미
+              "대기중인 예약 0건"이라고 말하고 있어서, 빈 목록 섹션은 같은
+              말을 두 번 하는 노이즈다. */}
+          {dashboard.waitlistedSessions.length > 0 && (
+            <>
+              <SectionHeader title="대기중인 예약" />
+              <ul className="flex flex-col gap-2">
+                {dashboard.waitlistedSessions.map((s) => (
+                  <SessionRow key={s.id} session={s} showDate />
+                ))}
+              </ul>
+            </>
+          )}
+        </div>
+      )}
 
       <div className="mt-8 grid grid-cols-2 gap-3">
         {QUICK_ACTIONS.map((action) => {
@@ -103,5 +129,51 @@ export default function AdminDashboardPage() {
         })}
       </div>
     </div>
+  )
+}
+
+// 섹션 제목 + "예약 현황" 진입 링크. 상세(명단·회원 추가·기간 필터)는 전부
+// /admin/bookings의 일이고 대시보드는 그 요약이라, 모든 섹션의 목적지가
+// 같다.
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <div className="mt-4 flex items-baseline justify-between">
+      <h2 className="text-heading-md text-ink">{title}</h2>
+      <Link href="/admin/bookings" className="flex items-center gap-0.5 text-caption text-brand-deep">
+        예약 현황
+        <ChevronRight aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={2} />
+      </Link>
+    </div>
+  )
+}
+
+// 한 세션 = 한 행 카드. 예약 현황 페이지의 세션 카드에서 명단을 뺀 요약
+// 형태 -- 시간이 행의 앵커(원장이 오늘 목록을 훑는 축), 정원 뱃지의
+// tone 규칙(가득 danger / 여유 success)은 그 페이지와 동일해서 두 화면이
+// 같은 언어로 읽힌다.
+function SessionRow({ session: s, showDate = false }: { session: OwnerDashboardSession; showDate?: boolean }) {
+  const isFull = s.bookedCount >= s.capacity
+  return (
+    <li>
+      <Link
+        href="/admin/bookings"
+        className="flex items-center gap-3 rounded-card border border-hairline bg-surface px-3.5 py-3 shadow-elev-1 transition-colors hover:bg-surface-soft"
+      >
+        <span className="shrink-0 text-body-strong text-brand-deep">{s.startTime ?? '--:--'}</span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-body-strong text-ink">{s.title ?? '수업'}</span>
+          <span className="mt-0.5 block truncate text-caption text-muted">
+            {showDate && s.date !== kstToday() ? `${periodLabel(s.date, 'day')} · ` : ''}
+            {s.instructorName ?? '강사 미배정'}
+          </span>
+        </span>
+        <span className="flex shrink-0 items-center gap-1.5">
+          <StatusBadge tone={isFull ? 'danger' : 'success'}>
+            {s.bookedCount}/{s.capacity}
+          </StatusBadge>
+          {s.waitlistedCount > 0 && <StatusBadge tone="waitlisted">대기 {s.waitlistedCount}</StatusBadge>}
+        </span>
+      </Link>
+    </li>
   )
 }
