@@ -213,10 +213,6 @@ export default function MemberRegisterPage() {
 
       {step === 1 && (
         <div className="flex flex-col gap-4">
-          {/* 3단계(확인·서명)는 처음부터 Card 위에 있었는데 1·2단계만 필드가
-              캔버스에 바로 얹혀 있었다 -- 단계마다 표면이 달라 보이던 것을
-              같은 흰 카드로 통일. */}
-          <Card className="flex flex-col gap-4">
           <Field label="이름">
             <TextInput value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="회원 이름" />
           </Field>
@@ -249,8 +245,10 @@ export default function MemberRegisterPage() {
                   aria-pressed={plan === p.id}
                   onClick={() => setPlan(p.id)}
                   className={cx(
+                    // bg-surface(흰색), not bg-canvas: 캔버스색 박스는 배경에
+                    // 묻혀 회색으로 보였다 -- 선택형 박스들은 전부 흰 면으로.
                     'flex flex-col items-start gap-0.5 rounded-input border px-3 py-2.5 text-left',
-                    plan === p.id ? 'border-brand-deep bg-brand-tint' : 'border-hairline bg-canvas'
+                    plan === p.id ? 'border-brand-deep bg-brand-tint' : 'border-hairline bg-surface'
                   )}
                 >
                   <span className={cx('text-body-strong', plan === p.id ? 'text-brand-deep' : 'text-ink')}>
@@ -272,7 +270,7 @@ export default function MemberRegisterPage() {
                   onClick={() => setTermMonths(t.months)}
                   className={cx(
                     'flex-1 py-2.5 text-caption',
-                    termMonths === t.months ? 'bg-brand-tint text-brand-deep' : 'bg-canvas text-body'
+                    termMonths === t.months ? 'bg-brand-tint text-brand-deep' : 'bg-surface text-body'
                   )}
                 >
                   {t.label}
@@ -294,7 +292,7 @@ export default function MemberRegisterPage() {
                       onClick={() => toggleClass(title)}
                       className={cx(
                         'rounded-full border px-3.5 py-1.5 text-caption',
-                        picked ? 'border-brand-deep bg-brand-tint text-brand-deep' : 'border-hairline bg-canvas text-body'
+                        picked ? 'border-brand-deep bg-brand-tint text-brand-deep' : 'border-hairline bg-surface text-body'
                       )}
                     >
                       {title}
@@ -304,7 +302,6 @@ export default function MemberRegisterPage() {
               </div>
             </Field>
           )}
-          </Card>
 
           <Card variant="soft">
             <div className="flex items-baseline justify-between gap-3">
@@ -335,15 +332,12 @@ export default function MemberRegisterPage() {
             아래 내용을 회원에게 보여주고 동의를 받습니다. 각 항목을 눌러 전문을 확인할 수 있습니다.
           </p>
 
-          {/* Step 1과 같은 이유의 Card 래핑 -- 약관 항목 박스들은 카드 위에서
-              bg-canvas(그레이지)로 한 단계 가라앉아 계층이 생긴다. */}
-          <Card className="flex flex-col gap-3">
           <button
             type="button"
             onClick={toggleAll}
             className={cx(
               'flex items-center gap-2.5 rounded-input border px-3.5 py-3',
-              allAgreed ? 'border-brand-deep bg-brand-tint' : 'border-hairline bg-canvas'
+              allAgreed ? 'border-brand-deep bg-brand-tint' : 'border-hairline bg-surface'
             )}
           >
             <AgreementDot checked={allAgreed} />
@@ -354,7 +348,7 @@ export default function MemberRegisterPage() {
             const checked = agreements[a.id]
             const open = openAgreement === a.id
             return (
-              <div key={a.id} className="overflow-hidden rounded-card border border-hairline bg-canvas">
+              <div key={a.id} className="overflow-hidden rounded-card border border-hairline bg-surface">
                 <div className="flex items-center gap-2.5 p-3.5">
                   <button
                     type="button"
@@ -393,7 +387,6 @@ export default function MemberRegisterPage() {
               </div>
             )
           })}
-          </Card>
 
           {stepError && (
             <p role="alert" className="text-body-md text-danger">
@@ -503,7 +496,7 @@ function AgreementDot({ checked }: { checked: boolean }) {
     <span
       className={cx(
         'flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border',
-        checked ? 'border-brand-deep bg-brand-deep' : 'border-hairline bg-canvas'
+        checked ? 'border-brand-deep bg-brand-deep' : 'border-hairline bg-surface'
       )}
     >
       {checked && <Check aria-hidden="true" className="h-3 w-3 text-on-brand" strokeWidth={3} />}
