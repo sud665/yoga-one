@@ -83,7 +83,18 @@ export function PeriodFilter({
       )}
 
       {isCalendar && (
-        <SessionCalendar selected={anchor} onSelect={onAnchorChange} datesWithSessions={datesWithItems} />
+        <SessionCalendar
+          selected={anchor}
+          // 날짜를 실제로 고르는 행위가 곧 day 단위로 좁히는 행위다 --
+          // 캘린더 뷰에 들어가는 것 자체는 더 이상 필터가 아니라서(아래
+          // usePeriodFilter 주석 참고), 앵커만 옮기고 세분성은 안 바꾸면
+          // 목록이 전혀 좁혀지지 않는다.
+          onSelect={(date) => {
+            onAnchorChange(date)
+            onGranularityChange('day')
+          }}
+          datesWithSessions={datesWithItems}
+        />
       )}
 
       <div

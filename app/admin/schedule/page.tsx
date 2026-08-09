@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card'
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { useToast } from '@/components/ui/Toast'
 
 const ICON_BUTTON = 'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-colors disabled:pointer-events-none disabled:opacity-50'
 
@@ -36,11 +37,11 @@ export default function SchedulePage() {
   // and keeps this to three primitives instead of a per-row state map.
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
-  const [deleteError, setDeleteError] = useState<string | null>(null)
   // 삭제 확인 다이얼로그가 겨누고 있는 행. deleteClassTemplate은 앞으로의
   // 수업(class_sessions)을 cascade로 함께 지우는 되돌릴 수 없는 액션인데
   // 원탭 즉시 실행이었다 -- 실행 전 확인을 한 번 세운다.
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const { toast } = useToast()
 
   const refresh = useCallback(() => {
     listTemplatesWithUpcomingSessions().then(({ templates }) => setTemplates(templates))
@@ -51,12 +52,15 @@ export default function SchedulePage() {
   }, [refresh])
 
   async function handleDelete(templateId: string) {
-    setDeleteError(null)
     setDeletingId(templateId)
     const result = await deleteClassTemplate(templateId)
     setDeletingId(null)
     if ('error' in result) {
-      setDeleteError(result.error)
+      // 인라인 박스가 아니라 토스트다 -- 실패해도(대개 "예약된 회원이
+      // 있어 삭제할 수 없습니다") 화면 레이아웃을 계속 차지하며 등록된
+      // 시간표 목록을 밀어내면 안 된다. 성공 흐름(연장·일시정지 등)이
+      // 이미 이 앱 전역에서 쓰는 토스트 패턴과 통일.
+      toast({ title: '시간표를 삭제하지 못했습니다', description: result.error, tone: 'error' })
       return
     }
     refresh()
@@ -76,11 +80,6 @@ export default function SchedulePage() {
       <TemplateForm onSaved={refresh} />
 
       <h2 className="mt-12 mb-4 text-heading-md text-ink">등록된 시간표</h2>
-      {deleteError && (
-        <p role="alert" className="mb-4 rounded-card bg-danger-tint px-4 py-3 text-body-strong text-danger">
-          {deleteError}
-        </p>
-      )}
       {templates === null ? (
         <Skeleton variant="block" className="h-24" />
       ) : templates.length === 0 ? (

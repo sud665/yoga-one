@@ -17,23 +17,27 @@ import { isWithin, periodRange, type Granularity } from './period'
  */
 export type PeriodView = 'list' | 'calendar'
 
-export function usePeriodFilter(initial: Granularity = 'all') {
-  const [view, setViewState] = useState<PeriodView>('list')
+export function usePeriodFilter(initial: Granularity = 'all', initialView: PeriodView = 'list') {
+  const [view, setViewState] = useState<PeriodView>(initialView)
   const [granularity, setGranularity] = useState<Granularity>(initial)
   const [anchor, setAnchor] = useState<string>(() => kstToday())
 
-  // The calendar is not a separate filter, it is a visual way to set the
-  // anchor at day granularity -- so switching to it forces 'day' and the same
-  // filter() below keeps working untouched. Switching back restores whatever
-  // the list was showing, so a detour through the calendar doesn't silently
-  // leave the list narrowed to one day.
+  // Entering calendar view is not itself a filter -- it only shows the grid.
+  // Narrowing to a single day happens when a date is actually picked
+  // (PeriodFilter wires SessionCalendar's onSelect to call both setAnchor
+  // and setGranularity('day') together), not just from switching views.
+  // This used to force 'day' the moment the view changed, which meant a
+  // screen defaulting to calendar view opened already narrowed to today --
+  // silently hiding every row that wasn't today's, the exact "where did my
+  // bookings go" regression the '전체'-is-default rule above exists to
+  // prevent. Switching back to list still restores whatever granularity was
+  // active before the calendar detour, same as before.
   const [listGranularity, setListGranularity] = useState<Granularity>(initial)
   const setView = useCallback(
     (next: PeriodView) => {
       setViewState(next)
       if (next === 'calendar') {
         setListGranularity(granularity)
-        setGranularity('day')
       } else {
         setGranularity(listGranularity)
       }

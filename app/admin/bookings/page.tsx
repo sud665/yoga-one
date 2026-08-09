@@ -18,7 +18,12 @@ export default function BookingsDashboardPage() {
   // (`Awaited<ReturnType<typeof ...>>`)로, 새 타입을 export하지 않고도 any를 피한다.
   const [sessions, setSessions] = useState<Awaited<ReturnType<typeof listSessionsWithRoster>> | null>(null)
   const [addSessionId, setAddSessionId] = useState<string | null>(null)
-  const period = usePeriodFilter()
+  // 목록보다 캘린더가 먼저 보이는 쪽이 자연스럽다(토글로 전환 가능한 건
+  // 그대로) -- 다만 캘린더가 뜬다고 목록까지 자동으로 오늘 하루로
+  // 좁아지진 않는다. granularity는 여전히 '전체'로 시작해서(두 번째
+  // 인자가 view만 바꾼다) 방금 등록한 예약이 오늘이 아니라는 이유로
+  // 화면에서 사라지는 일이 없다 -- 날짜를 실제로 클릭해야 그 날로 좁혀진다.
+  const period = usePeriodFilter('all', 'calendar')
 
   const refresh = useCallback(() => {
     listSessionsWithRoster().then(setSessions)
