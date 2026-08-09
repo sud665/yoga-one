@@ -42,6 +42,56 @@ export async function getMyProfile(): Promise<MyProfile | null> {
   }
 }
 
+// 프로필 화면의 "요가원 정보" 카드 (owner 전용). RLS("studios: owner
+// updates own studio", 20260809000000)가 자기 스튜디오+owner 역할로
+// 범위를 이미 좁히므로 여기서는 입력 검증만 한다 -- 다른 사람이 부르면
+// update가 0행을 매칭해 조용히 실패하는 대신, 아래에서 count로 확인해
+// 명시적인 에러를 돌려준다.
+export async function getMyStudioName(): Promise<string | null> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return null
+  const { data } = await supabase
+    .from('profiles')
+    .select('studio:studios(name)')
+    .eq('id', user.id)
+    .maybeSingle()
+  return data?.studio?.name ?? null
+}
+
+export async function updateStudioName(formData: FormData): Promise<{ error: string } | { success: true }> {
+  const name = String(formData.get('studioName') ?? '').trim()
+  if (!name) {
+    return { error: '요가원 이름을 입력해주세요.' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return { error: '로그인이 필요합니다.' }
+
+  const { data: profile } = await supabase.from('profiles').select('studio_id').eq('id', user.id).maybeSingle()
+  if (!profile) return { error: '프로필을 찾을 수 없습니다.' }
+
+  // `.select()`로 갱신된 행을 돌려받아야 "RLS가 0행 매칭으로 조용히
+  // 무시"한 경우(비owner가 어떻게든 호출)를 성공으로 오인하지 않는다.
+  const { data: updated, error } = await supabase
+    .from('studios')
+    .update({ name })
+    .eq('id', profile.studio_id)
+    .select('id')
+  if (error) return { error: error.message }
+  if (!updated || updated.length === 0) return { error: '요가원 정보를 수정할 권한이 없습니다.' }
+
+  // 스튜디오명은 모든 화면 상단의 RoleBanner에 떠 있으므로 셸 전체를
+  // 다시 그린다 -- updateMyProfile과 같은 이유의 layout-scope revalidate.
+  revalidatePath('/', 'layout')
+  return { success: true }
+}
+
 export async function updateMyProfile(formData: FormData): Promise<{ error: string } | { success: true }> {
   const fullName = String(formData.get('fullName') ?? '').trim()
   const phone = String(formData.get('phone') ?? '').trim()

@@ -3,10 +3,11 @@ import { redirect } from 'next/navigation'
 import { CircleUser } from 'lucide-react'
 
 import { SignOutButton } from '@/components/ui/SignOutButton'
-import { getMyProfile } from '@/lib/actions/profile'
+import { getMyProfile, getMyStudioName } from '@/lib/actions/profile'
 
 import { ProfileForm } from './ProfileForm'
 import { MyMembershipCard } from './MyMembershipCard'
+import { StudioForm } from './StudioForm'
 
 // One screen, three routes (/member/profile, /instructor/profile,
 // /admin/profile). The content is identical for every role -- a name, a phone
@@ -30,6 +31,9 @@ export async function ProfileScreen() {
       </div>
 
       <ProfileForm profile={profile} />
+
+      {/* 원장만: 요가원 이름 수정 (가입 때 정한 뒤 고칠 곳이 없었다). */}
+      {profile.role === 'owner' && <StudioForm initialName={(await getMyStudioName()) ?? ''} />}
 
       {/* 회원만: 원장/강사에게는 회원권 개념 자체가 없다. 미등록(초대 링크로만
           가입해 회원 등록 마법사를 거치지 않은) 회원에게는 카드 자체를 숨긴다

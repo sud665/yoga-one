@@ -1,5 +1,5 @@
 begin;
-select plan(11);
+select plan(14);
 
 create temporary table test_fixtures (key text primary key, value uuid);
 
@@ -166,6 +166,37 @@ select throws_ok(
   format('update public.profiles set role = %L where id = %L', 'owner', (select value from test_fixtures where key = 'member_b')),
   'not_permitted_role_change',
   'profiles_prevent_privilege_escalation still rejects a non-owner role change when the UPDATE reaches the table (service_role/postgres context, past the grant-level block)'
+);
+
+-- 12) 원장은 자기 스튜디오 이름을 고칠 수 있다
+-- (20260809000000_studio_update_policy.sql -- 프로필 화면의 요가원 정보
+-- 카드가 쓰는 update 정책).
+select tests.authenticate_as((select value from test_fixtures where key = 'owner_a'));
+update public.studios set name = 'Studio A 새이름' where id = (select value from test_fixtures where key = 'studio_a');
+select is(
+  (select name from public.studios where id = (select value from test_fixtures where key = 'studio_a')),
+  'Studio A 새이름',
+  'an owner can rename their own studio'
+);
+
+-- 13) 다른 스튜디오는 owner라도 못 고친다 -- USING이 0행을 매칭해 조용히
+-- no-op (에러가 아니라 무시). bypass로 원래 이름 그대로인지 확인.
+update public.studios set name = '탈취 시도' where id = (select value from test_fixtures where key = 'studio_b');
+select tests.bypass_rls();
+select is(
+  (select name from public.studios where id = (select value from test_fixtures where key = 'studio_b')),
+  'Studio B',
+  'an owner cannot rename another studio (RLS matches zero rows)'
+);
+
+-- 14) 비owner(회원)는 자기 스튜디오 이름도 못 고친다
+select tests.authenticate_as((select value from test_fixtures where key = 'member_b'));
+update public.studios set name = '회원이 바꾼 이름' where id = (select value from test_fixtures where key = 'studio_b');
+select tests.bypass_rls();
+select is(
+  (select name from public.studios where id = (select value from test_fixtures where key = 'studio_b')),
+  'Studio B',
+  'a member cannot rename their studio (owner-only policy)'
 );
 
 select tests.clear_authentication();
