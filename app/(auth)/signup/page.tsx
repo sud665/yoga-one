@@ -34,7 +34,7 @@ export default function SignupPage() {
         {pendingConfirmation ? (
           // 이메일 확인이 필요한 상태 (hosted 프로젝트에서 enable_confirmations=true인
           // 경우) -- lib/actions/invites.ts의 InviteAcceptForm과 동일한 처리.
-          <p role="status" className="rounded-card bg-surface-soft px-4 py-3 text-body-strong text-ink">
+          <p role="status" className="rounded-card border border-hairline bg-surface px-4 py-3 text-body-strong text-ink shadow-elev-1">
             이메일을 확인해주세요. 받으신 메일의 링크를 클릭하면 가입이 완료됩니다.
           </p>
         ) : (

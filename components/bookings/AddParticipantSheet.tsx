@@ -104,7 +104,7 @@ export function AddParticipantSheet({
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
-          <div className="flex items-center gap-2 rounded-input border border-hairline bg-canvas px-3.5">
+          <div className="flex items-center gap-2 rounded-input border border-hairline bg-surface px-3.5">
             <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-muted" strokeWidth={1.75} />
             <input
               value={query}
@@ -167,7 +167,7 @@ export function AddParticipantSheet({
             )}
           </div>
 
-          <div className="rounded-card bg-surface-soft p-3.5">
+          <div className="rounded-card border border-hairline bg-surface p-3.5">
             <p className="text-body-strong text-ink">원데이 참가자</p>
             <p className="mt-1 mb-3 text-caption text-muted">등록 회원이 아닌 참가자를 이름으로 바로 추가합니다.</p>
             <div className="flex flex-col gap-2.5">

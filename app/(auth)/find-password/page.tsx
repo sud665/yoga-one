@@ -57,7 +57,7 @@ function FindPasswordForm() {
         )}
 
         {sentTo ? (
-          <div className="rounded-card border border-hairline bg-surface-soft p-4">
+          <div className="rounded-card border border-hairline bg-surface p-4 shadow-elev-1">
             <p className="text-heading-md text-ink">메일을 확인해주세요</p>
             <p className="mt-1.5 text-body-md text-body">
               {sentTo}(으)로 재설정 링크를 보냈습니다. 메일이 오지 않으면 스팸함을 확인해주세요.

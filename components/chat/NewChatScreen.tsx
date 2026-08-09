@@ -71,7 +71,7 @@ export function NewChatScreen({ role }: { role: ProfileRole }) {
         <p className="text-body-md text-muted">대화를 시작할 수 있는 사람이 없습니다.</p>
       ) : (
         <>
-          <div className="mb-2 flex items-center gap-2 rounded-input border border-hairline bg-canvas px-3.5">
+          <div className="mb-2 flex items-center gap-2 rounded-input border border-hairline bg-surface px-3.5">
             <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-muted" strokeWidth={1.75} />
             <input
               value={query}

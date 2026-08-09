@@ -68,7 +68,7 @@ export function WithdrawScreen({ role }: { role: 'member' | 'instructor' }) {
   if (done) {
     return (
       <div className="w-full px-6 py-12">
-        <Card variant="soft" className="text-center">
+        <Card className="text-center">
           <p className="text-heading-md text-ink">탈퇴가 완료되었습니다</p>
           <p className="mt-2 mb-5 text-body-md text-body">
             그동안 이용해주셔서 감사합니다.
@@ -127,7 +127,7 @@ export function WithdrawScreen({ role }: { role: 'member' | 'instructor' }) {
           </Select>
         </div>
 
-        <label className="flex cursor-pointer items-center gap-2.5 rounded-input border border-hairline bg-canvas p-3.5">
+        <label className="flex cursor-pointer items-center gap-2.5 rounded-input border border-hairline bg-surface p-3.5">
           <input
             type="checkbox"
             checked={agreed}

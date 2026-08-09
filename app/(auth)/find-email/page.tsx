@@ -49,7 +49,7 @@ function FindEmailForm() {
         </form>
 
         {foundEmail && (
-          <div className="mt-5 rounded-card border border-hairline bg-surface-soft p-4">
+          <div className="mt-5 rounded-card border border-hairline bg-surface p-4 shadow-elev-1">
             <p className="text-caption text-muted">등록된 이메일</p>
             <p className="mt-1.5 mb-4 text-heading-md text-ink">{foundEmail}</p>
             <Button href="/login" variant="secondary" className="w-full">

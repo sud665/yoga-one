@@ -82,7 +82,7 @@ export default function InvitesPage() {
       )}
 
       {generatedUrl && (
-        <p className="mt-6 break-all rounded-card bg-surface-soft px-4 py-3 text-body-md text-ink">
+        <p className="mt-6 break-all rounded-card border border-hairline bg-surface px-4 py-3 text-body-md text-ink shadow-elev-1">
           발급된 링크:{' '}
           <a href={generatedUrl} className="text-body-strong text-brand-deep underline">
             {generatedUrl}

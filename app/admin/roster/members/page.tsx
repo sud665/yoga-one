@@ -123,7 +123,7 @@ export default function MemberRosterPage() {
       </div>
 
       {members !== null && members.length > 0 && (
-        <div className="mb-4 flex divide-x divide-hairline rounded-card border border-hairline">
+        <div className="mb-4 flex divide-x divide-hairline rounded-card border border-hairline bg-surface shadow-elev-1">
           <StatCell label="유효" value={stats.active} />
           <StatCell label="만료 임박" value={stats.soon} tone="text-warning" />
           <StatCell label="만료" value={stats.expired} tone="text-danger" />
@@ -142,7 +142,7 @@ export default function MemberRosterPage() {
         회원 초대 링크 발급
       </Button>
       {generatedUrl && (
-        <p className="mt-3 break-all rounded-card bg-surface-soft px-4 py-3 text-body-md text-ink">
+        <p className="mt-3 break-all rounded-card border border-hairline bg-surface px-4 py-3 text-body-md text-ink shadow-elev-1">
           발급된 링크:{' '}
           <a href={generatedUrl} className="text-body-strong text-brand-deep underline">
             {generatedUrl}
@@ -150,7 +150,7 @@ export default function MemberRosterPage() {
         </p>
       )}
 
-      <div className="mt-5 flex items-center gap-2 rounded-input border border-hairline bg-canvas px-3.5">
+      <div className="mt-5 flex items-center gap-2 rounded-input border border-hairline bg-surface px-3.5">
         <Search aria-hidden="true" className="h-4 w-4 shrink-0 text-muted" strokeWidth={1.75} />
         <input
           value={query}
@@ -184,7 +184,7 @@ export default function MemberRosterPage() {
             }}
             className={cx(
               'shrink-0 whitespace-nowrap rounded-full border px-3 py-1.5 text-caption',
-              statusFilter === f.value ? 'border-brand-deep bg-brand-tint text-brand-deep' : 'border-hairline bg-canvas text-body'
+              statusFilter === f.value ? 'border-brand-deep bg-brand-tint text-brand-deep' : 'border-hairline bg-surface text-body'
             )}
           >
             {f.label}

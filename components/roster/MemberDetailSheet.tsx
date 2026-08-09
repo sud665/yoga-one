@@ -119,12 +119,12 @@ export function MemberDetailSheet({ memberId, onClose, onChanged }: MemberDetail
 
             <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto">
               {detail.status === 'unregistered' ? (
-                <div className="rounded-card border border-hairline bg-surface-soft p-3.5 text-body-md text-muted">
+                <div className="rounded-card border border-hairline bg-surface p-3.5 text-body-md text-muted">
                   등록된 회원권 정보가 없습니다. 초대 링크로 가입한 회원이라 회원 등록 마법사를 거치지 않았습니다.
                 </div>
               ) : (
                 <>
-                  <div className="rounded-card border border-hairline p-3.5">
+                  <div className="rounded-card border border-hairline bg-surface p-3.5">
                     <p className="mb-2 text-body-strong text-ink">회원권</p>
                     <DetailRow label="이용권" value={`${detail.planLabel} · ${detail.termMonths}개월`} />
                     <DetailRow label="개시일" value={detail.startDate ?? '—'} />
@@ -136,7 +136,7 @@ export function MemberDetailSheet({ memberId, onClose, onChanged }: MemberDetail
                     <DetailRow label="수강 클래스" value={detail.classes.length ? detail.classes.join(', ') : '전체 클래스'} />
                   </div>
 
-                  <div className="rounded-card border border-hairline p-3.5">
+                  <div className="rounded-card border border-hairline bg-surface p-3.5">
                     <p className="mb-1 text-body-strong text-ink">동의 내역</p>
                     <DetailRow label="마케팅 정보 수신" value={detail.marketingConsent ? '동의' : '미동의'} />
                     <DetailRow label="SNS 사진 게시" value={detail.photoConsent ? '동의' : '미동의'} />
@@ -144,7 +144,7 @@ export function MemberDetailSheet({ memberId, onClose, onChanged }: MemberDetail
                 </>
               )}
 
-              <div className="rounded-card border border-hairline p-3.5">
+              <div className="rounded-card border border-hairline bg-surface p-3.5">
                 <p className="mb-1 text-body-strong text-ink">최근 출석</p>
                 {detail.recentAttendance.length === 0 ? (
                   <p className="pt-2 text-caption text-muted">출석 기록이 아직 없습니다</p>

@@ -35,7 +35,7 @@ export function InviteAcceptForm({ code, role }: { code: string; role: 'instruct
   // 코드를 이어받아 accept_invite를 마저 호출한다.
   if (pendingConfirmation) {
     return (
-      <p role="status" className="rounded-card bg-surface-soft px-4 py-3 text-body-strong text-ink">
+      <p role="status" className="rounded-card border border-hairline bg-surface px-4 py-3 text-body-strong text-ink shadow-elev-1">
         이메일을 확인해주세요. 받으신 메일의 링크를 클릭하면 가입이 완료됩니다.
       </p>
     )
