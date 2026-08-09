@@ -229,13 +229,15 @@ export default function MemberRosterPage() {
           {grouped.map((group) => (
             <div key={group.key} className="mt-3">
               <p className="sticky top-0 mb-0.5 bg-canvas py-1.5 text-label text-muted">{group.key}</p>
-              <ul className="flex flex-col">
+              {/* 구분선 리스트 대신 행마다 독립된 흰 카드 -- 회원 등록
+                  마법사(members/new)의 선택 박스들과 같은 표면 처리. */}
+              <ul className="flex flex-col gap-2">
                 {group.rows.map((m) => (
-                  <li key={m.id} className="border-t border-hairline-soft first:border-t-0">
+                  <li key={m.id}>
                     <button
                       type="button"
                       onClick={() => setSelectedId(m.id)}
-                      className="flex w-full items-center gap-2.5 py-3 text-left"
+                      className="flex w-full items-center gap-2.5 rounded-card border border-hairline bg-surface px-3.5 py-3 text-left shadow-elev-1 transition-colors hover:bg-surface-soft"
                     >
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-tint text-caption text-brand-deep">
                         {m.fullName.slice(0, 1)}
