@@ -71,15 +71,22 @@ export function RosterTable({ role, label }: { role: 'instructor' | 'member'; la
           description="위 버튼으로 초대 링크를 발급해보세요."
         />
       ) : (
-        <ul className="mt-10 flex flex-col">
+        // 구분선 리스트 대신 행마다 독립된 흰 카드 -- 회원 관리 목록의 행
+        // 카드와 같은 표면·구조(이니셜 아바타 + 이름/연락처 두 줄). 강사
+        // 행은 눌러서 열 상세가 없으므로 hover 처리는 없다.
+        <ul className="mt-10 flex flex-col gap-2">
           {profiles.map((p) => (
             <li
               key={p.id}
-              className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-hairline py-4 text-body-md text-ink first:border-t-0"
+              className="flex items-center gap-2.5 rounded-card border border-hairline bg-surface px-3.5 py-3 shadow-elev-1"
             >
-              <span className="text-body-strong">{p.full_name}</span>
-              <span className="text-muted">·</span>
-              <span className="text-muted">{p.phone ?? '연락처 미등록'}</span>
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-tint text-caption text-brand-deep">
+                {p.full_name.slice(0, 1)}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-body-strong text-ink">{p.full_name}</span>
+                <span className="mt-0.5 block truncate text-caption text-muted">{p.phone ?? '연락처 미등록'}</span>
+              </span>
             </li>
           ))}
         </ul>
