@@ -1,4 +1,5 @@
 import { AdminNav } from './admin-nav'
+import { RoleBanner } from '@/components/ui/RoleBanner'
 
 // App screen, not a responsive website: one column, always -- the desktop
 // sidebar variant (this file used to arrange a flex-row on md+, AdminNav
@@ -20,6 +21,8 @@ import { AdminNav } from './admin-nav'
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <div data-role="admin" className="flex h-full flex-col">
+      {/* 역할 표시줄 -- see components/ui/RoleBanner.tsx. */}
+      <RoleBanner />
       <main className="min-h-0 min-w-0 flex-1 overflow-y-auto">{children}</main>
       <AdminNav />
     </div>

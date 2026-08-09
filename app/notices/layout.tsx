@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { RoleBanner } from '@/components/ui/RoleBanner'
 import { AdminNav } from '@/app/admin/admin-nav'
 import { MemberNav } from '@/app/member/member-nav'
 import { InstructorNav } from '@/app/instructor/instructor-nav'
@@ -32,6 +33,8 @@ export default async function NoticesLayout({ children }: { children: React.Reac
 
   return (
     <div className="flex h-full flex-col">
+      {/* 역할 표시줄 -- see components/ui/RoleBanner.tsx. */}
+      <RoleBanner />
       <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
       {Nav && <Nav />}
     </div>

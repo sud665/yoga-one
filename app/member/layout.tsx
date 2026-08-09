@@ -1,8 +1,11 @@
 import { MemberNav } from './member-nav'
+import { RoleBanner } from '@/components/ui/RoleBanner'
 
 export default function MemberLayout({ children }: { children: React.ReactNode }) {
   return (
     <div data-role="member" className="flex h-full flex-col">
+      {/* 역할 표시줄 -- see components/ui/RoleBanner.tsx. */}
+      <RoleBanner />
       {/* main first, nav second: in a column flex, main's flex-1 fills
           everything above the nav's own shrink-0 height, which is what
           keeps the nav visually pinned to the bottom of the app-shell frame
