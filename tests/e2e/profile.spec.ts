@@ -25,23 +25,29 @@ test('editing name and phone on the profile screen persists them', async ({ page
   // getByLabel, not getByPlaceholder: this screen is the first in the app with
   // real <label> elements, because it is the one form a user opens with the
   // fields already filled in (see components/profile/ProfileForm.tsx).
-  await expect(page.getByLabel('이름')).toHaveValue('프로필 원장')
+  // exact: true -- 원장 프로필에는 StudioForm의 '요가원 이름' 라벨도 있어
+  // substring 매치인 getByLabel('이름')이 둘 다 잡는다(strict mode violation).
+  await expect(page.getByLabel('이름', { exact: true })).toHaveValue('프로필 원장')
 
-  await page.getByLabel('이름').fill('이름 바꾼 원장')
+  await page.getByLabel('이름', { exact: true }).fill('이름 바꾼 원장')
   await page.getByLabel('전화번호').fill('010-1234-5678')
-  await page.getByRole('button', { name: '저장' }).click()
+  // exact: true -- StudioForm의 '요가원 정보 저장' 버튼도 substring 매치된다.
+  await page.getByRole('button', { name: '저장', exact: true }).click()
   await expect(page.getByText('저장했습니다')).toBeVisible()
 
   // The reload is the point: the form keeps its own React state, so asserting
   // the inputs without one would pass on a save that never reached Postgres.
   await page.reload()
-  await expect(page.getByLabel('이름')).toHaveValue('이름 바꾼 원장')
+  await expect(page.getByLabel('이름', { exact: true })).toHaveValue('이름 바꾼 원장')
   await expect(page.getByLabel('전화번호')).toHaveValue('010-1234-5678')
 
   // The name is what other people in the studio see, so it has to leave this
   // screen too -- the schedule form's instructor picker lists the owner by
   // name (listInstructors includes owners, since an owner may teach).
+  // 커스텀 Dropdown(components/ui/Dropdown.tsx)은 네이티브 <select>와 달리
+  // 리스트가 열려 있는 동안에만 role="option"이 DOM에 붙는다 -- 먼저 연다.
   await page.goto('/admin/schedule')
+  await page.getByRole('button', { name: '강사', exact: true }).click()
   await expect(page.getByRole('option', { name: '이름 바꾼 원장' })).toBeAttached()
 })
 
@@ -76,6 +82,7 @@ test('changing a password requires the current one and the new one then works', 
   // carries its own 로그아웃 -- at Playwright's 1280px viewport both are
   // rendered, and an unscoped lookup is a strict-mode violation.
   await page.locator('main').getByRole('button', { name: '로그아웃' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '로그아웃' }).click()
   await expect(page).toHaveURL(/\/login/)
 
   await page.getByPlaceholder('이메일').fill(email)

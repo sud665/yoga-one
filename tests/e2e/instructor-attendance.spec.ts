@@ -43,6 +43,7 @@ test('instructor can view booked members for their own session and mark attendan
   // back to the owner and instructor again, all with their own live sessions.
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '강사 초대 링크 발급' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '발급' }).click()
   // getByRole('link', { name: /\/invite\// }), not .first(): Task 15 added an app-wide nav
   // (app/admin/layout.tsx) with 6 <Link>s ahead of every admin page's own content, so an
   // unqualified getByRole('link').first() now resolves to the nav's own "대시보드" link instead
@@ -80,12 +81,16 @@ test('instructor can view booked members for their own session and mark attendan
   const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토']
   const todayDayOfWeek = new Date().getDay()
   await page.goto('/admin/schedule')
-  await page.getByPlaceholder('클래스명').fill('Attendance Class')
-  await page.locator('select[name="instructorId"]').selectOption({ label: '출석 강사' })
-  await page.locator('select[name="dayOfWeek"]').selectOption(String(todayDayOfWeek))
+  await page.getByLabel('클래스명').fill('Attendance Class')
+  // Custom Dropdown replaced the native selects -- instructor opens by aria-label; the
+  // day is now a one-tap toggle chip (same fix as schedule-management.spec.ts).
+  await page.getByRole('button', { name: '강사', exact: true }).click()
+  await page.getByRole('option', { name: '출석 강사' }).click()
+  await page.getByRole('button', { name: DAY_LABELS[todayDayOfWeek], exact: true }).click()
   await page.locator('input[name="startTime"]').fill('09:00')
-  await page.getByPlaceholder('정원').fill('10')
+  await page.getByLabel('정원(명)').fill('10')
   await page.getByRole('button', { name: '시간표 추가' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '등록' }).click()
   // The template row now leads with the class name and keeps the
   // recurrence rule as metadata beneath it, so the two are asserted
   // separately -- which is what this check always meant.
@@ -100,6 +105,7 @@ test('instructor can view booked members for their own session and mark attendan
   // Member books the generated session.
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '회원 초대 링크 발급' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '발급' }).click()
   // getByRole('link', { name: /\/invite\// }): see the identical comment above this test's
   // instructorInviteUrl lookup -- same nav-collision fix.
   const memberInviteUrl = await page.getByRole('link', { name: /\/invite\// }).getAttribute('href')

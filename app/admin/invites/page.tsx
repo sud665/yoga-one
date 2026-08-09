@@ -5,6 +5,7 @@ import { createInvite, listInvites } from '@/lib/actions/invites'
 import type { Invite } from '@/lib/types'
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/Badge'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useToast } from '@/components/ui/Toast'
@@ -43,7 +44,13 @@ export default function InvitesPage() {
     listInvites().then(setInvites)
   }, [])
 
+  // 확인 다이얼로그가 겨누고 있는 발급 대상 역할. 초대 링크는 가입 권한을
+  // 여는 이벤트라(이 앱은 초대 없이는 가입 자체가 불가) 발급 전에 한 번
+  // 더 묻는다 -- 강사/회원 버튼이 나란해 서로 오탭하기도 쉽다.
+  const [confirmRole, setConfirmRole] = useState<'instructor' | 'member' | null>(null)
+
   function handleCreate(role: 'instructor' | 'member') {
+    setConfirmRole(null)
     setError(null)
     setGeneratedUrl(null)
     startTransition(async () => {
@@ -67,13 +74,24 @@ export default function InvitesPage() {
       </div>
 
       <div className="flex flex-col gap-3">
-        <Button icon={Plus} onClick={() => handleCreate('instructor')} disabled={isPending}>
+        <Button icon={Plus} onClick={() => setConfirmRole('instructor')} disabled={isPending}>
           강사 초대 링크 발급
         </Button>
-        <Button variant="secondary" icon={Plus} onClick={() => handleCreate('member')} disabled={isPending}>
+        <Button variant="secondary" icon={Plus} onClick={() => setConfirmRole('member')} disabled={isPending}>
           회원 초대 링크 발급
         </Button>
       </div>
+
+      <ConfirmDialog
+        open={confirmRole !== null}
+        title={confirmRole === 'instructor' ? '강사 초대 링크를 발급할까요?' : '회원 초대 링크를 발급할까요?'}
+        description={`${confirmRole === 'instructor' ? '강사' : '회원'} 권한으로 가입할 수 있는 일회용 링크가 만들어집니다. 발급 후 7일간 유효합니다.`}
+        confirmLabel="발급"
+        onConfirm={() => {
+          if (confirmRole) handleCreate(confirmRole)
+        }}
+        onCancel={() => setConfirmRole(null)}
+      />
 
       {error && (
         <p role="alert" className="mt-4 text-body-md text-danger">

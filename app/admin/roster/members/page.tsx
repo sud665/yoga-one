@@ -6,6 +6,7 @@ import { Search, UserPlus, UsersRound, X } from 'lucide-react'
 import { listMembersDetailed, type MemberRosterRow, type MembershipStatus } from '@/lib/actions/roster'
 import { createInvite } from '@/lib/actions/invites'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { StatusBadge } from '@/components/ui/Badge'
@@ -48,6 +49,9 @@ export default function MemberRosterPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
   const [inviting, setInviting] = useState(false)
+  // 초대 발급 확인 -- /admin/invites·강사 로스터의 발급 버튼과 같은 확인
+  // 카피/흐름. 같은 라벨의 버튼이 화면마다 다르게 행동하면 안 된다.
+  const [confirmInvite, setConfirmInvite] = useState(false)
 
   const refresh = useCallback(() => {
     listMembersDetailed().then(setMembers)
@@ -58,6 +62,7 @@ export default function MemberRosterPage() {
   }, [refresh])
 
   async function handleInvite() {
+    setConfirmInvite(false)
     setInviting(true)
     const result = await createInvite('member')
     setInviting(false)
@@ -138,9 +143,18 @@ export default function MemberRosterPage() {
       <Button href="/admin/roster/members/new" icon={UserPlus} className="w-full">
         회원 등록 (가입동의서 작성)
       </Button>
-      <Button variant="secondary" onClick={handleInvite} disabled={inviting} className="mt-2 w-full">
+      <Button variant="secondary" onClick={() => setConfirmInvite(true)} disabled={inviting} className="mt-2 w-full">
         회원 초대 링크 발급
       </Button>
+
+      <ConfirmDialog
+        open={confirmInvite}
+        title="회원 초대 링크를 발급할까요?"
+        description="회원 권한으로 가입할 수 있는 일회용 링크가 만들어집니다. 발급 후 7일간 유효합니다."
+        confirmLabel="발급"
+        onConfirm={handleInvite}
+        onCancel={() => setConfirmInvite(false)}
+      />
       {generatedUrl && (
         <p className="mt-3 break-all rounded-card border border-hairline bg-surface px-4 py-3 text-body-md text-ink shadow-elev-1">
           발급된 링크:{' '}

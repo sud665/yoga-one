@@ -281,6 +281,20 @@
   }
 }
 
+/* ConfirmDialog(components/ui/ConfirmDialog.tsx)의 등장 모션. 시트의
+   slide-up과 달리 중앙 다이얼로그라 fade + 미세 scale. roster-sheet-in과
+   같은 motion-safe 게이트/reduced-motion 축약 규칙을 그대로 탄다. */
+@keyframes confirm-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* DESIGN.md is an explicitly light-only design system -- no dark variant.
    (Dark-mode CSS variables were removed from this file entirely in an
    earlier commit, not reintroduced here.) */

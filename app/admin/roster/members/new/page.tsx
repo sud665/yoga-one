@@ -5,6 +5,7 @@ import { Check, ChevronRight, UserPlus } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { TextInput } from '@/components/ui/TextInput'
 import { registerMember } from '@/lib/actions/member-registration'
 import { listTemplatesWithUpcomingSessions } from '@/lib/actions/schedule'
@@ -41,6 +42,7 @@ export default function MemberRegisterPage() {
   const [signature, setSignature] = useState('')
 
   const [stepError, setStepError] = useState<string | null>(null)
+  const [confirming, setConfirming] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [result, setResult] = useState<{ url: string } | null>(null)
 
@@ -111,12 +113,19 @@ export default function MemberRegisterPage() {
     setAgreements(next)
   }
 
-  async function handleSubmit() {
+  // 서명 검증까지 통과한 뒤에만 확인 다이얼로그를 연다 -- 등록은 회원권
+  // 기간·결제 금액이 그대로 기록되는 이벤트라 마지막으로 한 번 더 묻는다.
+  function handleSubmit() {
     if (!signature.trim()) {
       setStepError('서명란에 회원 성명을 입력해주세요.')
       return
     }
     setStepError(null)
+    setConfirming(true)
+  }
+
+  async function submitRegistration() {
+    setConfirming(false)
     setSubmitting(true)
     const res = await registerMember({
       fullName,
@@ -151,6 +160,7 @@ export default function MemberRegisterPage() {
     setOpenAgreement(null)
     setSignature('')
     setStepError(null)
+    setConfirming(false)
     setResult(null)
   }
 
@@ -469,6 +479,21 @@ export default function MemberRegisterPage() {
           <p className="text-caption text-muted">가입동의서 내역은 요가원이 보관합니다.</p>
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirming}
+        title={`${fullName} 회원님을 등록할까요?`}
+        description="등록하면 회원권이 개시되고 비밀번호 설정 링크가 생성됩니다."
+        confirmLabel="등록"
+        onConfirm={submitRegistration}
+        onCancel={() => setConfirming(false)}
+      >
+        <div className="mt-3 flex flex-col gap-2 rounded-card bg-surface-soft p-3.5">
+          <SummaryRow label="회원권" value={`${selectedPlan.label} · ${selectedTerm.label.split(' ')[0]}`} />
+          <SummaryRow label="개시일" value={startDate} />
+          <SummaryRow label="결제 금액" value={won(price.total)} />
+        </div>
+      </ConfirmDialog>
     </div>
   )
 }

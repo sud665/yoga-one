@@ -14,12 +14,16 @@ async function signUpOwnerAndCreateSchedule(page: import('@playwright/test').Pag
   await expect(page).toHaveURL(/\/admin/)
 
   await page.goto('/admin/schedule')
-  await page.getByPlaceholder('클래스명').fill('Small Class')
-  await page.locator('select[name="instructorId"]').selectOption({ index: 1 })
-  await page.locator('select[name="dayOfWeek"]').selectOption('1')
+  await page.getByLabel('클래스명').fill('Small Class')
+  // Custom Dropdown replaced the native selects -- instructor opens by aria-label; the
+  // day is now a one-tap toggle chip (same fix as schedule-management.spec.ts).
+  await page.getByRole('button', { name: '강사', exact: true }).click()
+  await page.getByRole('option').first().click()
+  await page.getByRole('button', { name: '월', exact: true }).click()
   await page.locator('input[name="startTime"]').fill('09:00')
-  await page.getByPlaceholder('정원').fill('1')
+  await page.getByLabel('정원(명)').fill('1')
   await page.getByRole('button', { name: '시간표 추가' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '등록' }).click()
   // The template row now leads with the class name and keeps the
   // recurrence rule as metadata beneath it, so the two are asserted
   // separately -- which is what this check always meant.
@@ -43,6 +47,7 @@ async function signUpOwnerAndCreateSchedule(page: import('@playwright/test').Pag
 async function issueMemberInviteLink(page: import('@playwright/test').Page) {
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '회원 초대 링크 발급' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '발급' }).click()
   // getByRole('link', { name: /\/invite\// }), not .first(): Task 15 added an app-wide nav
   // (app/admin/layout.tsx) with 6 <Link>s ahead of every admin page's own content, so an
   // unqualified getByRole('link').first() now resolves to the nav's own "대시보드" link instead

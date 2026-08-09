@@ -15,16 +15,22 @@ test('owner can create a recurring class template and see it listed under its da
   await expect(page).toHaveURL(/\/admin/)
 
   await page.goto('/admin/schedule')
-  await page.getByPlaceholder('클래스명').fill('Hatha Yoga')
+  await page.getByLabel('클래스명').fill('Hatha Yoga')
   // Only one instructor option exists at this point: the owner who just
   // signed up. listInstructors() includes the 'owner' role precisely so a
   // brand-new studio (no invited instructor yet) can still assign itself,
   // per Task 4's class_templates_validate_instructor trigger.
-  await page.locator('select[name="instructorId"]').selectOption({ index: 1 })
-  await page.locator('select[name="dayOfWeek"]').selectOption('1')
+  // 커스텀 Dropdown(components/ui/Dropdown.tsx)이 네이티브 select를
+  // 대체했다: aria-label 트리거를 열고 listbox option을 고른다. 강사는
+  // 이 시점 목록의 유일한 후보(원장)라 first()로 충분 -- 기존
+  // selectOption({ index: 1 })과 같은 의미다.
+  await page.getByRole('button', { name: '강사', exact: true }).click()
+  await page.getByRole('option').first().click()
+  await page.getByRole('button', { name: '월', exact: true }).click()
   await page.locator('input[name="startTime"]').fill('09:00')
-  await page.getByPlaceholder('정원').fill('10')
+  await page.getByLabel('정원(명)').fill('10')
   await page.getByRole('button', { name: '시간표 추가' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '등록' }).click()
 
   // The template row leads with the class name; the day now lives one level
   // up as the (open-by-default) day-group's <summary>, with time/instructor

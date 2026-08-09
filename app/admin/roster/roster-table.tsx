@@ -5,6 +5,7 @@ import { listProfilesByRole } from '@/lib/actions/roster'
 import { createInvite } from '@/lib/actions/invites'
 import type { Profile } from '@/lib/types'
 import { Button } from '@/components/ui/Button'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useToast } from '@/components/ui/Toast'
@@ -18,6 +19,10 @@ import { Plus, UserRound, UsersRound } from 'lucide-react'
 export function RosterTable({ role, label }: { role: 'instructor' | 'member'; label: string }) {
   const [profiles, setProfiles] = useState<Profile[] | null>(null)
   const [generatedUrl, setGeneratedUrl] = useState<string | null>(null)
+  // 초대 발급 확인 다이얼로그 -- /admin/invites 페이지의 발급 버튼과 같은
+  // 확인 카피/흐름. 이 지름길만 확인 없이 즉시 발급되면 같은 라벨의 두
+  // 버튼이 다르게 행동하게 된다 (roster-management.spec도 이 버튼을 누른다).
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const { toast } = useToast()
   const Icon = role === 'instructor' ? UserRound : UsersRound
 
@@ -26,6 +31,7 @@ export function RosterTable({ role, label }: { role: 'instructor' | 'member'; la
   }, [role])
 
   async function handleInvite() {
+    setConfirmOpen(false)
     const result = await createInvite(role)
     if ('url' in result) {
       setGeneratedUrl(result.url)
@@ -33,9 +39,7 @@ export function RosterTable({ role, label }: { role: 'instructor' | 'member'; la
     }
     // Previously silent: a failed createInvite() (e.g. not signed in as the
     // owner) just did nothing, with zero feedback that the click had any
-    // effect at all. Not covered by any Playwright spec (every e2e
-    // invite-issuance flow goes through /admin/invites, not this roster
-    // shortcut), so wiring this to a toast carries no test risk.
+    // effect at all.
     toast({ title: `${label} 초대 링크를 발급하지 못했습니다`, description: result.error, tone: 'error' })
   }
 
@@ -48,7 +52,16 @@ export function RosterTable({ role, label }: { role: 'instructor' | 'member'; la
         <h1 className="text-heading-lg text-ink">{label} 관리</h1>
       </div>
 
-      <Button icon={Plus} onClick={handleInvite}>{label} 초대 링크 발급</Button>
+      <Button icon={Plus} onClick={() => setConfirmOpen(true)}>{label} 초대 링크 발급</Button>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title={`${label} 초대 링크를 발급할까요?`}
+        description={`${label} 권한으로 가입할 수 있는 일회용 링크가 만들어집니다. 발급 후 7일간 유효합니다.`}
+        confirmLabel="발급"
+        onConfirm={handleInvite}
+        onCancel={() => setConfirmOpen(false)}
+      />
 
       {generatedUrl && (
         <p className="mt-6 break-all rounded-card border border-hairline bg-surface px-4 py-3 text-body-md text-ink shadow-elev-1">

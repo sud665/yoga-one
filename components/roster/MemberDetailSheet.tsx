@@ -6,6 +6,7 @@ import { X } from 'lucide-react'
 
 import { Button } from '@/components/ui/Button'
 import { StatusBadge } from '@/components/ui/Badge'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { useToast } from '@/components/ui/Toast'
 import { getMemberDetail, extendMembership, toggleMembershipPause, type MemberDetail } from '@/lib/actions/roster'
@@ -24,6 +25,10 @@ export function MemberDetailSheet({ memberId, onClose, onChanged }: MemberDetail
   const [detail, setDetail] = useState<MemberDetail | null>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // 확인 다이얼로그가 겨누고 있는 액션. 원래 window.confirm이었다(QA
+  // 전수검사 2026-08-08, 항목 3 -- 당시엔 전용 확인 컴포넌트가 없어 가장
+  // 가벼운 수단이었음). ConfirmDialog가 생기면서 앱 전체 확인 UI와 통일.
+  const [confirmAction, setConfirmAction] = useState<'extend' | 'pause' | 'resume' | null>(null)
   const { toast } = useToast()
 
   // No memberId-changed reset needed: the parent (app/admin/roster/members/
@@ -40,13 +45,8 @@ export function MemberDetailSheet({ memberId, onClose, onChanged }: MemberDetail
     onChanged()
   }
 
-  async function handleExtend() {
+  async function performExtend() {
     if (!detail?.registrationId) return
-    // 클릭 한 번으로 즉시 실행되고 되돌릴 방법이 없어(QA 전수검사
-    // 2026-08-08, 항목 3 -- 오탭이 곧 데이터 변경이었음), 이 앱에 다른 확인
-    // 다이얼로그 컴포넌트가 없는 만큼 가장 가벼운 방식인 네이티브 confirm으로
-    // 막는다.
-    if (!window.confirm(`${detail.fullName}님의 회원권을 1개월 연장할까요?`)) return
     setError(null)
     setBusy(true)
     const result = await extendMembership(detail.registrationId)
@@ -59,10 +59,8 @@ export function MemberDetailSheet({ memberId, onClose, onChanged }: MemberDetail
     await refetch()
   }
 
-  async function handleTogglePause() {
+  async function performTogglePause(pausing: boolean) {
     if (!detail?.registrationId) return
-    const pausing = !detail.paused
-    if (!window.confirm(pausing ? `${detail.fullName}님의 회원권을 일시정지할까요?` : `${detail.fullName}님의 회원권을 재개할까요?`)) return
     setError(null)
     setBusy(true)
     const result = await toggleMembershipPause(detail.registrationId, pausing)
@@ -74,6 +72,12 @@ export function MemberDetailSheet({ memberId, onClose, onChanged }: MemberDetail
     toast({ title: pausing ? '회원권을 일시정지했습니다' : '회원권을 재개했습니다', tone: 'success' })
     await refetch()
   }
+
+  const CONFIRM_COPY = {
+    extend: { title: '회원권을 1개월 연장할까요?', confirmLabel: '연장' },
+    pause: { title: '회원권을 일시정지할까요?', confirmLabel: '일시정지' },
+    resume: { title: '회원권을 재개할까요?', confirmLabel: '재개' },
+  } as const
 
   return (
     <div className="absolute inset-0 z-[76] flex flex-col justify-end">
@@ -172,10 +176,14 @@ export function MemberDetailSheet({ memberId, onClose, onChanged }: MemberDetail
               )}
 
               <div className="grid grid-cols-2 gap-2">
-                <Button onClick={handleExtend} disabled={busy || !detail.registrationId}>
+                <Button onClick={() => setConfirmAction('extend')} disabled={busy || !detail.registrationId}>
                   회원권 연장
                 </Button>
-                <Button variant="secondary" onClick={handleTogglePause} disabled={busy || !detail.registrationId}>
+                <Button
+                  variant="secondary"
+                  onClick={() => setConfirmAction(detail.paused ? 'resume' : 'pause')}
+                  disabled={busy || !detail.registrationId}
+                >
                   {detail.paused ? '재개' : '일시정지'}
                 </Button>
                 {/* 원장<->회원 1:1 DM은 지원하지 않는다 (get_or_create_dm의
@@ -192,6 +200,25 @@ export function MemberDetailSheet({ memberId, onClose, onChanged }: MemberDetail
           </>
         )}
       </div>
+
+      {/* 시트(z-[76]) 위에 서는 확인 다이얼로그(z-[80]). 시트 루트가
+          inset-0이라 다이얼로그의 absolute inset-0도 같은 프레임 전체를
+          덮는다. */}
+      {detail && confirmAction && (
+        <ConfirmDialog
+          open
+          title={CONFIRM_COPY[confirmAction].title}
+          description={`${detail.fullName}님의 회원권에 바로 적용됩니다.`}
+          confirmLabel={CONFIRM_COPY[confirmAction].confirmLabel}
+          onConfirm={() => {
+            const action = confirmAction
+            setConfirmAction(null)
+            if (action === 'extend') performExtend()
+            else performTogglePause(action === 'pause')
+          }}
+          onCancel={() => setConfirmAction(null)}
+        />
+      )}
     </div>
   )
 }

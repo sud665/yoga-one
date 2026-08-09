@@ -13,6 +13,7 @@ test('an instructor can sign up via an owner-issued invite link', async ({ page,
 
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '강사 초대 링크 발급' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '발급' }).click()
   // getByRole('link', { name: /\/invite\// }), not .first(): Task 15 added an app-wide nav
   // (app/admin/layout.tsx) with 6 <Link>s ahead of every admin page's own content, so an
   // unqualified getByRole('link').first() now resolves to the nav's own "대시보드" link instead

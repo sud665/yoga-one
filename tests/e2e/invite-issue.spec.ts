@@ -13,6 +13,7 @@ test('owner can issue an instructor invite link', async ({ page }) => {
 
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '강사 초대 링크 발급' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '발급' }).click()
 
   await expect(page.getByText(/발급된 링크/)).toBeVisible()
   // The row leads with the Korean role label now; the raw enum no longer

@@ -16,6 +16,7 @@ test('owner can view the member roster after a member joins via invite', async (
 
   await page.goto('/admin/roster/members')
   await page.getByRole('button', { name: '회원 초대 링크 발급' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '발급' }).click()
   // getByRole('link', { name: /\/invite\// }), not .first(): Task 15 added an app-wide nav
   // (app/admin/layout.tsx) with 6 <Link>s ahead of every admin page's own content, so an
   // unqualified getByRole('link').first() now resolves to the nav's own "대시보드" link instead
@@ -70,6 +71,7 @@ test('roster listings are isolated per studio (no cross-tenant leakage)', async 
 
   await page.goto('/admin/roster/instructors')
   await page.getByRole('button', { name: '강사 초대 링크 발급' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '발급' }).click()
   // getByRole('link', { name: /\/invite\// }): see the comment on inviteUrl above -- same
   // nav-collision fix.
   const inviteUrlA = await page.getByRole('link', { name: /\/invite\// }).getAttribute('href')
@@ -98,6 +100,7 @@ test('roster listings are isolated per studio (no cross-tenant leakage)', async 
 
   await ownerBPage.goto('/admin/roster/instructors')
   await ownerBPage.getByRole('button', { name: '강사 초대 링크 발급' }).click()
+  await ownerBPage.getByRole('alertdialog').getByRole('button', { name: '발급' }).click()
   // getByRole('link', { name: /\/invite\// }): see the comment on inviteUrl above -- same
   // nav-collision fix.
   const inviteUrlB = await ownerBPage.getByRole('link', { name: /\/invite\// }).getAttribute('href')

@@ -54,12 +54,16 @@ test('an owner assigned as a session instructor can reach /instructor and mark a
   const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토']
   const todayDayOfWeek = new Date().getDay()
   await page.goto('/admin/schedule')
-  await page.getByPlaceholder('클래스명').fill('Owner Taught Class')
-  await page.locator('select[name="instructorId"]').selectOption({ index: 1 })
-  await page.locator('select[name="dayOfWeek"]').selectOption(String(todayDayOfWeek))
+  await page.getByLabel('클래스명').fill('Owner Taught Class')
+  // Custom Dropdown replaced the native selects -- instructor opens by aria-label; the
+  // day is now a one-tap toggle chip (same fix as schedule-management.spec.ts).
+  await page.getByRole('button', { name: '강사', exact: true }).click()
+  await page.getByRole('option').first().click()
+  await page.getByRole('button', { name: DAY_LABELS[todayDayOfWeek], exact: true }).click()
   await page.locator('input[name="startTime"]').fill('09:00')
-  await page.getByPlaceholder('정원').fill('10')
+  await page.getByLabel('정원(명)').fill('10')
   await page.getByRole('button', { name: '시간표 추가' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '등록' }).click()
   // The template row now leads with the class name and keeps the
   // recurrence rule as metadata beneath it, so the two are asserted
   // separately -- which is what this check always meant.
@@ -79,6 +83,7 @@ test('an owner assigned as a session instructor can reach /instructor and mark a
   // A member books the session so there's a real booking to mark attendance for.
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '회원 초대 링크 발급' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '발급' }).click()
   // getByRole('link', { name: /\/invite\// }), not .first(): app/admin/layout.tsx's
   // nav has several <Link>s ahead of the invites page's own content -- same
   // fix as every other spec that issues an invite (see task-15-report.md).
@@ -137,6 +142,7 @@ test('signing out clears the session and protects the previous route', async ({ 
   // test's body was untouched by that work).
   await page.goto('/admin/profile')
   await page.getByRole('button', { name: '로그아웃' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '로그아웃' }).click()
   await expect(page).toHaveURL(/\/login/)
 
   // Back to an authenticated route: middleware must bounce it, proving the

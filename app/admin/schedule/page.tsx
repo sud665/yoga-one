@@ -5,6 +5,7 @@ import { CalendarDays, ChevronDown, Pencil, Trash2 } from 'lucide-react'
 import { listTemplatesWithUpcomingSessions, deleteClassTemplate, type TemplateWithLabel } from '@/lib/actions/schedule'
 import { TemplateForm } from './template-form'
 import { Card } from '@/components/ui/Card'
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 
@@ -36,6 +37,10 @@ export default function SchedulePage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  // 삭제 확인 다이얼로그가 겨누고 있는 행. deleteClassTemplate은 앞으로의
+  // 수업(class_sessions)을 cascade로 함께 지우는 되돌릴 수 없는 액션인데
+  // 원탭 즉시 실행이었다 -- 실행 전 확인을 한 번 세운다.
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
 
   const refresh = useCallback(() => {
     listTemplatesWithUpcomingSessions().then(({ templates }) => setTemplates(templates))
@@ -56,6 +61,8 @@ export default function SchedulePage() {
     }
     refresh()
   }
+
+  const deleteTarget = templates?.find((t) => t.id === confirmDeleteId) ?? null
 
   return (
     <div className="w-full px-6 py-12">
@@ -138,7 +145,7 @@ export default function SchedulePage() {
                             <button
                               type="button"
                               aria-label="시간표 삭제"
-                              onClick={() => handleDelete(t.id)}
+                              onClick={() => setConfirmDeleteId(t.id)}
                               disabled={deletingId === t.id}
                               className={`${ICON_BUTTON} border-danger bg-surface text-danger hover:bg-danger-tint`}
                             >
@@ -155,6 +162,25 @@ export default function SchedulePage() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title="시간표를 삭제할까요?"
+        description={
+          deleteTarget
+            ? `매주 ${deleteTarget.dayLabel}요일 ${deleteTarget.start_time} · ${deleteTarget.title} — 앞으로 예정된 수업이 모두 함께 삭제되며 되돌릴 수 없습니다.`
+            : undefined
+        }
+        confirmLabel="삭제"
+        tone="danger"
+        onConfirm={() => {
+          if (!deleteTarget) return
+          const id = deleteTarget.id
+          setConfirmDeleteId(null)
+          handleDelete(id)
+        }}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </div>
   )
 }

@@ -76,6 +76,7 @@ test('full journey: onboarding through attendance', async ({ page, browser }) =>
   // 브리핑의 원래 순서(시간표 등록 -> 초대 발급)보다 앞당긴다.)
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '강사 초대 링크 발급' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '발급' }).click()
   const instructorInviteUrl = await page.getByRole('link', { name: /\/invite\// }).getAttribute('href')
   expect(instructorInviteUrl).toBeTruthy()
 
@@ -99,12 +100,16 @@ test('full journey: onboarding through attendance', async ({ page, browser }) =>
   const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토']
   const todayDayOfWeek = new Date().getDay()
   await page.goto('/admin/schedule')
-  await page.getByPlaceholder('클래스명').fill('Full Flow Class')
-  await page.locator('select[name="instructorId"]').selectOption({ label: '풀플로우 강사' })
-  await page.locator('select[name="dayOfWeek"]').selectOption(String(todayDayOfWeek))
+  await page.getByLabel('클래스명').fill('Full Flow Class')
+  // Custom Dropdown replaced the native selects -- instructor opens by aria-label; the
+  // day is now a one-tap toggle chip (same fix as schedule-management.spec.ts).
+  await page.getByRole('button', { name: '강사', exact: true }).click()
+  await page.getByRole('option', { name: '풀플로우 강사' }).click()
+  await page.getByRole('button', { name: DAY_LABELS[todayDayOfWeek], exact: true }).click()
   await page.locator('input[name="startTime"]').fill('09:00')
-  await page.getByPlaceholder('정원').fill('1')
+  await page.getByLabel('정원(명)').fill('1')
   await page.getByRole('button', { name: '시간표 추가' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '등록' }).click()
   // The template row now leads with the class name and keeps the
   // recurrence rule as metadata beneath it, so the two are asserted
   // separately -- which is what this check always meant.
@@ -119,6 +124,7 @@ test('full journey: onboarding through attendance', async ({ page, browser }) =>
   // 4. 회원1 초대 발급 및 가입 -> 예약 (정원 1이므로 이 예약으로 세션이 마감된다).
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '회원 초대 링크 발급' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '발급' }).click()
   const memberInviteUrl1 = await page.getByRole('link', { name: /\/invite\// }).getAttribute('href')
   expect(memberInviteUrl1).toBeTruthy()
 
@@ -149,6 +155,7 @@ test('full journey: onboarding through attendance', async ({ page, browser }) =>
   // 순서가 바뀌면 member2의 최초 로드 화면엔 "대기 등록" 버튼이 아예 나타나지 않는다.
   await page.goto('/admin/invites')
   await page.getByRole('button', { name: '회원 초대 링크 발급' }).click()
+  await page.getByRole('alertdialog').getByRole('button', { name: '발급' }).click()
   const memberInviteUrl2 = await page.getByRole('link', { name: /\/invite\// }).getAttribute('href')
   expect(memberInviteUrl2).toBeTruthy()
 
