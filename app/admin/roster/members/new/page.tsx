@@ -213,6 +213,10 @@ export default function MemberRegisterPage() {
 
       {step === 1 && (
         <div className="flex flex-col gap-4">
+          {/* 3단계(확인·서명)는 처음부터 Card 위에 있었는데 1·2단계만 필드가
+              캔버스에 바로 얹혀 있었다 -- 단계마다 표면이 달라 보이던 것을
+              같은 흰 카드로 통일. */}
+          <Card className="flex flex-col gap-4">
           <Field label="이름">
             <TextInput value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="회원 이름" />
           </Field>
@@ -300,6 +304,7 @@ export default function MemberRegisterPage() {
               </div>
             </Field>
           )}
+          </Card>
 
           <Card variant="soft">
             <div className="flex items-baseline justify-between gap-3">
@@ -330,6 +335,9 @@ export default function MemberRegisterPage() {
             아래 내용을 회원에게 보여주고 동의를 받습니다. 각 항목을 눌러 전문을 확인할 수 있습니다.
           </p>
 
+          {/* Step 1과 같은 이유의 Card 래핑 -- 약관 항목 박스들은 카드 위에서
+              bg-canvas(그레이지)로 한 단계 가라앉아 계층이 생긴다. */}
+          <Card className="flex flex-col gap-3">
           <button
             type="button"
             onClick={toggleAll}
@@ -385,6 +393,7 @@ export default function MemberRegisterPage() {
               </div>
             )
           })}
+          </Card>
 
           {stepError && (
             <p role="alert" className="text-body-md text-danger">
