@@ -303,7 +303,7 @@ export default function MemberRegisterPage() {
             </Field>
           )}
 
-          <Card variant="soft">
+          <Card>
             <div className="flex items-baseline justify-between gap-3">
               <span className="text-body-strong text-ink">결제 예정 금액</span>
               <span className="text-heading-lg text-ink">{won(price.total)}</span>
